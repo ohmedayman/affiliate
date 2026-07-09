@@ -1047,8 +1047,40 @@ async function loadNotificationsList() {
 
 // ===== SETTINGS =====
 function loadSettings(c) {
+  const pct = getProfileCompletion();
   c.innerHTML = `
     <div class="page-header"><h1>⚙️ الإعدادات</h1></div>
+
+    <div class="settings-section">
+      <h2>🎨 المظهر</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.8rem 0;border-bottom:1px solid #f3f4f6">
+        <span style="font-size:.9rem">الوضع الليلي</span>
+        <button class="btn btn-sm ${document.body.classList.contains('dark-mode') ? 'btn-primary' : 'btn-ghost'}" onclick="toggleDarkMode()">
+          ${document.body.classList.contains('dark-mode') ? '☀️ نهاري' : '🌙 ليلي'}
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h2>📊 أدوات متقدمة</h2>
+      <div style="display:flex;flex-direction:column;gap:.8rem">
+        <button class="btn btn-ghost btn-block" onclick="showEarningsCalculator()" style="justify-content:flex-start">
+          🧮 حاسبة الأرباح - احسب أرباحك المتوقعة
+        </button>
+        <button class="btn btn-ghost btn-block" onclick="showQRCode()" style="justify-content:flex-start">
+          📱 كود QR - شير رابط الإحالة بالكود
+        </button>
+        <button class="btn btn-ghost btn-block" onclick="showWeeklySummary()" style="justify-content:flex-start">
+          📊 ملخص الأسبوع - تقرير أسبوعي
+        </button>
+        <button class="btn btn-ghost btn-block" onclick="exportToCSV()" style="justify-content:flex-start">
+          📥 تصدير البيانات - حمّل CSV
+        </button>
+        <button class="btn btn-ghost btn-block" onclick="showProfileCompletion()" style="justify-content:flex-start">
+          📋 إكمال الملف الشخصي - ${pct}% مكتمل
+        </button>
+      </div>
+    </div>
 
     <div class="settings-section">
       <h2>📝 تعديل البيانات</h2>
@@ -1195,3 +1227,247 @@ const DEFAULT_VIDEOS = [
   {id:'v3',title:'واتساب كورس تسويق',desc:'ازاي تستخدم واتساب في البيع',url:'https://www.youtube.com/embed/dQw4w9WgXcQ'},
   {id:'v4',title:'بناء استراتيجية تسويقية',desc:'خطط تسويق احترافية',url:'https://www.youtube.com/embed/dQw4w9WgXcQ'}
 ];
+
+// ===== DARK MODE =====
+function initDarkMode() {
+  const saved = localStorage.getItem('darkMode');
+  if (saved === 'true') {
+    document.body.classList.add('dark-mode');
+  }
+}
+
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('darkMode', isDark);
+  showToast(isDark ? 'الوضع الليلي مفعّل 🌙' : 'الوضع النهاري مفعّل ☀️');
+}
+
+// ===== EARNINGS CALCULATOR =====
+function showEarningsCalculator() {
+  const modal = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <div style="padding:1.5rem">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem">
+        🧮 حاسبة الأرباح
+      </h2>
+      <p style="color:var(--text-secondary);font-size:.85rem;margin-bottom:1.5rem">
+        احسب أرباحك المتوقعة بناءً على عدد الزوار
+      </p>
+      <div class="form-group">
+        <label>عدد الزوار المتوقع</label>
+        <input type="number" id="calc-visitors" placeholder="10000" oninput="calculateEarnings()">
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:1rem;margin-top:1rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.5rem">
+          <span style="color:var(--text-secondary);font-size:.85rem">الأرباح المتوقعة:</span>
+          <span id="calc-result" style="font-weight:700;font-size:1.2rem;color:var(--success)">0 ج.م</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--text-secondary);font-size:.85rem">الأرباح لكل 1000 زائر:</span>
+          <span style="font-weight:600;font-size:.9rem">20 ج.م</span>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-block" style="margin-top:1rem" onclick="closeModal()">إغلاق</button>
+    </div>`;
+  modal.classList.add('active');
+}
+
+function calculateEarnings() {
+  const visitors = parseInt(document.getElementById('calc-visitors').value) || 0;
+  const earnings = Math.floor(visitors / 1000) * 20;
+  document.getElementById('calc-result').textContent = earnings + ' ج.م';
+}
+
+// ===== QR CODE GENERATOR =====
+function showQRCode() {
+  const link = getShareLink();
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(link)}`;
+  const modal = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <div style="padding:1.5rem;text-align:center">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">📱 كود QR لرابط الإحالة</h2>
+      <img src="${qrUrl}" alt="QR Code" style="width:200px;height:200px;border-radius:12px;margin:1rem 0;box-shadow:0 4px 20px rgba(0,0,0,0.1)">
+      <p style="color:var(--text-secondary);font-size:.85rem;margin-bottom:1rem">
+        امسح الكود بالموبايل عشان تفتح رابط الإحالة
+      </p>
+      <div style="background:var(--bg);border-radius:10px;padding:.8rem;margin-bottom:1rem">
+        <code style="font-size:.75rem;color:var(--text-secondary);word-break:break-all">${link}</code>
+      </div>
+      <div style="display:flex;gap:.8rem">
+        <button class="btn btn-primary" style="flex:1" onclick="downloadQR('${qrUrl}')">📥 تحميل</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">إغلاق</button>
+      </div>
+    </div>`;
+  modal.classList.add('active');
+}
+
+function downloadQR(url) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'milano-f16-qr.png';
+  a.click();
+  showToast('تم تحميل الكود ✅');
+}
+
+// ===== EXPORT DATA =====
+async function exportToCSV() {
+  try {
+    const snap = await db.collection('conversions').where('affiliateId','==',currentUser.uid).orderBy('createdAt','desc').get();
+    if (snap.empty) {
+      showToast('لا توجد بيانات للتصدير', 'error');
+      return;
+    }
+    let csv = 'التاريخ,العميل,المنتج,الحالة,العمولة\n';
+    snap.forEach(doc => {
+      const d = doc.data();
+      const date = d.createdAt?.toDate()?.toLocaleDateString('ar-EG') || '-';
+      const status = d.status === 'approved' ? 'مقبول' : d.status === 'paid' ? 'مدفوع' : 'قيد المراجعة';
+      csv += `${date},${d.customerName || 'عميل'},${d.productName || '-'},${status},${d.commission || 0}\n`;
+    });
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `milano-referrals-${new Date().toLocaleDateString('ar-EG')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('تم تصدير البيانات ✅');
+  } catch(e) {
+    showToast('حدث خطأ في التصدير', 'error');
+  }
+}
+
+// ===== PROFILE COMPLETION =====
+function getProfileCompletion() {
+  if (!affiliateData) return 0;
+  let completed = 0;
+  let total = 5;
+  if (affiliateData.name) completed++;
+  if (affiliateData.phone) completed++;
+  if (affiliateData.email) completed++;
+  if (affiliateData.referralCode) completed++;
+  if (affiliateData.totalClicks > 0) completed++;
+  return Math.round((completed / total) * 100);
+}
+
+function showProfileCompletion() {
+  const pct = getProfileCompletion();
+  const missing = [];
+  if (!affiliateData?.phone) missing.push('رقم التليفون');
+  if (!affiliateData?.totalClicks) missing.push('مشاركة رابط واحد على الأقل');
+  
+  const modal = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <div style="padding:1.5rem;text-align:center">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">📋 إكمال الملف الشخصي</h2>
+      <div style="position:relative;width:120px;height:120px;margin:1rem auto">
+        <svg style="width:120px;height:120px;transform:rotate(-90deg)">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+          <circle cx="60" cy="60" r="50" fill="none" stroke="${pct === 100 ? '#10b981' : '#3b82f6'}" stroke-width="8" 
+                  stroke-dasharray="${314}" stroke-dashoffset="${314 - (314 * pct / 100)}" stroke-linecap="round"/>
+        </svg>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.5rem;font-weight:800">
+          ${pct}%
+        </div>
+      </div>
+      <p style="color:var(--text-secondary);font-size:.85rem;margin-bottom:1rem">
+        ${pct === 100 ? 'ملفك الشخصي مكتمل! 🎉' : 'كمّل ملفك الشخصي عشان تحصل على شارة إضافية'}
+      </p>
+      ${missing.length > 0 ? `
+        <div style="background:var(--bg);border-radius:10px;padding:1rem;text-align:right">
+          <p style="font-size:.85rem;font-weight:600;margin-bottom:.5rem">البيانات الناقصة:</p>
+          ${missing.map(m => `<p style="font-size:.8rem;color:var(--text-secondary)">• ${m}</p>`).join('')}
+        </div>
+      ` : ''}
+      <button class="btn btn-ghost btn-block" style="margin-top:1rem" onclick="closeModal()">إغلاق</button>
+    </div>`;
+  modal.classList.add('active');
+}
+
+// ===== WEEKLY SUMMARY =====
+async function showWeeklySummary() {
+  const modal = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <div style="padding:1.5rem">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem">
+        📊 ملخص الأسبوع
+      </h2>
+      <div style="text-align:center;padding:2rem">
+        <div class="spinner spinner-dark"></div>
+        <p style="color:var(--text-secondary);font-size:.85rem;margin-top:.5rem">جاري تحميل البيانات...</p>
+      </div>
+    </div>`;
+  modal.classList.add('active');
+
+  try {
+    const today = new Date();
+    const weekAgo = new Date(today);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    
+    const clicksSnap = await db.collection('clicks')
+      .where('affiliateId','==',currentUser.uid)
+      .where('createdAt','>=',weekAgo)
+      .get();
+    
+    let dailyClicks = {};
+    clicksSnap.forEach(doc => {
+      const date = doc.data().createdAt?.toDate()?.toLocaleDateString('ar-EG');
+      dailyClicks[date] = (dailyClicks[date] || 0) + 1;
+    });
+
+    const totalClicks = clicksSnap.size;
+    const avgDaily = Math.round(totalClicks / 7);
+    const earnings = Math.floor(totalClicks / 1000) * 20;
+
+    content.innerHTML = `
+      <div style="padding:1.5rem">
+        <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">📊 ملخص الأسبوع</h2>
+        
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin-bottom:1.5rem">
+          <div style="background:var(--bg);border-radius:10px;padding:1rem;text-align:center">
+            <div style="font-size:1.5rem;font-weight:800;color:var(--primary)">${totalClicks}</div>
+            <div style="font-size:.75rem;color:var(--text-secondary)">نقرات هذا الأسبوع</div>
+          </div>
+          <div style="background:var(--bg);border-radius:10px;padding:1rem;text-align:center">
+            <div style="font-size:1.5rem;font-weight:800;color:var(--success)">${earnings} ج.م</div>
+            <div style="font-size:.75rem;color:var(--text-secondary)">أرباح هذا الأسبوع</div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg);border-radius:10px;padding:1rem;margin-bottom:1rem">
+          <div style="font-size:.85rem;font-weight:600;margin-bottom:.5rem">متوسط النقرات اليومي:</div>
+          <div style="font-size:1.2rem;font-weight:800;color:var(--primary)">${avgDaily} نقرة/يوم</div>
+        </div>
+
+        <div style="background:var(--bg);border-radius:10px;padding:1rem">
+          <div style="font-size:.85rem;font-weight:600;margin-bottom:.5rem">اليوم الأعلى نقرات:</div>
+          <div style="font-size:.9rem;color:var(--text)">
+            ${Object.keys(dailyClicks).length > 0 
+              ? Object.entries(dailyClicks).sort((a,b) => b[1] - a[1])[0]?.join(' - ') + ' (' + Object.entries(dailyClicks).sort((a,b) => b[1] - a[1])[0]?.[1] + ' نقرة)'
+              : 'لا توجد بيانات'}
+          </div>
+        </div>
+
+        <button class="btn btn-ghost btn-block" style="margin-top:1rem" onclick="closeModal()">إغلاق</button>
+      </div>`;
+  } catch(e) {
+    content.innerHTML = `
+      <div style="padding:1.5rem;text-align:center">
+        <p style="color:var(--text-secondary)">خطأ في تحميل البيانات</p>
+        <button class="btn btn-ghost btn-block" style="margin-top:1rem" onclick="closeModal()">إغلاق</button>
+      </div>`;
+  }
+}
+
+// ===== MODAL HELPERS =====
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('active');
+}
+
+// ===== INIT DARK MODE ON LOAD =====
+initDarkMode();
