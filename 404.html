@@ -5,37 +5,241 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>404 - الصفحة غير موجودة | ميلانو F16</title>
   <link rel="icon" href="https://assets.wuiltstore.com/cmksv9bcw0ki601gn64lf4joy_Gemini_Generated_Image_8x0fug8x0fug8x0f.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#0d47a1 0%,#1a237e 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;color:white;text-align:center;padding:2rem;direction:rtl}
-    .container{max-width:500px;animation:fadeInUp .8s ease}
-    @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
-    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-    .error-code{font-size:8rem;font-weight:900;background:linear-gradient(135deg,#ff6d00,#ff9100);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:float 3s ease-in-out infinite;line-height:1}
-    .emoji{font-size:5rem;margin:1rem 0;animation:pulse 2s ease-in-out infinite}
-    h1{font-size:1.8rem;margin-bottom:.8rem;font-weight:700}
-    p{font-size:1.1rem;opacity:.85;margin-bottom:2rem;line-height:1.7}
-    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:1rem 2.5rem;background:white;color:#1a73e8;border-radius:12px;font-weight:700;font-size:1rem;text-decoration:none;transition:all .3s;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
-    .btn:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,0.3)}
-    .btn:active{transform:scale(.97)}
-    .btn-outline{background:transparent;color:white;border:2px solid rgba(255,255,255,0.4);margin-right:1rem}
-    .btn-outline:hover{background:rgba(255,255,255,0.1);border-color:white}
-    .links{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:1rem}
-    .brand{display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:2.5rem;opacity:.7;font-size:.9rem}
-    .brand img{width:24px;height:24px;border-radius:6px;object-fit:cover}
+    
+    body{
+      font-family:'Cairo',sans-serif;
+      background:linear-gradient(135deg,#0a1628 0%,#0d2137 50%,#0a1628 100%);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      text-align:center;
+      padding:2rem;
+      direction:rtl;
+      overflow:hidden;
+      position:relative
+    }
+
+    /* Animated background particles */
+    .bg-particles{
+      position:fixed;
+      top:0;left:0;right:0;bottom:0;
+      overflow:hidden;
+      z-index:0
+    }
+    .particle{
+      position:absolute;
+      width:4px;height:4px;
+      background:rgba(239,68,68,0.3);
+      border-radius:50%;
+      animation:float 15s infinite linear
+    }
+    .particle:nth-child(1){left:10%;animation-delay:0s;animation-duration:12s}
+    .particle:nth-child(2){left:20%;animation-delay:2s;animation-duration:14s}
+    .particle:nth-child(3){left:30%;animation-delay:4s;animation-duration:11s}
+    .particle:nth-child(4){left:40%;animation-delay:1s;animation-duration:13s}
+    .particle:nth-child(5){left:50%;animation-delay:3s;animation-duration:15s}
+    .particle:nth-child(6){left:60%;animation-delay:5s;animation-duration:12s}
+    .particle:nth-child(7){left:70%;animation-delay:0.5s;animation-duration:14s}
+    .particle:nth-child(8){left:80%;animation-delay:2.5s;animation-duration:11s}
+
+    @keyframes float{
+      0%{transform:translateY(100vh) rotate(0deg);opacity:0}
+      10%{opacity:1}
+      90%{opacity:1}
+      100%{transform:translateY(-100vh) rotate(720deg);opacity:0}
+    }
+
+    /* Main container */
+    .container{
+      position:relative;
+      z-index:1;
+      max-width:500px;
+      animation:fadeInUp .8s ease
+    }
+
+    /* Error code */
+    .error-code{
+      font-size:8rem;
+      font-weight:900;
+      background:linear-gradient(135deg,#ef4444,#f97316);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+      animation:float 3s ease-in-out infinite;
+      line-height:1;
+      margin-bottom:1rem;
+      filter:drop-shadow(0 4px 20px rgba(239,68,68,0.3))
+    }
+
+    /* Emoji */
+    .emoji{
+      font-size:4rem;
+      margin:1rem 0;
+      animation:pulse 2s ease-in-out infinite;
+      filter:drop-shadow(0 4px 15px rgba(255,255,255,0.2))
+    }
+    @keyframes pulse{
+      0%,100%{transform:scale(1)}
+      50%{transform:scale(1.1)}
+    }
+
+    /* Text */
+    h1{
+      font-size:1.8rem;
+      margin-bottom:.8rem;
+      font-weight:800;
+      background:linear-gradient(135deg,#fff,#e0e7ff);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text
+    }
+    p{
+      font-size:1rem;
+      color:rgba(255,255,255,0.6);
+      margin-bottom:2rem;
+      line-height:1.7
+    }
+
+    /* Buttons */
+    .links{
+      display:flex;
+      gap:1rem;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top:1rem
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.9rem 2rem;
+      border-radius:12px;
+      font-weight:700;
+      font-size:.95rem;
+      text-decoration:none;
+      transition:all .3s ease;
+      font-family:'Cairo',sans-serif
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,#3b82f6,#60a5fa);
+      color:white;
+      box-shadow:0 4px 20px rgba(59,130,246,0.3)
+    }
+    .btn-primary:hover{
+      transform:translateY(-3px);
+      box-shadow:0 8px 30px rgba(59,130,246,0.4)
+    }
+    .btn-outline{
+      background:rgba(255,255,255,0.1);
+      color:white;
+      border:1px solid rgba(255,255,255,0.2);
+      backdrop-filter:blur(10px)
+    }
+    .btn-outline:hover{
+      background:rgba(255,255,255,0.15);
+      border-color:rgba(255,255,255,0.3);
+      transform:translateY(-2px)
+    }
+    .btn:active{transform:translateY(0)}
+
+    /* Brand */
+    .brand{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:.5rem;
+      margin-top:2.5rem;
+      opacity:.5;
+      font-size:.85rem
+    }
+    .brand img{
+      width:24px;
+      height:24px;
+      border-radius:6px;
+      object-fit:cover
+    }
+
+    /* Animations */
+    @keyframes fadeInUp{
+      from{opacity:0;transform:translateY(30px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    /* Floating icon */
+    .floating-icon{
+      position:fixed;
+      font-size:2rem;
+      opacity:.1;
+      animation:floatIcon 20s infinite linear
+    }
+    .floating-icon:nth-child(1){top:20%;left:10%;animation-delay:0s}
+    .floating-icon:nth-child(2){top:60%;left:80%;animation-delay:5s}
+    .floating-icon:nth-child(3){top:80%;left:20%;animation-delay:10s}
+
+    @keyframes floatIcon{
+      0%{transform:translateY(0) rotate(0deg)}
+      50%{transform:translateY(-30px) rotate(180deg)}
+      100%{transform:translateY(0) rotate(360deg)}
+    }
+
+    /* Responsive */
+    @media(max-width:480px){
+      .error-code{font-size:5rem}
+      .emoji{font-size:3rem}
+      h1{font-size:1.4rem}
+      .links{flex-direction:column;align-items:center}
+      .btn{width:100%;max-width:250px;justify-content:center}
+    }
   </style>
 </head>
 <body>
+  <!-- Background particles -->
+  <div class="bg-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <!-- Floating icons -->
+  <div class="floating-icon">🔍</div>
+  <div class="floating-icon">📄</div>
+  <div class="floating-icon">❓</div>
+
   <div class="container">
     <div class="error-code">404</div>
     <div class="emoji">🔍</div>
     <h1>الصفحة غير موجودة!</h1>
     <p>يبدو إن الرابط اللي كتبته غلط أو الصفحة اتشالت. جرب ترجع الصفحة الرئيسية أو تتصفح المنتجات.</p>
+    
     <div class="links">
-      <a href="https://affiliate.milanof16.com/" class="btn">🏠 الرئيسية</a>
-      <a href="https://milanof16.com/ar" class="btn btn-outline">🛒 المتجر</a>
+      <a href="https://affiliate.milanof16.com/" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        الرئيسية
+      </a>
+      <a href="https://milanof16.com/ar" class="btn btn-outline">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        المتجر
+      </a>
     </div>
+
     <div class="brand">
       <img src="https://assets.wuiltstore.com/cmksv9bcw0ki601gn64lf4joy_Gemini_Generated_Image_8x0fug8x0fug8x0f.webp" alt="ميلانو">
       <span>ميلانو F16 - برنامج الشراكة</span>

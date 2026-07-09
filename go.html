@@ -5,31 +5,370 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>جاري التحويل... - ميلانو F16</title>
   <link rel="icon" href="https://assets.wuiltstore.com/cmksv9bcw0ki601gn64lf4joy_Gemini_Generated_Image_8x0fug8x0fug8x0f.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0d47a1,#1a237e);min-height:100vh;display:flex;align-items:center;justify-content:center;color:white;text-align:center}
-    .loader{animation:pulse 1.5s infinite}
-    @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:.7}}
-    h1{font-size:1.5rem;margin:1rem 0 .5rem}
-    p{opacity:.8;margin-bottom:2rem}
-    .spinner{width:50px;height:50px;border:4px solid rgba(255,255,255,.2);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1.5rem}
+    
+    body{
+      font-family:'Cairo',sans-serif;
+      background:linear-gradient(135deg,#0a1628 0%,#0d2137 50%,#0a1628 100%);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      text-align:center;
+      overflow:hidden;
+      position:relative
+    }
+
+    /* Animated background particles */
+    .bg-particles{
+      position:fixed;
+      top:0;left:0;right:0;bottom:0;
+      overflow:hidden;
+      z-index:0
+    }
+    .particle{
+      position:absolute;
+      width:4px;height:4px;
+      background:rgba(59,130,246,0.3);
+      border-radius:50%;
+      animation:float 15s infinite linear
+    }
+    .particle:nth-child(1){left:10%;animation-delay:0s;animation-duration:12s}
+    .particle:nth-child(2){left:20%;animation-delay:2s;animation-duration:14s}
+    .particle:nth-child(3){left:30%;animation-delay:4s;animation-duration:11s}
+    .particle:nth-child(4){left:40%;animation-delay:1s;animation-duration:13s}
+    .particle:nth-child(5){left:50%;animation-delay:3s;animation-duration:15s}
+    .particle:nth-child(6){left:60%;animation-delay:5s;animation-duration:12s}
+    .particle:nth-child(7){left:70%;animation-delay:0.5s;animation-duration:14s}
+    .particle:nth-child(8){left:80%;animation-delay:2.5s;animation-duration:11s}
+    .particle:nth-child(9){left:90%;animation-delay:4.5s;animation-duration:13s}
+    .particle:nth-child(10){left:15%;animation-delay:1.5s;animation-duration:15s}
+
+    @keyframes float{
+      0%{transform:translateY(100vh) rotate(0deg);opacity:0}
+      10%{opacity:1}
+      90%{opacity:1}
+      100%{transform:translateY(-100vh) rotate(720deg);opacity:0}
+    }
+
+    /* Main container */
+    .container{
+      position:relative;
+      z-index:1;
+      padding:2rem;
+      max-width:420px;
+      width:100%
+    }
+
+    /* Logo section */
+    .logo-section{
+      margin-bottom:2rem;
+      animation:fadeInDown .8s ease
+    }
+    .logo{
+      width:80px;
+      height:80px;
+      border-radius:20px;
+      object-fit:cover;
+      margin:0 auto 1rem;
+      display:block;
+      box-shadow:0 8px 32px rgba(59,130,246,0.3);
+      animation:logoPulse 3s ease-in-out infinite
+    }
+    @keyframes logoPulse{
+      0%,100%{box-shadow:0 8px 32px rgba(59,130,246,0.3)}
+      50%{box-shadow:0 8px 48px rgba(59,130,246,0.5)}
+    }
+
+    /* Shield icon */
+    .shield-wrapper{
+      position:relative;
+      width:100px;
+      height:100px;
+      margin:0 auto 1.5rem
+    }
+    .shield{
+      font-size:3.5rem;
+      animation:shieldBounce 2s ease-in-out infinite;
+      filter:drop-shadow(0 4px 20px rgba(59,130,246,0.4))
+    }
+    @keyframes shieldBounce{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-8px)}
+    }
+    .shield-ring{
+      position:absolute;
+      top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      width:80px;height:80px;
+      border:3px solid rgba(59,130,246,0.2);
+      border-radius:50%;
+      animation:ringPulse 2s ease-in-out infinite
+    }
+    .shield-ring:nth-child(2){
+      width:100px;height:100px;
+      animation-delay:.5s;
+      border-color:rgba(59,130,246,0.1)
+    }
+    @keyframes ringPulse{
+      0%,100%{transform:translate(-50%,-50%) scale(1);opacity:1}
+      50%{transform:translate(-50%,-50%) scale(1.1);opacity:.5}
+    }
+
+    /* Loading spinner */
+    .spinner-container{
+      margin:0 auto 1.5rem;
+      width:60px;height:60px;
+      position:relative
+    }
+    .spinner{
+      width:100%;height:100%;
+      border:3px solid rgba(255,255,255,0.1);
+      border-top-color:#3b82f6;
+      border-radius:50%;
+      animation:spin 1s linear infinite
+    }
+    .spinner-inner{
+      position:absolute;
+      top:8px;left:8px;right:8px;bottom:8px;
+      border:3px solid rgba(255,255,255,0.05);
+      border-top-color:#60a5fa;
+      border-radius:50%;
+      animation:spin 1.5s linear infinite reverse
+    }
     @keyframes spin{to{transform:rotate(360deg)}}
-    .btn{display:inline-block;padding:.8rem 2rem;background:white;color:#1a73e8;border-radius:10px;font-weight:600;text-decoration:none;transition:all .3s}
-    .btn:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(0,0,0,.2)}
+
+    /* Progress bar */
+    .progress-wrapper{
+      margin:0 auto 2rem;
+      max-width:280px;
+      animation:fadeIn 1s ease .5s both
+    }
+    .progress-bar{
+      height:4px;
+      background:rgba(255,255,255,0.1);
+      border-radius:4px;
+      overflow:hidden;
+      position:relative
+    }
+    .progress-fill{
+      height:100%;
+      background:linear-gradient(90deg,#3b82f6,#60a5fa,#3b82f6);
+      background-size:200% 100%;
+      border-radius:4px;
+      width:0%;
+      transition:width .3s ease;
+      animation:shimmer 1.5s ease-in-out infinite
+    }
+    @keyframes shimmer{
+      0%{background-position:200% 0}
+      100%{background-position:-200% 0}
+    }
+    .progress-text{
+      font-size:.75rem;
+      color:rgba(255,255,255,0.5);
+      margin-top:.5rem
+    }
+
+    /* Text content */
+    .content{
+      animation:fadeInUp .8s ease .3s both
+    }
+    .title{
+      font-size:1.5rem;
+      font-weight:800;
+      margin-bottom:.5rem;
+      background:linear-gradient(135deg,#fff,#e0e7ff);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text
+    }
+    .subtitle{
+      font-size:.9rem;
+      color:rgba(255,255,255,0.6);
+      margin-bottom:1.5rem;
+      line-height:1.6
+    }
+    .brand-name{
+      color:#60a5fa;
+      font-weight:700
+    }
+
+    /* Fallback button */
+    .fallback-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.9rem 2rem;
+      background:rgba(255,255,255,0.1);
+      border:1px solid rgba(255,255,255,0.2);
+      border-radius:12px;
+      color:white;
+      font-family:'Cairo',sans-serif;
+      font-size:.9rem;
+      font-weight:600;
+      cursor:pointer;
+      transition:all .3s ease;
+      backdrop-filter:blur(10px);
+      text-decoration:none
+    }
+    .fallback-btn:hover{
+      background:rgba(255,255,255,0.15);
+      border-color:rgba(255,255,255,0.3);
+      transform:translateY(-2px);
+      box-shadow:0 8px 24px rgba(0,0,0,0.2)
+    }
+    .fallback-btn:active{
+      transform:translateY(0)
+    }
+    .fallback-btn svg{
+      width:18px;height:18px
+    }
+
+    /* Security badge */
+    .security-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      padding:.4rem .8rem;
+      background:rgba(16,185,129,0.1);
+      border:1px solid rgba(16,185,129,0.2);
+      border-radius:20px;
+      font-size:.7rem;
+      color:#6ee7b7;
+      margin-top:1.5rem;
+      animation:fadeIn 1s ease 1s both
+    }
+    .security-dot{
+      width:6px;height:6px;
+      background:#10b981;
+      border-radius:50%;
+      animation:dotPulse 2s ease-in-out infinite
+    }
+    @keyframes dotPulse{
+      0%,100%{opacity:1}
+      50%{opacity:.4}
+    }
+
+    /* Animations */
+    @keyframes fadeInDown{
+      from{opacity:0;transform:translateY(-20px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes fadeInUp{
+      from{opacity:0;transform:translateY(20px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes fadeIn{
+      from{opacity:0}
+      to{opacity:1}
+    }
+
+    /* Footer */
+    .footer{
+      position:fixed;
+      bottom:1rem;
+      left:0;right:0;
+      text-align:center;
+      font-size:.7rem;
+      color:rgba(255,255,255,0.3);
+      animation:fadeIn 1s ease 1.5s both
+    }
+
+    /* Responsive */
+    @media(max-width:480px){
+      .container{padding:1.5rem}
+      .title{font-size:1.3rem}
+      .shield{font-size:3rem}
+    }
   </style>
 </head>
 <body>
-  <div>
-    <div class="loader" style="font-size:4rem">🛡️</div>
-    <div class="spinner"></div>
-    <h1>جاري التحويل...</h1>
-    <p>هتتنقل لمتجر ميلانو خلال ثانية</p>
-    <a href="https://milanof16.com/ar" id="redirect-link" class="btn">اضغط هنا لو محولتش</a>
+  <!-- Background particles -->
+  <div class="bg-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
   </div>
+
+  <div class="container">
+    <!-- Shield icon with rings -->
+    <div class="shield-wrapper">
+      <div class="shield-ring"></div>
+      <div class="shield-ring"></div>
+      <div class="shield">🛡️</div>
+    </div>
+
+    <!-- Spinner -->
+    <div class="spinner-container">
+      <div class="spinner"></div>
+      <div class="spinner-inner"></div>
+    </div>
+
+    <!-- Text content -->
+    <div class="content">
+      <h1 class="title">جاري التحويل...</h1>
+      <p class="subtitle">هتتنقل لمتجر <span class="brand-name">ميلانو F16</span> خلال ثانية</p>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-wrapper">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <p class="progress-text" id="progress-text">جاري التحميل...</p>
+    </div>
+
+    <!-- Fallback button -->
+    <a href="https://milanof16.com/ar" id="redirect-link" class="fallback-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        <polyline points="15 3 21 3 21 9"></polyline>
+        <line x1="10" y1="14" x2="21" y2="3"></line>
+      </svg>
+      اضغط هنا لو محولتش
+    </a>
+
+    <!-- Security badge -->
+    <div class="security-badge">
+      <div class="security-dot"></div>
+      <span>رابط آمن ومضمون</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">ميلانو F16 - حل مشكلة الحشرات</div>
+
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script>
+    // Progress bar animation
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    let progress = 0;
+    
+    const progressInterval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress > 90) progress = 90;
+      progressFill.style.width = progress + '%';
+      
+      if (progress < 30) progressText.textContent = 'جاري التحقق من الرابط...';
+      else if (progress < 60) progressText.textContent = 'جاري تحضير الصفحة...';
+      else progressText.textContent = 'جاري التحويل...';
+    }, 200);
+
     async function handleRedirect() {
       const path = window.location.pathname;
       const parts = path.split('/go/').filter(Boolean);
@@ -43,24 +382,18 @@
       let targetUrl = 'https://milanof16.com/ar';
 
       try {
-        // Check if it's a referral code (short, no slash)
         if (!code.includes('/') && parts.length === 1) {
-          // It's a referral code like /go/mohmedayman5925
           targetUrl = 'https://milanof16.com/ar';
           await trackReferralClick(code);
-        }
-        // Check if it's a product link like /go/mohmedayman5925/abc123
-        else if (parts.length >= 2) {
+        } else if (parts.length >= 2) {
           const refCode = parts[0];
           const encodedUrl = parts[1];
-          // Try to decode the product URL
           try {
             const decoded = atob(encodedUrl + '==');
             if (decoded.startsWith('http')) {
               targetUrl = decoded;
             }
           } catch(e) {
-            // If decode fails, just use ref code
             targetUrl = 'https://milanof16.com/ar';
           }
           await trackReferralClick(refCode);
@@ -70,17 +403,20 @@
       }
 
       document.getElementById('redirect-link').href = targetUrl;
-      setTimeout(() => { window.location.href = targetUrl; }, 1000);
+      
+      // Complete progress and redirect
+      clearInterval(progressInterval);
+      progressFill.style.width = '100%';
+      progressText.textContent = 'جاري التحويل للمتجر...';
+      
+      setTimeout(() => { window.location.href = targetUrl; }, 800);
     }
 
     async function trackReferralClick(code) {
       try {
-        // Find affiliate by referral code
         const affSnap = await db.collection('affiliates').where('referralCode','==',code).limit(1).get();
         if (!affSnap.empty) {
           const affDoc = affSnap.docs[0];
-
-          // Log the click
           await db.collection('clicks').add({
             affiliateId: affDoc.id,
             referralCode: code,
@@ -88,8 +424,6 @@
             userAgent: navigator.userAgent,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
-
-          // Increment affiliate clicks
           await db.collection('affiliates').doc(affDoc.id).update({
             totalClicks: firebase.firestore.FieldValue.increment(1)
           });
@@ -100,11 +434,12 @@
     }
 
     function showError(msg) {
+      clearInterval(progressInterval);
       document.body.innerHTML = `
-        <div style="text-align:center">
-          <h1 style="font-size:2rem;margin-bottom:1rem">⚠️</h1>
-          <h1>${msg}</h1>
-          <a href="/" style="color:white;margin-top:2rem;display:inline-block">العودة للرئيسية</a>
+        <div style="text-align:center;padding:2rem">
+          <div style="font-size:4rem;margin-bottom:1rem">⚠️</div>
+          <h1 style="font-size:1.5rem;margin-bottom:1rem;font-family:Cairo,sans-serif">${msg}</h1>
+          <a href="/" style="color:#60a5fa;margin-top:2rem;display:inline-block;font-family:Cairo,sans-serif;text-decoration:none">العودة للرئيسية</a>
         </div>`;
     }
 
