@@ -1648,7 +1648,23 @@ button { font-family: inherit; cursor: pointer; }
    ================================================================ */
 @media (max-width: 768px) {
   .navbar { padding: 0.8rem 1.5rem; }
-  .navbar-links { display: none; }
+  .navbar-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    padding: 1rem;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    border-top: 1px solid var(--border);
+    animation: fadeInDown 0.3s ease;
+  }
+  .navbar-links.show {
+    display: flex;
+  }
   .mobile-toggle { display: block; }
   
   .hero {

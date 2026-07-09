@@ -384,6 +384,9 @@
     </div>
   </footer>
 
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
   <script src="js/products-data.js"></script>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
@@ -395,6 +398,11 @@
       once: true,
       offset: 50
     });
+
+    // ===== FAQ Toggle =====
+    function toggleFaq(el) {
+      el.parentElement.classList.toggle('open');
+    }
 
     // ===== Products Data =====
     const products = window.PRODUCTS || [];
@@ -550,6 +558,7 @@
     // ===== Toast =====
     function showToast(msg, type = 'info') {
       const c = document.getElementById('toast-container');
+      if (!c) return;
       const t = document.createElement('div');
       t.className = `toast toast-${type}`;
       t.innerHTML = msg;
@@ -573,6 +582,11 @@
       if (scrollIndicator) {
         scrollIndicator.style.opacity = window.scrollY > 100 ? '0' : '1';
       }
+    });
+
+    // ===== Mobile Nav Toggle =====
+    document.querySelector('.mobile-toggle')?.addEventListener('click', function() {
+      document.querySelector('.navbar-links')?.classList.toggle('show');
     });
   </script>
 </body>
