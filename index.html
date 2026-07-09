@@ -4,29 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ميلانو F16 - برنامج الشراكة والعمولة</title>
-  <link rel="stylesheet" href="css/style.css">
-  <style>
-    .hero { background: linear-gradient(135deg, #0d47a1 0%, #1565c0 40%, #1a237e 100%); }
-    .badge { display:inline-block;background:var(--secondary);color:white;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.75rem;font-weight:600;margin-right:0.5rem; }
-    .testimonials-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem; }
-    .testimonial-card { background:var(--card-bg);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow); }
-    .testimonial-card .stars { color:#f9ab00;margin-bottom:0.5rem; }
-    .testimonial-card .text { color:var(--text-secondary);font-style:italic;margin-bottom:1rem; }
-    .testimonial-card .author { font-weight:600; }
-    .faq-item { background:var(--card-bg);border-radius:var(--radius);margin-bottom:1rem;box-shadow:var(--shadow);overflow:hidden; }
-    .faq-question { padding:1.2rem 1.5rem;cursor:pointer;font-weight:600;display:flex;justify-content:space-between;align-items:center; }
-    .faq-question::after { content:'+';font-size:1.5rem;color:var(--primary); }
-    .faq-item.open .faq-question::after { content:'-'; }
-    .faq-answer { padding:0 1.5rem;max-height:0;overflow:hidden;transition:all 0.3s;color:var(--text-secondary); }
-    .faq-item.open .faq-answer { padding:0 1.5rem 1.2rem;max-height:200px; }
-  </style>
+  <link rel="stylesheet" href="css/landing.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 </head>
 <body>
 
-  <!-- NAVBAR -->
-  <nav class="navbar">
+  <nav class="navbar" id="navbar">
     <a href="index.html" class="navbar-brand">
-      🛡️ ميلانو <span>F16</span>
+      <div class="logo-icon">🛡️</div>
+      ميلانو <span>F16</span>
     </a>
     <div class="navbar-links">
       <a href="#features">المميزات</a>
@@ -35,82 +21,77 @@
       <a href="#faq">الأسئلة</a>
       <a href="auth.html" class="btn btn-primary">ابدأ دلوقتي</a>
     </div>
+    <button class="mobile-toggle" onclick="document.querySelector('.navbar-links').classList.toggle('show')">☰</button>
   </nav>
 
-  <!-- HERO -->
   <section class="hero">
-    <h1>ابدأ اكسب مع ميلانو F16 🚀</h1>
-    <p>شارك منتجاتنا للقضاء على الحشرات واحصل على عمولة تصل إلى 30% من كل عملية بيع. شحن مجاني ومنتجات مضمونة!</p>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;position:relative;">
-      <a href="auth.html" class="btn btn-secondary btn-lg">سجّل دلوقتي مجاناً</a>
-      <a href="#how-it-works" class="btn btn-outline btn-lg">اعرف أكتر</a>
-    </div>
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <span class="num">+500</span>
-        <span class="label">شريك نشط</span>
+    <div class="hero-content">
+      <div class="hero-badge">🚀 برنامج العمولة رقم 1 في مصر</div>
+      <h1>ابدأ اكسب مع <span class="highlight">ميلانو F16</span></h1>
+      <p>شارك منتجاتنا للقضاء على الحشرات واحصل على عمولة تصل إلى 30% من كل عملية بيع. شحن مجاني ومنتجات مضمونة!</p>
+      <div class="hero-buttons">
+        <a href="auth.html" class="btn btn-secondary btn-lg">سجّل دلوقتي مجاناً</a>
+        <a href="#how-it-works" class="btn btn-outline btn-lg">اعرف أكتر</a>
       </div>
-      <div class="hero-stat">
-        <span class="num">30%</span>
-        <span class="label">عمولة لكل بيع</span>
-      </div>
-      <div class="hero-stat">
-        <span class="num">+10K</span>
-        <span class="label">عميلة تم بيعها</span>
-      </div>
-      <div class="hero-stat">
-        <span class="num">48</span>
-        <span class="label">ساعة تسليم الأرباح</span>
+      <div class="hero-stats">
+        <div class="hero-stat"><span class="num counter" data-target="500">0</span><span class="label">شريك نشط</span></div>
+        <div class="hero-stat"><span class="num">30%</span><span class="label">عمولة لكل بيع</span></div>
+        <div class="hero-stat"><span class="num counter" data-target="10000">0</span><span class="label">عميلة تم بيعها</span></div>
+        <div class="hero-stat"><span class="num">48</span><span class="label">ساعة تسليم الأرباح</span></div>
       </div>
     </div>
   </section>
 
-  <!-- FEATURES -->
   <section class="section" id="features">
-    <h2 class="section-title">ليه تشتغل معانا؟ 🤔</h2>
-    <p class="section-subtitle">مميزات تخلينك تكسب وانت في بيتك</p>
+    <div class="section-header animate-in">
+      <span class="badge">✨ ليه تشتغل معانا</span>
+      <h2>مميزات تخلينك تكسب وانت في بيتك</h2>
+      <p>كل اللي محتاجه عشان تبدأ تكسب من الإنترنت</p>
+    </div>
     <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">💰</div>
+      <div class="feature-card animate-in">
+        <div class="feature-icon blue">💰</div>
         <h3>عمولة عالية</h3>
         <p>احصل على عمولة تصل إلى 30% من كل عملية بيع. كل ما بعتت أكتر كسبت أكتر!</p>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">📦</div>
+      <div class="feature-card animate-in">
+        <div class="feature-icon green">📦</div>
         <h3>شحن مجاني</h3>
         <p>شحن مجاني على الطلبات فوق 3000 جنيه. العملاء يحبوا الشراء من غير تكاليف إضافية.</p>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔒</div>
+      <div class="feature-card animate-in">
+        <div class="feature-icon orange">🔒</div>
         <h3>منتجات أصلية</h3>
-        <p>كل منتجاتنا أصلية ومضمونة. سمعتنا عندنا أهم حاجة.</p>
+        <p>كل منتجاتنا أصلية ومضمونة من شركة ميلانو. سمعتنا عندنا أهم حاجة.</p>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">📊</div>
-        <h3>لوحة تحكم</h3>
-        <p>تابع أرباحك وإحالاتك في أي وقت من خلال لوحة التحكم الخاصة بيك.</p>
+      <div class="feature-card animate-in">
+        <div class="feature-icon purple">📊</div>
+        <h3>لوحة تحكم متقدمة</h3>
+        <p>تابع أرباحك وإحالاتك ونقراتك في أي وقت من خلال لوحة التحكم.</p>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">⚡</div>
+      <div class="feature-card animate-in">
+        <div class="feature-icon teal">⚡</div>
         <h3>دفع سريع</h3>
         <p>الأرباح بتتحوللك خلال 48 ساعة من الموافقة على السحب.</p>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">🎯</div>
+      <div class="feature-card animate-in">
+        <div class="feature-icon red">🎯</div>
         <h3>منتجات مطلوبة</h3>
         <p>منتجاتنا من أشهر المبيدات الحشرية في مصر. سهلة البيع وبتحقق أرباح سريعة.</p>
       </div>
     </div>
   </section>
 
-  <!-- HOW IT WORKS -->
-  <section class="section" id="how-it-works" style="background:var(--bg);">
-    <h2 class="section-title">ازاي تبدأ؟ 🛠️</h2>
-    <p class="section-subtitle">3 خطوات بسيطة وابدأ تكسب</p>
-    <div class="steps">
+  <section class="section" id="how-it-works" style="background:var(--bg)">
+    <div class="section-header animate-in">
+      <span class="badge">🛠️ الخطوات</span>
+      <h2>ازاي تبدأ؟</h2>
+      <p>4 خطوات بسيطة وابدأ تكسب</p>
+    </div>
+    <div class="steps-container animate-in">
       <div class="step">
         <div class="step-num">1</div>
-        <h3>سجّل حساب مجاني</h3>
+        <h3>سجّل حساب</h3>
         <p>سجّل بياناتك في ثانية واحصل على كود إحالة خاص بيك.</p>
       </div>
       <div class="step">
@@ -120,19 +101,26 @@
       </div>
       <div class="step">
         <div class="step-num">3</div>
+        <h3>العميل يشتري</h3>
+        <p>العميل بيشتري من خلال رابطك وبتتحول العملية لحد بيع مسجل.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
         <h3>ابدأ تكسب</h3>
         <p>كل ما حد يشتري من خلال رابطك، بتاخد عمولتك فوراً!</p>
       </div>
     </div>
   </section>
 
-  <!-- PRODUCTS -->
   <section class="section" id="products">
-    <h2 class="section-title">منتجاتنا 🛡️</h2>
-    <p class="section-subtitle">منتجات ميلانو F16 للقضاء على الحشرات - أسعار تنافسية وعمولات مجزية</p>
-    <div class="products-grid">
+    <div class="section-header animate-in">
+      <span class="badge">🛡️ المنتجات</span>
+      <h2>منتجاتنا للقضاء على الحشرات</h2>
+      <p>أسعار تنافسية وعمولات مجزية</p>
+    </div>
+    <div class="products-grid animate-in">
       <div class="product-card">
-        <div style="height:200px;display:flex;align-items:center;justify-content:center;background:#e8f0fe;font-size:4rem;">🪳</div>
+        <div class="product-img-wrap" style="background:#e8f0fe">🪳</div>
         <div class="product-info">
           <h3>اف 16 للصراصير 500مل</h3>
           <div class="product-price">60 ج.م</div>
@@ -140,7 +128,7 @@
         </div>
       </div>
       <div class="product-card">
-        <div style="height:200px;display:flex;align-items:center;justify-content:center;background:#e8f0fe;font-size:4rem;">🐜</div>
+        <div class="product-img-wrap" style="background:#e8f5e9">🐜</div>
         <div class="product-info">
           <h3>اف 22 للنمل 500مل</h3>
           <div class="product-price">60 ج.م</div>
@@ -148,7 +136,7 @@
         </div>
       </div>
       <div class="product-card">
-        <div style="height:200px;display:flex;align-items:center;justify-content:center;background:#e8f0fe;font-size:4rem;">🐛</div>
+        <div class="product-img-wrap" style="background:#fff3e0">🐛</div>
         <div class="product-info">
           <h3>مبيد اف 35 للبق</h3>
           <div class="product-price">70 ج.م</div>
@@ -156,85 +144,205 @@
         </div>
       </div>
       <div class="product-card">
-        <div style="height:200px;display:flex;align-items:center;justify-content:center;background:#e8f0fe;font-size:4rem;">🪰</div>
+        <div class="product-img-wrap" style="background:#e0f2f1">🪰</div>
         <div class="product-info">
           <h3>رينجو للذباب</h3>
           <div class="product-price">60 ج.م</div>
           <div class="product-commission">عمولتك: 15 ج.م (25%)</div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- TESTIMONIALS -->
-  <section class="section" style="background:var(--bg);">
-    <h2 class="section-title">شركائنا بيقولوا إيه 💬</h2>
-    <div class="testimonials-grid">
-      <div class="testimonial-card">
-        <div class="stars">⭐⭐⭐⭐⭐</div>
-        <div class="text">"بدأت مع ميلانو من 3 شهور وكنت بكسب حوالي 3000 جنيه في الشهر. المنتجات سهلة البيع جداً والدعم ممتاز."</div>
-        <div class="author">- أحمد محمد، القاهرة</div>
+      <div class="product-card">
+        <div class="product-img-wrap" style="background:#ede7f6">🐄</div>
+        <div class="product-info">
+          <h3>سوبر 777 لحشرات المواشي</h3>
+          <div class="product-price">50 ج.م</div>
+          <div class="product-commission">عمولتك: 12 ج.م (24%)</div>
+        </div>
       </div>
-      <div class="testimonial-card">
-        <div class="stars">⭐⭐⭐⭐⭐</div>
-        <div class="text">"أفضل برنامج affiliate اشتغلت معاه. بسّع على فيسبوك وواتساب وكسبان كل شهر بشكل ثابت."</div>
-        <div class="author">- سارة علي، الإسكندرية</div>
-      </div>
-      <div class="testimonial-card">
-        <div class="stars">⭐⭐⭐⭐⭐</div>
-        <div class="text">"الدفع سريع والمنتجات أصلية. ب推荐 المبيدات لأصحابي وجيراني ومكسبان من كل بيع."</div>
-        <div class="author">- محمد حسين، الجيزة</div>
+      <div class="product-card">
+        <div class="product-img-wrap" style="background:#fce4ec">🧽</div>
+        <div class="product-info">
+          <h3>جيجي اسبونج</h3>
+          <div class="product-price">20 ج.م</div>
+          <div class="product-commission">عمولتك: 5 ج.م (25%)</div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- FAQ -->
+  <section class="section" style="background:var(--bg)">
+    <div class="section-header animate-in">
+      <span class="badge">💬 شركائنا</span>
+      <h2>شركائنا بيقولوا إيه</h2>
+    </div>
+    <div class="testimonials-grid animate-in">
+      <div class="testimonial-card">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text">"بدأت مع ميلانو من 3 شهور وكنت بكسب حوالي 3000 جنيه في الشهر. المنتجات سهلة البيع جداً والدعم ممتاز."</div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">أ</div>
+          <div><div class="testimonial-name">أحمد محمد</div><div class="testimonial-role">القاهرة</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text">"أفضل برنامج affiliate اشتغلت معاه. بسّع على فيسبوك وواتساب وكسبان كل شهر بشكل ثابت."</div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">س</div>
+          <div><div class="testimonial-name">سارة علي</div><div class="testimonial-role">الإسكندرية</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+        <div class="testimonial-text">"الدفع سريع والمنتجات أصلية. ب推荐 المبيدات لأصحابي وجيراني ومكسبان من كل بيع."</div>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">م</div>
+          <div><div class="testimonial-name">محمد حسين</div><div class="testimonial-role">الجيزة</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="section" id="faq">
-    <h2 class="section-title">الأسئلة الشائعة ❓</h2>
-    <div style="max-width:800px;margin:0 auto;">
+    <div class="section-header animate-in">
+      <span class="badge">❓ الأسئلة الشائعة</span>
+      <h2>عندك سؤال؟</h2>
+    </div>
+    <div class="faq-list animate-in">
       <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">ازاي أسجل في برنامج العمولة؟</div>
+        <div class="faq-question" onclick="toggleFaq(this)">ازاي أسجل في برنامج العمولة؟ <span class="faq-arrow">▼</span></div>
         <div class="faq-answer">سجّل حساب مجاني من صفحة التسجيل، وهتحصل على كود إحالة خاص بيك تقدر تشاركه مع أي حد.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">كم عمولة كل بيع؟</div>
+        <div class="faq-question" onclick="toggleFaq(this)">كم عمولة كل بيع؟ <span class="faq-arrow">▼</span></div>
         <div class="faq-answer">العمولة بتتراوح بين 25% إلى 30% حسب المنتج. يعني لو بعت منتج ب 60 جنيه بتاخد 15 جنيه عمولة.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">ازاي بستلم أرباحي؟</div>
-        <div class="faq-answer">بتطلب سحب من لوحة التحكم والدفع بيتم خلال 48 ساعة على فودافون كاش أو فودافون كاش.</div>
+        <div class="faq-question" onclick="toggleFaq(this)">ازاي بستلم أرباحي؟ <span class="faq-arrow">▼</span></div>
+        <div class="faq-answer">بتطلب سحب من لوحة التحكم والدفع بيتم خلال 48 ساعة على فودافون كاش أو وي كاش.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">هل فيه حد أدنى للسحب؟</div>
+        <div class="faq-question" onclick="toggleFaq(this)">هل فيه حد أدنى للسحب؟ <span class="faq-arrow">▼</span></div>
         <div class="faq-answer">الحد الأدنى للسحب هو 50 جنيه مصري.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">المنتجات أصلية؟</div>
+        <div class="faq-question" onclick="toggleFaq(this)">المنتجات أصلية؟ <span class="faq-arrow">▼</span></div>
         <div class="faq-answer">أيوه، كل منتجاتنا أصلية ومضمونة من شركة ميلانو. سمعتنا عندنا أهم حاجة.</div>
       </div>
     </div>
   </section>
 
-  <!-- CTA -->
   <section class="cta">
     <h2>جاهز تبدأ تكسب؟ 💰</h2>
     <p>سجّل دلوقتي مجاناً وابدأ شارك المنتجات واحصل على عمولتك الأولى خلال ساعات!</p>
-    <a href="auth.html" class="btn btn-lg" style="background:white;color:var(--secondary);">ابدأ دلوقتي مجاناً 🚀</a>
+    <a href="auth.html" class="btn btn-lg" style="background:white;color:#ff6d00">ابدأ دلوقتي مجاناً 🚀</a>
   </section>
 
-  <!-- FOOTER -->
   <footer class="footer">
-    <p style="margin-bottom:0.5rem;">milanof16.com &copy; 2026 - جميع الحقوق محفوظة</p>
-    <p>
-      <a href="http://milanof16.com/ar">الموقع الرسمي</a> |
-      <a href="http://wa.me/+201551278606">تواصل معنا</a> |
-      <a href="auth.html">تسجيل الدخول</a>
-    </p>
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">🛡️ ميلانو <span>F16</span></div>
+        <p class="footer-desc">ميلانو F16 للقضاء النهائي على الحشرات. منتجات أصلية مضمونة مع شحن مجاني.</p>
+        <div class="footer-social">
+          <a href="https://www.facebook.com/milanof16.22" target="_blank">📘</a>
+          <a href="http://wa.me/+201551278606" target="_blank">💬</a>
+        </div>
+      </div>
+      <div>
+        <h4>روابط سريعة</h4>
+        <ul class="footer-links">
+          <li><a href="index.html">الرئيسية</a></li>
+          <li><a href="auth.html">سجّل دلوقتي</a></li>
+          <li><a href="#features">المميزات</a></li>
+          <li><a href="#faq">الأسئلة</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>المنتجات</h4>
+        <ul class="footer-links">
+          <li><a href="http://milanof16.com/ar/shop">المتجر</a></li>
+          <li><a href="#">اف 16 للصراصير</a></li>
+          <li><a href="#">اف 22 للنمل</a></li>
+          <li><a href="#">اف 35 للبق</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>تواصل معانا</h4>
+        <ul class="footer-links">
+          <li><a href="tel:01029293339">📞 01029293339</a></li>
+          <li><a href="http://wa.me/+201551278606">💬 واتساب</a></li>
+          <li><a href="http://milanof16.com/ar/contact-us">📩 اتصل بنا</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 ميلانو F16 - جميع الحقوق محفوظة | <a href="http://milanof16.com/ar" style="color:var(--primary)">الموقع الرسمي</a></p>
+    </div>
   </footer>
+
+  <div class="toast-container" id="toast-container"></div>
 
   <script>
     function toggleFaq(el) {
       el.parentElement.classList.toggle('open');
+    }
+
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Animate on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
+
+    // Counter animation
+    function animateCounters() {
+      document.querySelectorAll('.counter').forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        const duration = 2000;
+        const step = target / (duration / 16);
+        let current = 0;
+        const timer = setInterval(() => {
+          current += step;
+          if (current >= target) {
+            counter.textContent = target.toLocaleString('ar-EG') + '+';
+            clearInterval(timer);
+          } else {
+            counter.textContent = Math.floor(current).toLocaleString('ar-EG');
+          }
+        }, 16);
+      });
+    }
+
+    // Run counter when hero is visible
+    const heroObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateCounters();
+          heroObserver.disconnect();
+        }
+      });
+    });
+
+    const heroStats = document.querySelector('.hero-stats');
+    if (heroStats) heroObserver.observe(heroStats);
+
+    // Toast notification
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
     }
   </script>
 </body>

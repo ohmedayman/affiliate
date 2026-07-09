@@ -1,186 +1,100 @@
-// ===== AUTH PAGE LOGIC =====
-
 let currentTab = 'login';
+auth.onAuthStateChanged((user) => { if (user) window.location.href = 'dashboard.html'; });
 
-// Check if user is already logged in
-auth.onAuthStateChanged((user) => {
-  if (user) {
-    window.location.href = 'dashboard.html';
-  }
-});
-
-// Tab switching
 function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
   document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
-
-  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
-  document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
-
-  clearErrors();
+  document.getElementById('login-form').style.display = tab==='login'?'block':'none';
+  document.getElementById('register-form').style.display = tab==='register'?'block':'none';
+  document.querySelectorAll('.alert').forEach(a => a.style.display='none');
 }
 
-// Show error
-function showError(formId, message) {
-  const alert = document.querySelector(`#${formId} .alert`);
-  if (alert) {
-    alert.textContent = message;
-    alert.style.display = 'block';
-  }
-}
+function showError(formId, msg) { const a = document.querySelector(`#${formId} .alert`); if(a){a.textContent=msg;a.style.display='flex';} }
 
-// Clear errors
-function clearErrors() {
-  document.querySelectorAll('.alert').forEach(a => a.style.display = 'none');
+function setLoading(btn, loading) {
+  if (loading) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> جاري...'; }
+  else { btn.disabled = false; btn.innerHTML = `<span class="btn-text">${btn.dataset.originalText||'إرسال'}</span>`; }
 }
 
 // ===== LOGIN =====
-async function handleLogin(e) {
+document.getElementById('login-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  clearErrors();
-
+  document.querySelectorAll('.alert').forEach(a => a.style.display='none');
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
-
-  if (!email || !password) {
-    showError('login-form', 'من فضلك ملأ كل الحقول');
-    return;
-  }
-
-  const btn = document.getElementById('login-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> جاري الدخول...';
-
+  if (!email || !password) { showError('login-form','من فضلك ملأ كل الحقول'); return; }
+  const btn = e.target.querySelector('button[type="submit"]');
+  const orig = btn.innerHTML; btn.dataset.originalText = 'تسجيل الدخول';
+  setLoading(btn, true);
   try {
     await auth.signInWithEmailAndPassword(email, password);
     window.location.href = 'dashboard.html';
-  } catch (error) {
+  } catch(error) {
     let msg = 'حدث خطأ، حاول تاني';
-    if (error.code === 'auth/user-not-found') msg = 'البريد الإلكتروني غير مسجل';
-    if (error.code === 'auth/wrong-password') msg = 'كلمة المرور غير صحيحة';
-    if (error.code === 'auth/invalid-email') msg = 'البريد الإلكتروني غير صالح';
-    if (error.code === 'auth/too-many-requests') msg = 'تم حظر الحساب مؤقتاً، حاول بعد شوية';
+    if (error.code==='auth/user-not-found') msg = 'البريد الإلكتروني غير مسجل';
+    if (error.code==='auth/wrong-password') msg = 'كلمة المرور غير صحيحة';
+    if (error.code==='auth/invalid-email') msg = 'البريد الإلكتروني غير صالح';
+    if (error.code==='auth/too-many-requests') msg = 'تم حظر الحساب مؤقتاً';
+    if (error.code==='auth/invalid-credential') msg = 'بيانات الدخول غير صحيحة';
     showError('login-form', msg);
+    setLoading(btn, false);
   }
-
-  btn.disabled = false;
-  btn.innerHTML = 'تسجيل الدخول';
-}
+});
 
 // ===== REGISTER =====
-async function handleRegister(e) {
+document.getElementById('register-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  clearErrors();
-
+  document.querySelectorAll('.alert').forEach(a => a.style.display='none');
   const name = document.getElementById('reg-name').value.trim();
   const phone = document.getElementById('reg-phone').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const password = document.getElementById('reg-password').value;
-  const confirmPassword = document.getElementById('reg-confirm-password').value;
-
-  if (!name || !phone || !email || !password) {
-    showError('register-form', 'من فضلك ملأ كل الحقول');
-    return;
-  }
-
-  if (password.length < 6) {
-    showError('register-form', 'كلمة المرور لازم تكون 6 حروف على الأقل');
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    showError('register-form', 'كلمتا المرور غير متطابقتين');
-    return;
-  }
-
-  const btn = document.getElementById('reg-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> جاري التسجيل...';
-
+  if (!name || !phone || !email || !password) { showError('register-form','من فضلك ملأ كل الحقول'); return; }
+  if (password.length < 6) { showError('register-form','كلمة المرور 6 أحرف على الأقل'); return; }
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.dataset.originalText = 'إنشاء حساب';
+  setLoading(btn, true);
   try {
-    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-    const user = userCredential.user;
-
-    // Generate unique referral code
-    const referralCode = name.replace(/\s+/g, '').toLowerCase() + Math.floor(Math.random() * 10000);
-
-    // Save user data to Firestore
-    await db.collection('affiliates').doc(user.uid).set({
-      name: name,
-      phone: phone,
-      email: email,
-      referralCode: referralCode,
-      referralsCount: 0,
-      totalEarnings: 0,
-      pendingPayout: 0,
-      paidPayout: 0,
-      status: 'active',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    const cred = await auth.createUserWithEmailAndPassword(email, password);
+    const refCode = name.replace(/\s+/g,'').toLowerCase() + Math.floor(Math.random()*10000);
+    await db.collection('affiliates').doc(cred.user.uid).set({
+      name, phone, email, referralCode: refCode,
+      referralsCount: 0, totalEarnings: 0, pendingPayout: 0, paidPayout: 0,
+      totalClicks: 0, sharesCount: 0, platformsCount: 0,
+      status: 'active', createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-
-    // Send email verification
-    await user.sendEmailVerification();
-
+    await db.collection('notifications').add({
+      affiliateId: cred.user.uid,
+      message: 'مرحباً بيك في برنامج ميلانو F16! 🎉 ابدأ بمشاركة رابط الإحالة',
+      read: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
     window.location.href = 'dashboard.html';
-  } catch (error) {
+  } catch(error) {
     let msg = 'حدث خطأ، حاول تاني';
-    if (error.code === 'auth/email-already-in-use') msg = 'البريد الإلكتروني مسجل بالفعل';
-    if (error.code === 'auth/invalid-email') msg = 'البريد الإلكتروني غير صالح';
-    if (error.code === 'auth/weak-password') msg = 'كلمة المرور ضعيفة';
+    if (error.code==='auth/email-already-in-use') msg = 'البريد الإلكتروني مسجل بالفعل';
+    if (error.code==='auth/invalid-email') msg = 'البريد الإلكتروني غير صالح';
+    if (error.code==='auth/weak-password') msg = 'كلمة المرور ضعيفة';
     showError('register-form', msg);
+    setLoading(btn, false);
   }
-
-  btn.disabled = false;
-  btn.innerHTML = 'إنشاء حساب';
-}
+});
 
 // ===== GOOGLE LOGIN =====
 async function handleGoogleLogin() {
   try {
-    const result = await auth.signInWithPopup(googleProvider);
+    const result = await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
     const user = result.user;
-
-    // Check if user doc exists
     const doc = await db.collection('affiliates').doc(user.uid).get();
     if (!doc.exists) {
-      const referralCode = user.displayName
-        ? user.displayName.replace(/\s+/g, '').toLowerCase() + Math.floor(Math.random() * 10000)
-        : 'user' + Math.floor(Math.random() * 100000);
-
+      const refCode = (user.displayName||'user').replace(/\s+/g,'').toLowerCase() + Math.floor(Math.random()*10000);
       await db.collection('affiliates').doc(user.uid).set({
-        name: user.displayName || 'مستخدم',
-        phone: '',
-        email: user.email,
-        referralCode: referralCode,
-        referralsCount: 0,
-        totalEarnings: 0,
-        pendingPayout: 0,
-        paidPayout: 0,
-        status: 'active',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        name: user.displayName||'مستخدم', phone:'', email:user.email, referralCode:refCode,
+        referralsCount:0, totalEarnings:0, pendingPayout:0, paidPayout:0,
+        totalClicks:0, sharesCount:0, platformsCount:0,
+        status:'active', createdAt:firebase.firestore.FieldValue.serverTimestamp()
       });
     }
-
     window.location.href = 'dashboard.html';
-  } catch (error) {
-    showError('login-form', 'حدث خطأ في تسجيل الدخول بجوجل');
-  }
+  } catch(e) { showError('login-form','حدث خطأ في تسجيل الدخول بجوجل'); }
 }
-
-// ===== FORGOT PASSWORD =====
-async function handleForgotPassword() {
-  const email = prompt('ادخل البريد الإلكتروني:');
-  if (!email) return;
-
-  try {
-    await auth.sendPasswordResetEmail(email);
-    alert('تم إرسال رابط إعادة تعيين كلمة المرور على البريد الإلكتروني');
-  } catch (error) {
-    alert('البريد الإلكتروني غير مسجل');
-  }
-}
-
-// Bind events
-document.getElementById('login-form')?.addEventListener('submit', handleLogin);
-document.getElementById('register-form')?.addEventListener('submit', handleRegister);
