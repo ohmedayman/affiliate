@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>جاري التحويل... - ميلانو F16</title>
+  <link rel="icon" href="https://assets.wuiltstore.com/cmksv9bcw0ki601gn64lf4joy_Gemini_Generated_Image_8x0fug8x0fug8x0f.webp">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0d47a1,#1a237e);min-height:100vh;display:flex;align-items:center;justify-content:center;color:white;text-align:center}
+    .loader{animation:pulse 1.5s infinite}
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:.7}}
+    h1{font-size:1.5rem;margin:1rem 0 .5rem}
+    p{opacity:.8;margin-bottom:2rem}
+    .spinner{width:50px;height:50px;border:4px solid rgba(255,255,255,.2);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1.5rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .btn{display:inline-block;padding:.8rem 2rem;background:white;color:#1a73e8;border-radius:10px;font-weight:600;text-decoration:none;transition:all .3s}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(0,0,0,.2)}
+  </style>
+</head>
+<body>
+  <div>
+    <div class="loader" style="font-size:4rem">🛡️</div>
+    <div class="spinner"></div>
+    <h1>جاري التحويل...</h1>
+    <p>هتتنقل للموقع خلال ثانية</p>
+    <a href="#" id="redirect-link" class="btn">اضغط هنا لو محولتش</a>
+  </div>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script>
+    async function handleRedirect() {
+      const path = window.location.pathname;
+      const code = path.split('/go/')[1];
+      if (!code) { document.body.innerHTML = '<div style="text-align:center"><h1>رابط غير صالح</h1><a href="/" style="color:white">العودة للرئيسية</a></div>'; return; }
+      try {
+        const snap = await db.collection('shortlinks').where('code','==',code).limit(1).get();
+        if (snap.empty) { document.body.innerHTML = '<div style="text-align:center"><h1>الرابط غير موجود</h1><a href="/" style="color:white">العودة للرئيسية</a></div>'; return; }
+        const doc = snap.docs[0];
+        const data = doc.data();
+        await db.collection('shortlinks').doc(doc.id).update({clicks: firebase.firestore.FieldValue.increment(1)});
+        document.getElementById('redirect-link').href = data.longUrl;
+        setTimeout(() => { window.location.href = data.longUrl; }, 1000);
+      } catch(e) {
+        document.body.innerHTML = '<div style="text-align:center"><h1>حدث خطأ</h1><a href="/" style="color:white">العودة للرئيسية</a></div>';
+      }
+    }
+    handleRedirect();
+  </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+/* ===== FLATICON INTEGRATION ===== */
+@import url('https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css');
+@import url('https://cdn-uicons.flaticon.com/2.6.0/uicons-bold-rounded/css/uicons-bold-rounded.css');
+@import url('https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-rounded/css/uicons-solid-rounded.css');
+
+/* Override emoji icons with flaticon */
+.icon-sm{font-style:normal!important;font-size:1.1rem}
+.icon-md{font-style:normal!important;font-size:1.4rem}
+.icon-lg{font-style:normal!important;font-size:2rem}
+.icon-xl{font-style:normal!important;font-size:3rem}
+
+/* ===== ADMIN LAYOUT ===== */
+.admin-layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.admin-sidebar{background:linear-gradient(180deg,#0a0e27 0%,#1a1f3a 100%);color:white;padding:1.5rem;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.admin-sidebar .brand{display:flex;align-items:center;gap:.6rem;font-size:1.2rem;font-weight:700;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.08)}
+.admin-sidebar .brand img{width:36px;height:36px;border-radius:10px;object-fit:cover}
+.admin-sidebar .brand span{color:#ff6d00}
+.admin-nav-section{margin-bottom:1.5rem}
+.admin-nav-label{font-size:.65rem;text-transform:uppercase;color:rgba(255,255,255,0.35);letter-spacing:1.5px;padding:0 1rem;margin-bottom:.5rem}
+.admin-nav a{display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;border-radius:10px;margin-bottom:2px;transition:all .2s;font-size:.88rem;color:rgba(255,255,255,0.6);text-decoration:none}
+.admin-nav a:hover{background:rgba(255,255,255,0.06);color:white}
+.admin-nav a.active{background:linear-gradient(135deg,#1a73e8,#1565c0);color:white;box-shadow:0 4px 15px rgba(26,115,232,0.3)}
+.admin-nav .badge-count{margin-right:auto;background:#ef4444;color:white;font-size:.65rem;padding:.15rem .45rem;border-radius:10px;font-weight:600}
+.admin-nav i{font-style:normal;width:20px;text-align:center}
+.admin-main{background:#f0f2f5;overflow-y:auto}
+.admin-topbar{background:white;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 10px rgba(0,0,0,0.04);position:sticky;top:0;z-index:50}
+.admin-topbar h1{font-size:1.3rem;font-weight:700}
+.admin-topbar .topbar-actions{display:flex;gap:1rem;align-items:center}
+.admin-content{padding:2rem}
+
+/* ===== ADMIN STAT CARDS ===== */
+.admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-bottom:2rem}
+.admin-stat{background:white;border-radius:16px;padding:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.04);position:relative;overflow:hidden;transition:all .3s;border:1px solid transparent}
+.admin-stat:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,0.08)}
+.admin-stat .stat-icon-wrap{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:1.3rem}
+.admin-stat .stat-icon-wrap.blue{background:linear-gradient(135deg,#e8f0fe,#d2e3fc);color:#1a73e8}
+.admin-stat .stat-icon-wrap.green{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);color:#0f9d58}
+.admin-stat .stat-icon-wrap.orange{background:linear-gradient(135deg,#fff3e0,#ffe0b2);color:#ff6d00}
+.admin-stat .stat-icon-wrap.purple{background:linear-gradient(135deg,#ede7f6,#d1c4e9);color:#7c4dff}
+.admin-stat .stat-icon-wrap.red{background:linear-gradient(135deg,#fce4ec,#f8bbd0);color:#d93025}
+.admin-stat .stat-icon-wrap.teal{background:linear-gradient(135deg,#e0f2f1,#b2dfdb);color:#00897b}
+.admin-stat h3{font-size:1.8rem;font-weight:800;margin-bottom:.2rem}
+.admin-stat p{color:#5f6368;font-size:.85rem}
+.admin-stat .stat-trend{position:absolute;top:1.2rem;left:1.2rem;font-size:.7rem;font-weight:600;padding:.2rem .5rem;border-radius:20px}
+.admin-stat .stat-trend.up{background:#e8f5e9;color:#0f9d58}
+.admin-stat .stat-trend.down{background:#fce4ec;color:#d93025}
+
+/* ===== ADMIN TABLE ===== */
+.admin-table-wrap{background:white;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);overflow:hidden;margin-bottom:2rem}
+.admin-table-header{padding:1.2rem 1.5rem;border-bottom:1px solid #e8eaed;display:flex;justify-content:space-between;align-items:center}
+.admin-table-header h2{font-size:1.1rem;display:flex;align-items:center;gap:.5rem}
+.admin-table-header .table-actions{display:flex;gap:.5rem}
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th{padding:.9rem 1.2rem;text-align:right;background:#f8f9fa;font-weight:600;font-size:.75rem;text-transform:uppercase;color:#5f6368;letter-spacing:.5px;border-bottom:1px solid #e8eaed}
+.admin-table td{padding:.9rem 1.2rem;border-bottom:1px solid #f1f3f4;font-size:.9rem}
+.admin-table tr:hover{background:#f8f9fa}
+.admin-table .user-cell{display:flex;align-items:center;gap:.8rem}
+.admin-table .user-avatar{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:white;flex-shrink:0}
+.admin-table .user-info .name{font-weight:600;font-size:.9rem}
+.admin-table .user-info .email{font-size:.75rem;color:#5f6368}
+
+/* ===== ADMIN MODALS ===== */
+.admin-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .3s}
+.admin-modal-overlay.active{opacity:1;visibility:visible}
+.admin-modal{background:white;border-radius:20px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;transform:translateY(20px);transition:transform .3s;padding:0}
+.admin-modal-overlay.active .admin-modal{transform:translateY(0)}
+.admin-modal-header{padding:1.5rem 2rem;border-bottom:1px solid #e8eaed;display:flex;justify-content:space-between;align-items:center}
+.admin-modal-header h2{font-size:1.2rem}
+.admin-modal-body{padding:2rem}
+.admin-modal-footer{padding:1.5rem 2rem;border-top:1px solid #e8eaed;display:flex;justify-content:flex-end;gap:.8rem}
+
+/* ===== SHORT LINK SECTION ===== */
+.short-link-card{background:linear-gradient(135deg,#667eea,#764ba2);border-radius:20px;padding:2rem;color:white;margin-bottom:2rem;position:relative;overflow:hidden}
+.short-link-card::before{content:'';position:absolute;top:-50%;right:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 70%)}
+.short-link-card h3{font-size:1.3rem;margin-bottom:1rem;position:relative}
+.short-link-form{display:flex;gap:.8rem;position:relative}
+.short-link-form input{flex:1;padding:.9rem 1.2rem;border:none;border-radius:12px;font-size:1rem;font-family:inherit}
+.short-link-form .btn{border-radius:12px;padding:.9rem 2rem}
+.short-link-result{margin-top:1rem;display:none;position:relative}
+.short-link-result.show{display:flex;align-items:center;gap:1rem;background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);padding:1rem;border-radius:12px;border:1px solid rgba(255,255,255,0.2)}
+.short-link-result input{flex:1;background:transparent;border:none;color:white;font-size:1rem;font-weight:600;font-family:monospace}
+.short-link-result input::placeholder{color:rgba(255,255,255,0.6)}
+.short-link-result button{background:white;color:#667eea;border:none;padding:.6rem 1.2rem;border-radius:8px;font-weight:600;cursor:pointer;transition:all .2s}
+.short-link-result button:hover{transform:scale(1.05)}
+
+/* ===== ADMIN CHARTS ===== */
+.admin-chart{background:white;border-radius:16px;padding:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.admin-chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.admin-chart-header h3{font-size:1.05rem}
+.admin-chart-bars{display:flex;align-items:flex-end;gap:6px;height:200px;padding:1rem 0}
+.admin-chart-bar{flex:1;border-radius:6px 6px 0 0;transition:all .3s;cursor:pointer;position:relative;min-height:8px}
+.admin-chart-bar:hover{opacity:.8}
+.admin-chart-bar .tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1a1a2e;color:white;padding:.3rem .6rem;border-radius:6px;font-size:.7rem;white-space:nowrap;z-index:10}
+.admin-chart-bar:hover .tooltip{display:block}
+.admin-chart-labels{display:flex;gap:6px;padding-top:.5rem;border-top:1px solid #f1f3f4}
+.admin-chart-labels span{flex:1;text-align:center;font-size:.7rem;color:#5f6368}
+
+/* ===== ACTIVITY FEED ===== */
+.activity-feed{display:flex;flex-direction:column;gap:.5rem}
+.activity-item{display:flex;align-items:flex-start;gap:.8rem;padding:1rem;border-radius:12px;transition:background .2s}
+.activity-item:hover{background:#f8f9fa}
+.activity-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:.4rem}
+.activity-dot.green{background:#0f9d58}.activity-dot.blue{background:#1a73e8}.activity-dot.orange{background:#ff6d00}.activity-dot.red{background:#d93025}
+.activity-text{flex:1;font-size:.9rem}
+.activity-time{font-size:.75rem;color:#5f6368;margin-top:.2rem}
+
+/* ===== PAGINATION ===== */
+.pagination{display:flex;align-items:center;justify-content:center;gap:.3rem;margin-top:1.5rem}
+.pagination button{width:36px;height:36px;border-radius:8px;border:1px solid #e8eaed;background:white;cursor:pointer;font-weight:600;font-size:.85rem;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.pagination button:hover{border-color:#1a73e8;color:#1a73e8}
+.pagination button.active{background:#1a73e8;color:white;border-color:#1a73e8}
+.pagination button:disabled{opacity:.4;cursor:not-allowed}
+
+/* ===== EMPTY STATE ===== */
+.empty-state{text-align:center;padding:4rem 2rem;color:#5f6368}
+.empty-state .empty-icon{font-size:4rem;margin-bottom:1rem;opacity:.5}
+.empty-state h3{margin-bottom:.5rem;color:#202124}
+.empty-state p{max-width:400px;margin:0 auto 1.5rem;font-size:.9rem}
+
+/* ===== SEARCH BOX ===== */
+.search-box{position:relative}
+.search-box input{width:100%;padding:.7rem 1rem .7rem 2.5rem;border:2px solid #e8eaed;border-radius:10px;font-size:.9rem;transition:all .2s;background:#f8f9fa}
+.search-box input:focus{outline:none;border-color:#1a73e8;background:white;box-shadow:0 0 0 3px rgba(26,115,232,0.1)}
+.search-box .search-icon{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:#5f6368;font-style:normal}
+
+/* ===== TOGGLE SWITCH ===== */
+.toggle{position:relative;width:44px;height:24px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0}
+.toggle .slider{position:absolute;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:24px;transition:.3s}
+.toggle .slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s}
+.toggle input:checked+.slider{background:#0f9d58}
+.toggle input:checked+.slider::before{transform:translateX(20px)}
+
+/* ===== QUICK ACTIONS ===== */
+.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+.quick-action{background:white;border-radius:14px;padding:1.2rem;text-align:center;cursor:pointer;transition:all .3s;border:2px solid transparent;text-decoration:none;color:inherit}
+.quick-action:hover{border-color:#1a73e8;transform:translateY(-2px);box-shadow:0 4px 15px rgba(26,115,232,0.1)}
+.quick-action .qa-icon{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto .8rem;font-size:1.3rem}
+.quick-action h4{font-size:.9rem;margin-bottom:.2rem}
+.quick-action p{font-size:.75rem;color:#5f6368}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1200px){.admin-stats{grid-template-columns:repeat(2,1fr)}.quick-actions{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){
+  .admin-layout{grid-template-columns:1fr}
+  .admin-sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;z-index:100;height:auto;border-radius:16px 16px 0 0;padding:.5rem;box-shadow:0 -4px 20px rgba(0,0,0,0.2)}
+  .admin-sidebar .brand,.admin-nav-section,.admin-nav-label{display:none}
+  .admin-nav{display:flex;justify-content:space-around;gap:0}
+  .admin-nav a{flex-direction:column;font-size:.6rem;padding:.5rem;margin:0;gap:.2rem}
+  .admin-nav .badge-count{display:none}
+  .admin-main{padding-bottom:4rem}
+  .admin-content{padding:1rem}
+  .admin-stats{grid-template-columns:1fr}
+  .quick-actions{grid-template-columns:1fr}
+  .short-link-form{flex-direction:column}
+}
