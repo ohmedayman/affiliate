@@ -272,50 +272,85 @@ async function loadAdminVideos() {
   const c = document.getElementById('admin-page-content');
   c.innerHTML = `
     <div class="admin-table-wrap" style="padding:2rem">
-      <h2 style="margin-bottom:1rem"><i class="fi fi-sr-video"></i> إضافة فيديو جديد</h2>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
-        <div class="form-group"><label>عنوان الفيديو</label><input type="text" id="vid-title" placeholder="مثال: ازاي تبيع على واتساب"></div>
-        <div class="form-group"><label>الوصف</label><input type="text" id="vid-desc" placeholder="وصف مختصر للفيديو"></div>
+      <h2 style="margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem"><i class="fi fi-sr-video"></i> إدارة الفيديوهات التعليمية</h2>
+      
+      <div style="background:white;border-radius:12px;padding:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:2rem">
+        <h3 style="font-size:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem"><i class="fi fi-sr-plus"></i> إضافة فيديو جديد</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+          <div class="form-group"><label>عنوان الفيديو</label><input type="text" id="vid-title" placeholder="مثال: ازاي تبيع على واتساب"></div>
+          <div class="form-group"><label>التصنيف</label>
+            <select id="vid-category">
+              <option value="getting-started">🚀 البدء</option>
+              <option value="social">📱 السوشيال ميديا</option>
+              <option value="sales">💰 المبيعات</option>
+              <option value="tips">💡 نصائح</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+          <div class="form-group"><label>الوصف</label><input type="text" id="vid-desc" placeholder="وصف مختصر للفيديو"></div>
+          <div class="form-group"><label>المدة (اختياري)</label><input type="text" id="vid-duration" placeholder="مثال: 10:30"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:1rem">
+          <div class="form-group"><label>رابط الفيديو (YouTube, Facebook, أو رابط مباشر)</label><input type="url" id="vid-url" placeholder="https://youtube.com/watch?v=..."></div>
+          <div class="form-group"><label>رابط الصورة المصغرة (اختياري)</label><input type="url" id="vid-thumbnail" placeholder="https://...jpg"></div>
+        </div>
+        <button class="btn btn-primary" onclick="addVideo()"><i class="fi fi-sr-plus"></i> إضافة الفيديو</button>
       </div>
-      <div class="form-group"><label>رابط الفيديو (YouTube, Facebook, أو رابط مباشر)</label><input type="url" id="vid-url" placeholder="https://youtube.com/watch?v=..."></div>
-      <button class="btn btn-primary" onclick="addVideo()"><i class="fi fi-sr-plus"></i> إضافة الفيديو</button>
-    </div>
-    <div class="admin-table-wrap">
-      <div class="admin-table-header"><h2><i class="fi fi-sr-video"></i> الفيديوهات المحملة</h2></div>
-      <div class="table-wrapper">
-        <table class="admin-table">
-          <thead><tr><th>#</th><th>العنوان</th><th>الوصف</th><th>المشاهدات</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
-          <tbody id="admin-videos-tbody"><tr><td colspan="6" style="text-align:center;padding:3rem"><div class="spinner spinner-dark"></div></td></tr></tbody>
-        </table>
-      </div>
-    </div>`;
+
+      <div class="admin-table-wrap">
+        <div class="admin-table-header"><h2><i class="fi fi-sr-video"></i> الفيديوهات المحملة</h2></div>
+        <div class="table-wrapper">
+          <table class="admin-table">
+            <thead><tr><th>#</th><th>العنوان</th><th>التصنيف</th><th>الوصف</th><th>المدة</th><th>المشاهدات</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+            <tbody id="admin-videos-tbody"><tr><td colspan="8" style="text-align:center;padding:3rem"><div class="spinner spinner-dark"></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>`;
   loadVideosList();
 }
 
 async function loadVideosList() {
   const tbody = document.getElementById('admin-videos-tbody');
   if (!tbody) return;
+  const categoryLabels = {'getting-started':'🚀 البدء','social':'📱 السوشيال','sales':'💰 المبيعات','tips':'💡 نصائح'};
   try {
     const snap = await db.collection('videos').orderBy('createdAt','desc').get();
-    if (snap.empty) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:3rem;color:#5f6368">لا توجد فيديوهات بعد</td></tr>'; return; }
+    if (snap.empty) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:3rem;color:#5f6368">لا توجد فيديوهات بعد</td></tr>'; return; }
     let html = '', i = 1;
     snap.forEach(doc => {
       const d = doc.data();
       const date = d.createdAt?.toDate().toLocaleDateString('ar-EG')||'-';
-      html += `<tr><td>${i++}</td><td><strong>${d.title}</strong></td><td>${d.desc||'-'}</td><td>${d.views||0}</td><td>${date}</td><td><button class="btn btn-sm btn-ghost" onclick="deleteVideo('${doc.id}')"><i class="fi fi-sr-trash"></i></button></td></tr>`;
+      const cat = categoryLabels[d.category] || '💡 نصائح';
+      html += `<tr>
+        <td>${i++}</td>
+        <td><strong>${d.title}</strong></td>
+        <td><span style="padding:.2rem .5rem;border-radius:8px;background:#e8f0fe;font-size:.75rem">${cat}</span></td>
+        <td>${d.desc||'-'}</td>
+        <td>${d.duration||'-'}</td>
+        <td>${d.views||0}</td>
+        <td>${date}</td>
+        <td>
+          <button class="btn btn-sm btn-ghost" onclick="editVideo('${doc.id}')" title="تعديل"><i class="fi fi-sr-pencil"></i></button>
+          <button class="btn btn-sm btn-ghost" onclick="deleteVideo('${doc.id}')" title="حذف" style="color:#ef4444"><i class="fi fi-sr-trash"></i></button>
+        </td>
+      </tr>`;
     });
     tbody.innerHTML = html;
-  } catch(e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:3rem;color:#5f6368">خطأ</td></tr>'; }
+  } catch(e) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:3rem;color:#5f6368">خطأ</td></tr>'; }
 }
 
 async function addVideo() {
   const title = document.getElementById('vid-title').value.trim();
   const desc = document.getElementById('vid-desc').value.trim();
   const url = document.getElementById('vid-url').value.trim();
+  const category = document.getElementById('vid-category').value;
+  const duration = document.getElementById('vid-duration').value.trim();
+  const thumbnail = document.getElementById('vid-thumbnail').value.trim();
   if (!title || !url) { showToast('ادخل العنوان والرابط', 'error'); return; }
   try {
     await db.collection('videos').add({
-      title, desc, url,
+      title, desc, url, category, duration, thumbnail,
       views: 0,
       createdBy: adminUser.uid,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -324,6 +359,24 @@ async function addVideo() {
     document.getElementById('vid-title').value = '';
     document.getElementById('vid-desc').value = '';
     document.getElementById('vid-url').value = '';
+    document.getElementById('vid-duration').value = '';
+    document.getElementById('vid-thumbnail').value = '';
+    loadVideosList();
+  } catch(e) { showToast('حدث خطأ', 'error'); }
+}
+
+async function editVideo(id) {
+  try {
+    const doc = await db.collection('videos').doc(id).get();
+    if (!doc.exists) return;
+    const d = doc.data();
+    const newTitle = prompt('عنوان الفيديو:', d.title);
+    if (newTitle === null) return;
+    const newDesc = prompt('الوصف:', d.desc || '');
+    const newUrl = prompt('الرابط:', d.url);
+    if (!newTitle || !newUrl) return;
+    await db.collection('videos').doc(id).update({title:newTitle, desc:newDesc, url:newUrl});
+    showToast('تم التعديل ✅', 'success');
     loadVideosList();
   } catch(e) { showToast('حدث خطأ', 'error'); }
 }
@@ -339,27 +392,45 @@ async function deleteVideo(id) {
 
 // ===== ADMIN MESSAGES =====
 let selectedAffiliate = null;
+let adminChatUnsub = null;
 
 async function loadAdminMessages() {
   const c = document.getElementById('admin-page-content');
   c.innerHTML = `
-    <div style="display:grid;grid-template-columns:280px 1fr;gap:0;height:calc(100vh - 140px);border-radius:16px;overflow:hidden;background:white;box-shadow:0 2px 12px rgba(0,0,0,0.08)">
-      <div class="msg-sidebar" style="border-left:1px solid #e0e0e0;overflow-y:auto;background:#fafafa">
-        <div style="padding:1rem;border-bottom:1px solid #e0e0e0"><h3 style="font-size:.95rem">الشركاء</h3></div>
-        <div id="msg-affiliates-list" style="padding:.5rem"></div>
+    <div style="display:grid;grid-template-columns:300px 1fr;gap:0;height:calc(100vh - 120px);border-radius:16px;overflow:hidden;background:white;box-shadow:0 4px 20px rgba(0,0,0,0.1)">
+      <div class="msg-sidebar" style="border-left:1px solid #e0e0e0;overflow-y:auto;background:#fafafa;display:flex;flex-direction:column">
+        <div style="padding:1.2rem;border-bottom:1px solid #e0e0e0;background:white">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:.5rem"><i class="fi fi-sr-comments"></i> الرسائل</h3>
+          <input type="text" id="search-affiliates" placeholder="🔍 بحث عن شريك..." style="width:100%;padding:.6rem 1rem;border:1px solid #e0e0e0;border-radius:10px;font-size:.85rem;box-sizing:border-box" oninput="filterAffiliatesList(this.value)">
+        </div>
+        <div id="msg-affiliates-list" style="padding:.5rem;flex:1;overflow-y:auto"></div>
       </div>
-      <div class="msg-main" style="display:flex;flex-direction:column">
-        <div id="msg-header" style="padding:1rem;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;gap:.8rem">
-          <div style="width:40px;height:40px;border-radius:50%;background:#e8f0fe;display:flex;align-items:center;justify-content:center;font-weight:700;color:#1a73e8">💬</div>
-          <div><h3 style="font-size:.95rem">اختر شريك للبدء</h3><p style="font-size:.75rem;color:#5f6368">ابعت رد على الشريك</p></div>
+      <div class="msg-main" style="display:flex;flex-direction:column;background:#f8f9fa">
+        <div id="msg-header" style="padding:1rem 1.5rem;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;gap:.8rem;background:white">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#1a73e8,#4285f4);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:1.1rem">💬</div>
+          <div>
+            <h3 style="font-size:1rem;font-weight:600">اختر شريك للبدء</h3>
+            <p style="font-size:.75rem;color:#5f6368">ابعت رد أو ابدأ محادثة جديدة</p>
+          </div>
         </div>
-        <div id="msg-chat-area" style="flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.5rem">
-          <div style="text-align:center;padding:3rem;color:#5f6368"><div style="font-size:3rem;margin-bottom:1rem">💬</div><p>اختر شريك من القائمة عشان تبدأ المحادثة</p></div>
+        <div id="msg-chat-area" style="flex:1;overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:.8rem">
+          <div style="text-align:center;padding:4rem 2rem;color:#5f6368">
+            <div style="font-size:4rem;margin-bottom:1rem;opacity:.5">💬</div>
+            <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:.5rem">ابدأ محادثة</h3>
+            <p style="font-size:.9rem">اختر شريك من القائمة عشان تبدأ الرد على رسائله</p>
+          </div>
         </div>
-        <div id="msg-input-area" style="padding:.8rem;border-top:1px solid #e0e0e0;display:none;background:white">
-          <div style="display:flex;gap:.5rem">
-            <textarea id="admin-chat-input" placeholder="اكتب الرد..." rows="1" style="flex:1;padding:.6rem 1rem;border:2px solid #e0e0e0;border-radius:20px;font-size:.9rem;font-family:inherit;resize:none;max-height:80px" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAdminMessage()}"></textarea>
-            <button onclick="sendAdminMessage()" style="width:42px;height:42px;border-radius:50%;background:#1a73e8;border:none;color:white;font-size:1.1rem;cursor:pointer;flex-shrink:0">📤</button>
+        <div id="msg-input-area" style="padding:1rem 1.5rem;border-top:1px solid #e0e0e0;display:none;background:white">
+          <div style="display:flex;gap:.8rem;align-items:flex-end">
+            <div style="flex:1;position:relative">
+              <textarea id="admin-chat-input" placeholder="اكتب ردك هنا..." rows="1" 
+                style="width:100%;padding:.8rem 1.2rem;border:2px solid #e0e0e0;border-radius:24px;font-size:.9rem;font-family:inherit;resize:none;max-height:100px;box-sizing:border-box;line-height:1.4" 
+                oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'" 
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAdminMessage()}"></textarea>
+            </div>
+            <button onclick="sendAdminMessage()" style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#1a73e8,#4285f4);border:none;color:white;font-size:1.2rem;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(26,115,232,0.3);transition:all .2s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+              <i class="fi fi-sr-paper-plane"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -367,21 +438,55 @@ async function loadAdminMessages() {
   loadMsgAffiliates();
 }
 
+function filterAffiliatesList(query) {
+  const items = document.querySelectorAll('.msg-aff-item');
+  items.forEach(item => {
+    const name = item.getAttribute('data-name') || '';
+    const email = item.getAttribute('data-email') || '';
+    const match = name.includes(query) || email.includes(query);
+    item.style.display = match ? 'flex' : 'none';
+  });
+}
+
+function formatAdminMsgTime(date) {
+  if (!date) return '';
+  const d = date.toDate ? date.toDate() : new Date(date);
+  const now = new Date();
+  const diff = Math.floor((now - d) / 1000);
+  if (diff < 60) return 'الآن';
+  if (diff < 3600) return `منذ ${Math.floor(diff/60)} دقيقة`;
+  if (diff < 86400) return `منذ ${Math.floor(diff/3600)} ساعة`;
+  return d.toLocaleDateString('ar-EG',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+
 async function loadMsgAffiliates() {
   const list = document.getElementById('msg-affiliates-list');
   if (!list) return;
   try {
     const snap = await db.collection('affiliates').get();
+    if (snap.empty) {
+      list.innerHTML = '<div style="text-align:center;padding:2rem;color:#5f6368"><div style="font-size:2rem;margin-bottom:.5rem">👥</div><p>لا يوجد شركاء بعد</p></div>';
+      return;
+    }
     let html = '';
     snap.forEach(doc => {
       const d = doc.data();
-      html += `<div onclick="selectChatAffiliate('${doc.id}','${d.name||'مستخدم'}')" class="msg-aff-item" style="display:flex;align-items:center;gap:.8rem;padding:.8rem;border-radius:10px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='#e8f0fe'" onmouseout="this.style.background='transparent'">
-        <div style="width:36px;height:36px;border-radius:50%;background:#1a73e8;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0">${(d.name||'?').charAt(0)}</div>
-        <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.name||'-'}</div><div style="font-size:.7rem;color:#5f6368;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.email||'-'}</div></div>
+      const name = d.name || 'مستخدم';
+      const email = d.email || '-';
+      const tier = d.referralsCount >= 50 ? '💎' : d.referralsCount >= 25 ? '🥇' : d.referralsCount >= 10 ? '🥈' : '🥉';
+      html += `<div onclick="selectChatAffiliate('${doc.id}','${name.replace(/'/g,"\\'")}')" class="msg-aff-item" data-name="${name}" data-email="${email}" style="display:flex;align-items:center;gap:.8rem;padding:.8rem;border-radius:12px;cursor:pointer;transition:all .2s;border:1px solid transparent" onmouseover="this.style.background='#e8f0fe';this.style.borderColor='#c6dafc'" onmouseout="this.style.background='transparent';this.style.borderColor='transparent'">
+        <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#1a73e8,#4285f4);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0">${name.charAt(0)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</span>
+            <span style="font-size:.8rem">${tier}</span>
+          </div>
+          <div style="font-size:.75rem;color:#5f6368;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.2rem">${email}</div>
+        </div>
       </div>`;
     });
-    list.innerHTML = html || '<div style="text-align:center;padding:2rem;color:#5f6368">لا يوجد شركاء</div>';
-  } catch(e) { list.innerHTML = '<div style="text-align:center;padding:2rem;color:#5f6368">خطأ</div>'; }
+    list.innerHTML = html;
+  } catch(e) { list.innerHTML = '<div style="text-align:center;padding:2rem;color:#5f6368">خطأ في التحميل</div>'; }
 }
 
 async function selectChatAffiliate(uid, name) {
@@ -389,25 +494,60 @@ async function selectChatAffiliate(uid, name) {
   const header = document.getElementById('msg-header');
   const chatArea = document.getElementById('msg-chat-area');
   const inputArea = document.getElementById('msg-input-area');
-  header.innerHTML = `<div style="width:40px;height:40px;border-radius:50%;background:#1a73e8;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">${name.charAt(0)}</div><div><h3 style="font-size:.95rem">${name}</h3><p style="font-size:.75rem;color:#0f9d58">متصل</p></div>`;
+  
+  header.innerHTML = `
+    <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#1a73e8,#4285f4);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;flex-shrink:0">${name.charAt(0)}</div>
+    <div style="flex:1">
+      <h3 style="font-size:1rem;font-weight:600">${name}</h3>
+      <p style="font-size:.75rem;color:#0f9d58;display:flex;align-items:center;gap:.3rem"><span style="width:6px;height:6px;border-radius:50%;background:#0f9d58;display:inline-block"></span> متصل الآن</p>
+    </div>
+    <button onclick="clearChatHistory('${uid}')" style="padding:.4rem .8rem;border-radius:8px;border:1px solid #e0e0e0;background:white;cursor:pointer;font-size:.8rem;color:#5f6368;transition:all .2s" onmouseover="this.style.background='#f1f3f4'" onmouseout="this.style.background='white'">
+      <i class="fi fi-sr-broom"></i> مسح
+    </button>`;
+  
   inputArea.style.display = 'block';
-  chatArea.innerHTML = '<div style="text-align:center;padding:2rem"><div class="spinner spinner-dark"></div></div>';
+  chatArea.innerHTML = '<div style="text-align:center;padding:2rem"><div class="spinner spinner-dark"></div><p style="color:#5f6368;font-size:.85rem;margin-top:.5rem">جاري تحميل المحادثة...</p></div>';
 
+  if (adminChatUnsub) { try{adminChatUnsub()}catch(e){} }
+  
   try {
-    db.collection('messages').where('affiliateId','==',uid).orderBy('createdAt','asc').limit(100).onSnapshot(snap => {
-      if (snap.empty) {
-        chatArea.innerHTML = '<div style="text-align:center;padding:2rem;color:#5f6368"><p>لا توجد رسائل بعد</p></div>';
+    adminChatUnsub = db.collection('messages').where('affiliateId','==',uid).limit(200).onSnapshot(snap => {
+      const msgs = [];
+      snap.forEach(doc => msgs.push({id:doc.id,...doc.data()}));
+      msgs.sort((a,b) => {
+        const ta = a.createdAt?.toMillis?.() || 0;
+        const tb = b.createdAt?.toMillis?.() || 0;
+        return ta - tb;
+      });
+      if (msgs.length === 0) {
+        chatArea.innerHTML = `
+          <div style="text-align:center;padding:3rem;color:#5f6368">
+            <div style="font-size:3rem;margin-bottom:1rem;opacity:.5">📨</div>
+            <p style="font-size:.95rem;font-weight:500">لا توجد رسائل بعد</p>
+            <p style="font-size:.8rem;margin-top:.3rem">ابدأ المحادثة بإرسال رسالة</p>
+          </div>`;
         return;
       }
       let html = '';
-      snap.forEach(doc => {
-        const msg = doc.data();
-        const time = msg.createdAt?.toDate?.()?.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})||'';
+      let lastDate = '';
+      msgs.forEach(msg => {
+        const time = formatAdminMsgTime(msg.createdAt);
+        const msgDate = msg.createdAt?.toDate?.()?.toLocaleDateString('ar-EG',{day:'numeric',month:'long',year:'numeric'}) || '';
         const isAdmin = msg.sender === 'admin';
-        html += `<div style="max-width:75%;padding:.7rem 1rem;border-radius:16px;font-size:.9rem;line-height:1.5;align-self:${isAdmin?'flex-end':'flex-start'};background:${isAdmin?'#1a73e8':'#f1f3f4'};color:${isAdmin?'white':'#1a1a2e'};border-bottom-${isAdmin?'left':'right'}-radius:4px">
-          <div>${msg.text}</div>
-          <div style="font-size:.6rem;opacity:.7;margin-top:.3rem;text-align:${isAdmin?'left':'right'}">${time}</div>
-        </div>`;
+        if (msgDate !== lastDate) {
+          html += `<div style="display:flex;align-items:center;gap:.8rem;margin:.8rem 0"><div style="flex:1;height:1px;background:#e0e0e0"></div><span style="font-size:.7rem;color:#9aa0a6;padding:.2rem .6rem;background:#f1f3f4;border-radius:8px;white-space:nowrap">${msgDate}</span><div style="flex:1;height:1px;background:#e0e0e0"></div></div>`;
+          lastDate = msgDate;
+        }
+        html += `
+          <div style="max-width:70%;display:flex;flex-direction:column;align-self:${isAdmin?'flex-end':'flex-start'};margin-left:${isAdmin?'0':'auto'};margin-right:${isAdmin?'auto':'0'}">
+            <div style="padding:.8rem 1.2rem;border-radius:18px;font-size:.9rem;line-height:1.6;position:relative;${isAdmin ? 'background:linear-gradient(135deg,#1a73e8,#4285f4);color:white;border-bottom-left-radius:6px;box-shadow:0 2px 8px rgba(26,115,232,0.2)' : 'background:white;color:#1a1a2e;border-bottom-right-radius:6px;border:1px solid #e0e0e0;box-shadow:0 1px 3px rgba(0,0,0,0.05)'}">
+              ${msg.text}
+            </div>
+            <div style="font-size:.65rem;color:#9aa0a6;margin-top:.3rem;padding:0 .4rem;display:flex;align-items:center;gap:.3rem;${isAdmin ? 'justify-content:flex-end' : 'justify-content:flex-start'}">
+              ${time}
+              ${isAdmin ? (msg.read ? '<span style="color:#0f9d58">✓✓</span>' : '<span style="color:#9aa0a6">✓</span>') : ''}
+            </div>
+          </div>`;
       });
       chatArea.innerHTML = html;
       chatArea.scrollTop = chatArea.scrollHeight;
@@ -415,6 +555,18 @@ async function selectChatAffiliate(uid, name) {
   } catch(e) {
     chatArea.innerHTML = '<div style="text-align:center;padding:2rem;color:#5f6368">خطأ في تحميل الرسائل</div>';
   }
+}
+
+async function clearChatHistory(uid) {
+  if (!confirm('هل تريد مسح كل رسائل هذا الشريك؟')) return;
+  try {
+    const snap = await db.collection('messages').where('affiliateId','==',uid).get();
+    const batch = db.batch();
+    snap.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+    document.getElementById('msg-chat-area').innerHTML = '<div style="text-align:center;padding:3rem;color:#5f6368"><div style="font-size:3rem;margin-bottom:1rem;opacity:.5">📨</div><p>تم مسح المحادثة</p></div>';
+    showToast('تم مسح المحادثة ✅', 'success');
+  } catch(e) { showToast('حدث خطأ', 'error'); }
 }
 
 async function sendAdminMessage() {
@@ -435,7 +587,8 @@ async function sendAdminMessage() {
     });
     await db.collection('notifications').add({
       affiliateId: selectedAffiliate.uid,
-      message: `رسالة جديدة من الإدارة: ${text.substring(0, 50)}...`,
+      type: 'message',
+      message: `رسالة جديدة من الإدارة: ${text.substring(0, 80)}${text.length > 80 ? '...' : ''}`,
       read: false,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });

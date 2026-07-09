@@ -52,7 +52,7 @@ function setupRealtimeListeners() {
   }, e => console.error(e));
   unsubscribers.push(affUnsub);
 
-  const notifUnsub = db.collection('notifications').where('affiliateId','==',currentUser.uid).orderBy('createdAt','desc').limit(50).onSnapshot(snap => {
+  const notifUnsub = db.collection('notifications').where('affiliateId','==',currentUser.uid).onSnapshot(snap => {
     let unread = 0;
     snap.forEach(d => { if (!d.data().read) unread++; });
     const badge = document.getElementById('notif-badge');
@@ -61,15 +61,6 @@ function setupRealtimeListeners() {
     if (topBadge) { topBadge.textContent = unread || ''; topBadge.style.display = unread ? 'inline' : 'none'; }
   }, e => console.error(e));
   unsubscribers.push(notifUnsub);
-
-  const chatUnsub = db.collection('messages').where('affiliateId','==',currentUser.uid).orderBy('createdAt','asc').onSnapshot(snap => {
-    if (currentPage === 'chat') renderChatMessages(snap);
-    let unread = 0;
-    snap.forEach(d => { if (!d.data().read && d.data().sender === 'admin') unread++; });
-    const badge = document.getElementById('chat-badge');
-    if (badge) { badge.textContent = unread || ''; badge.style.display = unread ? 'flex' : 'none'; }
-  }, e => console.error(e));
-  unsubscribers.push(chatUnsub);
 }
 
 auth.onAuthStateChanged(async (user) => {
@@ -87,6 +78,19 @@ async function loadAffiliateData() {
     const doc = await db.collection('affiliates').doc(currentUser.uid).get();
     if (doc.exists) {
       affiliateData = doc.data();
+      const updates = {};
+      if (!affiliateData.hasOwnProperty('governorate')) updates.governorate = '';
+      if (!affiliateData.hasOwnProperty('address')) updates.address = '';
+      if (!affiliateData.hasOwnProperty('birthday')) updates.birthday = '';
+      if (!affiliateData.hasOwnProperty('gender')) updates.gender = '';
+      if (!affiliateData.hasOwnProperty('facebook')) updates.facebook = '';
+      if (!affiliateData.hasOwnProperty('instagram')) updates.instagram = '';
+      if (!affiliateData.hasOwnProperty('tiktok')) updates.tiktok = '';
+      if (!affiliateData.hasOwnProperty('emailNotifications')) updates.emailNotifications = true;
+      if (Object.keys(updates).length > 0) {
+        await db.collection('affiliates').doc(currentUser.uid).update(updates);
+        Object.assign(affiliateData, updates);
+      }
     } else {
       const refCode = (currentUser.displayName || 'user').replace(/\s+/g,'').toLowerCase() + Math.floor(Math.random()*10000);
       const data = {
@@ -101,6 +105,14 @@ async function loadAffiliateData() {
         totalClicks: 0,
         sharesCount: 0,
         platformsCount: 0,
+        governorate: '',
+        address: '',
+        birthday: '',
+        gender: '',
+        facebook: '',
+        instagram: '',
+        tiktok: '',
+        emailNotifications: true,
         status: 'active',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       };
@@ -233,147 +245,39 @@ function loadPage(page) {
   if (loaders[page]) loaders[page](content);
 }
 
-// ===== OVERVIEW =====
-async function loadOverview(c) {
-  let clicks = 0, todayClicks = 0, referrals = affiliateData?.referralsCount || 0;
-  try {
-    const today = new Date(); today.setHours(0,0,0,0);
-    const clicksSnap = await db.collection('clicks').where('affiliateId','==',currentUser.uid).get();
-    clicks = clicksSnap.size;
-    clicksSnap.forEach(d => { if (d.data().createdAt?.toDate() >= today) todayClicks++; });
-  } catch(e){}
-
-  const calculatedEarnings = Math.floor(clicks / 1000) * 20;
-  const pendingEarnings = ((clicks % 1000) / 1000 * 20).toFixed(2);
-  const nextPayout = 1000 - (clicks % 1000);
-  const tier = getCurrentTier();
-
-  c.innerHTML = `
-    <div class="page-header">
-      <h1>مرحباً ${affiliateData?.name || ''} 👋</h1>
-      <p class="subtitle">إليك ملخص أرباحك اليوم</p>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card" onclick="loadPage('payouts')">
-        <div class="stat-card-header">
-          <div class="stat-card-icon green">💰</div>
-          <span class="stat-card-trend up">+12%</span>
-        </div>
-        <div class="stat-card-value">${calculatedEarnings} <small>ج.م</small></div>
-        <div class="stat-card-label">إجمالي الأرباح</div>
-      </div>
-      <div class="stat-card" onclick="loadPage('referrals')">
-        <div class="stat-card-header">
-          <div class="stat-card-icon blue">👥</div>
-          <span class="stat-card-trend up">+${todayClicks}</span>
-        </div>
-        <div class="stat-card-value">${referrals}</div>
-        <div class="stat-card-label">إجمالي الإحالات</div>
-      </div>
-      <div class="stat-card" onclick="loadPage('products')">
-        <div class="stat-card-header">
-          <div class="stat-card-icon purple">⏳</div>
-        </div>
-        <div class="stat-card-value">${pendingEarnings} <small>ج.م</small></div>
-        <div class="stat-card-label">أرباح معلقة</div>
-        <div class="stat-card-progress">متبقي ${nextPayout} زائر للدفعة التالية</div>
-      </div>
-      <div class="stat-card" onclick="loadPage('products')">
-        <div class="stat-card-header">
-          <div class="stat-card-icon orange">🔗</div>
-          <span class="stat-card-trend up">+${todayClicks}</span>
-        </div>
-        <div class="stat-card-value">${clicks.toLocaleString()}</div>
-        <div class="stat-card-label">إجمالي الزوار</div>
-      </div>
-    </div>
-
-    <div class="referral-box">
-      <div class="referral-header">
-        <span>🔗 رابط الإحالة الخاص بك</span>
-        <span class="copy-hint">اضغط للنسخ</span>
-      </div>
-      <div class="referral-link-row">
-        <input type="text" id="referral-link" readonly value="${getShareLink()}" onclick="copyToClipboard(this.value); this.select();">
-        <button class="btn btn-primary btn-sm" onclick="copyToClipboard(document.getElementById('referral-link').value)">
-          <i class="fi fi-rr-duplicate"></i> نسخ
-        </button>
-      </div>
-    </div>
-
-    <div class="quick-actions">
-      <h3>⚡ إجراءات سريعة</h3>
-      <div class="actions-row">
-        <button class="action-btn" onclick="shareWhatsApp()">
-          <span class="action-icon">💬</span>
-          <span>واتساب</span>
-        </button>
-        <button class="action-btn" onclick="shareFacebook()">
-          <span class="action-icon">📘</span>
-          <span>فيسبوك</span>
-        </button>
-        <button class="action-btn" onclick="copyLink()">
-          <span class="action-icon">📋</span>
-          <span>نسخ الرابط</span>
-        </button>
-        <button class="action-btn" onclick="loadPage('products')">
-          <span class="action-icon">📦</span>
-          <span>المنتجات</span>
-        </button>
-      </div>
-    </div>
-
-    <div class="tier-progress-section">
-      <div class="section-header">
-        <h3>🏅 التقدم نحو المستوى التالي</h3>
-      </div>
-      <div class="tier-progress-card" id="tier-progress"></div>
-    </div>
-
-    <div class="chart-container">
-      <div class="chart-header">
-        <h3>📈 النقرات - آخر 7 أيام</h3>
-        <div class="live-dot"></div>
-      </div>
-      <div class="chart-area" id="chart-area"></div>
-      <div class="chart-labels" id="chart-labels"></div>
-    </div>
-
-    <div class="recent-section">
-      <div class="section-header">
-        <h3>📋 آخر الإحالات</h3>
-        <button class="btn btn-ghost btn-sm" onclick="loadPage('referrals')">عرض الكل</button>
-      </div>
-      <div id="recent-referrals"></div>
-    </div>
-  `;
-
-  loadChartData();
-  renderTierProgress();
-  loadRecentReferrals();
-}
-
 async function loadChartData() {
-  const data = [];
-  const today = new Date();
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today); d.setDate(d.getDate()-i); d.setHours(0,0,0,0);
-    const next = new Date(d); next.setDate(next.getDate()+1);
-    try {
-      const snap = await db.collection('clicks').where('affiliateId','==',currentUser.uid).where('createdAt','>=',d).where('createdAt','<',next).get();
-      data.push({label: d.toLocaleDateString('ar-EG',{weekday:'short'}), value: snap.size});
-    } catch(e) { data.push({label: d.toLocaleDateString('ar-EG',{weekday:'short'}), value: 0}); }
-  }
   const area = document.getElementById('chart-area');
   const labels = document.getElementById('chart-labels');
-  if (!area || !data.length) return;
-  const max = Math.max(...data.map(d=>d.value), 1);
-  area.innerHTML = data.map(d => {
-    const height = Math.max((d.value/max)*100, 4);
-    return `<div class="chart-bar-wrap"><div class="chart-bar" style="height:${height}%;background:${d.value>0?'linear-gradient(180deg,#1a73e8,#60a5fa)':'#e5e7eb'}"><div class="bar-tooltip">${d.value} نقرة</div></div></div>`;
-  }).join('');
-  labels.innerHTML = data.map(d => `<span>${d.label}</span>`).join('');
+  if (!area) return;
+  try {
+    const today = new Date();
+    const weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7);
+    const snap = await db.collection('clicks')
+      .where('affiliateId','==',currentUser.uid)
+      .get();
+    const dailyCounts = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today); d.setDate(d.getDate()-i);
+      const key = d.toLocaleDateString('ar-EG',{weekday:'short'});
+      dailyCounts[key] = 0;
+    }
+    snap.forEach(doc => {
+      const cd = doc.data().createdAt?.toDate();
+      if (cd && cd >= weekAgo) {
+        const key = cd.toLocaleDateString('ar-EG',{weekday:'short'});
+        if (dailyCounts.hasOwnProperty(key)) dailyCounts[key]++;
+      }
+    });
+    const data = Object.entries(dailyCounts).map(([label, value]) => ({label, value}));
+    const max = Math.max(...data.map(d=>d.value), 1);
+    area.innerHTML = data.map(d => {
+      const height = Math.max((d.value/max)*100, 4);
+      return `<div class="chart-bar-wrap"><div class="chart-bar" style="height:${height}%;background:${d.value>0?'linear-gradient(180deg,#4f46e5,#818cf8)':'var(--border)'}"><div class="bar-tooltip">${d.value} نقرة</div></div></div>`;
+    }).join('');
+    labels.innerHTML = data.map(d => `<span>${d.label}</span>`).join('');
+  } catch(e) {
+    area.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--text-secondary);width:100%">لا توجد بيانات كافية</div>';
+  }
 }
 
 function renderTierProgress() {
@@ -415,14 +319,17 @@ async function loadRecentReferrals() {
   const container = document.getElementById('recent-referrals');
   if (!container) return;
   try {
-    const snap = await db.collection('conversions').where('affiliateId','==',currentUser.uid).orderBy('createdAt','desc').limit(5).get();
+    const snap = await db.collection('conversions').where('affiliateId','==',currentUser.uid).get();
     if (snap.empty) {
       container.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>لا توجد إحالات بعد</p><button class="btn btn-primary btn-sm" onclick="loadPage('products')">شارك رابطك الآن</button></div>`;
       return;
     }
+    const items = [];
+    snap.forEach(doc => items.push({id:doc.id,...doc.data()}));
+    items.sort((a,b) => (b.createdAt?.toMillis?.()||0) - (a.createdAt?.toMillis?.()||0));
+    const top5 = items.slice(0,5);
     let html = '<div class="referral-list">';
-    snap.forEach(doc => {
-      const d = doc.data();
+    top5.forEach(d => {
       const date = d.createdAt?.toDate()?.toLocaleDateString('ar-EG') || '-';
       const statusClass = d.status === 'approved' ? 'approved' : d.status === 'paid' ? 'paid' : 'pending';
       const statusText = d.status === 'approved' ? 'مقبول' : d.status === 'paid' ? 'مدفوع' : 'قيد المراجعة';
@@ -614,14 +521,16 @@ async function loadPayoutsHistory() {
   const container = document.getElementById('payouts-table');
   if (!container) return;
   try {
-    const snap = await db.collection('payouts').where('affiliateId','==',currentUser.uid).orderBy('createdAt','desc').get();
+    const snap = await db.collection('payouts').where('affiliateId','==',currentUser.uid).get();
     if (snap.empty) {
       container.innerHTML = '<div class="empty-state"><div class="empty-icon">💸</div><p>لا توجد مدفوعات بعد</p></div>';
       return;
     }
+    const items = [];
+    snap.forEach(doc => items.push({id:doc.id,...doc.data()}));
+    items.sort((a,b) => (b.createdAt?.toMillis?.()||0) - (a.createdAt?.toMillis?.()||0));
     let html = '<div class="payout-list">';
-    snap.forEach(doc => {
-      const d = doc.data();
+    items.forEach(d => {
       const date = d.createdAt?.toDate()?.toLocaleDateString('ar-EG') || '-';
       const statusClass = d.status === 'paid' ? 'paid' : 'pending';
       const statusText = d.status === 'paid' ? 'تم الدفع' : 'قيد المعالجة';
@@ -686,15 +595,17 @@ async function loadAllReferrals() {
   const container = document.getElementById('all-referrals');
   if (!container) return;
   try {
-    const snap = await db.collection('conversions').where('affiliateId','==',currentUser.uid).orderBy('createdAt','desc').get();
+    const snap = await db.collection('conversions').where('affiliateId','==',currentUser.uid).get();
     if (snap.empty) {
       container.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><p>لا توجد إحالات بعد</p><button class="btn btn-primary btn-sm" onclick="loadPage(\'products\')">شارك رابطك الآن</button></div>';
       return;
     }
+    const items = [];
+    snap.forEach(doc => items.push({id:doc.id,...doc.data()}));
+    items.sort((a,b) => (b.createdAt?.toMillis?.()||0) - (a.createdAt?.toMillis?.()||0));
     let html = '<div class="referral-list">';
     let i = 1;
-    snap.forEach(doc => {
-      const d = doc.data();
+    items.forEach(d => {
       const date = d.createdAt?.toDate()?.toLocaleDateString('ar-EG') || '-';
       const statusClass = d.status === 'approved' ? 'approved' : d.status === 'paid' ? 'paid' : d.status === 'rejected' ? 'rejected' : 'pending';
       const statusText = d.status === 'approved' ? 'مقبول' : d.status === 'paid' ? 'مدفوع' : d.status === 'rejected' ? 'مرفوض' : 'قيد المراجعة';
@@ -841,73 +752,125 @@ function loadBadges(c) {
 // ===== VIDEOS =====
 function loadVideos(c) {
   c.innerHTML = `
-    <div class="page-header"><h1>🎬 الفيديوهات التعليمية</h1></div>
-    <p class="section-desc">شوف الفيديوهات التعليمية عشان تlearn أزاي تبيع أكتر!</p>
+    <div class="page-header">
+      <div>
+        <h1>🎓 أكاديمية ميلانو</h1>
+        <p class="subtitle">اتعلم أزاي تبقى مسوّق احترافي وتكسب أكتر</p>
+      </div>
+    </div>
+    <div class="filter-bar" id="video-filters">
+      <button class="filter-chip active" onclick="filterVideos('all',this)">الكل</button>
+      <button class="filter-chip" onclick="filterVideos('getting-started',this)">🚀 البدء</button>
+      <button class="filter-chip" onclick="filterVideos('social',this)">📱 السوشيال ميديا</button>
+      <button class="filter-chip" onclick="filterVideos('sales',this)">💰 المبيعات</button>
+      <button class="filter-chip" onclick="filterVideos('tips',this)">💡 نصائح</button>
+    </div>
     <div class="video-grid" id="video-grid">
       <div class="loading-state"><div class="spinner spinner-dark"></div></div>
     </div>`;
   loadVideosGrid();
 }
 
+let allVideos = [];
+
 async function loadVideosGrid() {
   const grid = document.getElementById('video-grid');
   if (!grid) return;
   try {
     const snap = await db.collection('videos').orderBy('createdAt','desc').get();
-    const videos = [];
+    allVideos = [];
     if (snap.empty) {
-      DEFAULT_VIDEOS.forEach(v => videos.push(v));
+      DEFAULT_VIDEOS.forEach(v => allVideos.push(v));
     } else {
-      snap.forEach(doc => videos.push({id: doc.id, ...doc.data()}));
+      snap.forEach(doc => allVideos.push({id: doc.id, ...doc.data()}));
     }
-    grid.innerHTML = videos.map(v => {
-      const embedUrl = convertToEmbedUrl(v.url);
-      return `
-        <div class="video-card">
-          <div class="video-thumb">
-            <iframe src="${embedUrl}" frameborder="0" allowfullscreen loading="lazy"></iframe>
-          </div>
-          <div class="video-info">
-            <h3>${v.title}</h3>
-            <p>${v.desc || ''}</p>
-            <div class="video-meta">
-              <span>👁️ ${v.views || 0} مشاهدة</span>
-              ${v.createdAt?.toDate ? `<span>📅 ${v.createdAt.toDate().toLocaleDateString('ar-EG')}</span>` : ''}
-            </div>
-          </div>
-        </div>`;
-    }).join('');
-  } catch(e) { grid.innerHTML = '<div class="empty-state"><p>خطأ في تحميل الفيديوهات</p></div>'; }
+    renderVideoCards(allVideos);
+  } catch(e) { 
+    DEFAULT_VIDEOS.forEach(v => allVideos.push(v));
+    renderVideoCards(allVideos);
+  }
 }
 
-function renderVideos(snap) {
+function renderVideoCards(videos) {
   const grid = document.getElementById('video-grid');
   if (!grid) return;
-  const videos = [];
-  if (snap.empty) {
-    DEFAULT_VIDEOS.forEach(v => videos.push(v));
-  } else {
-    snap.forEach(doc => videos.push({id: doc.id, ...doc.data()}));
+  if (videos.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🎬</div>
+        <h3>لا توجد فيديوهات</h3>
+        <p>قريباً هننزل محتوى تعليمي احترافي</p>
+      </div>`;
+    return;
   }
+  const categoryLabels = {'getting-started':'🚀 البدء','social':'📱 السوشيال ميديا','sales':'💰 المبيعات','tips':'💡 نصائح'};
   grid.innerHTML = videos.map(v => {
     const embedUrl = convertToEmbedUrl(v.url);
+    const cat = v.category || 'tips';
+    const badge = categoryLabels[cat] || '💡 نصائح';
     return `
-      <div class="video-card">
-        <div class="video-thumb"><iframe src="${embedUrl}" frameborder="0" allowfullscreen loading="lazy"></iframe></div>
+      <div class="video-card" onclick="playVideo('${embedUrl}','${(v.title||'').replace(/'/g,"\\'")}')">
+        <div class="video-thumb">
+          ${v.thumbnail ? `<img src="${v.thumbnail}" alt="${v.title}" style="width:100%;height:100%;object-fit:cover">` : `<iframe src="${embedUrl}" frameborder="0" allowfullscreen loading="lazy"></iframe>`}
+          <div class="video-play-btn">▶</div>
+          <div class="video-category-badge">${badge}</div>
+        </div>
         <div class="video-info">
           <h3>${v.title}</h3>
           <p>${v.desc || ''}</p>
-          <div class="video-meta"><span>👁️ ${v.views || 0} مشاهدة</span></div>
+          <div class="video-meta">
+            <span>👁️ ${v.views || 0} مشاهدة</span>
+            ${v.duration ? `<span>⏱️ ${v.duration}</span>` : ''}
+            ${v.createdAt?.toDate ? `<span>📅 ${v.createdAt.toDate().toLocaleDateString('ar-EG')}</span>` : ''}
+          </div>
         </div>
       </div>`;
   }).join('');
 }
 
+function filterVideos(category, btn) {
+  document.querySelectorAll('#video-filters .filter-chip').forEach(c => c.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (category === 'all') {
+    renderVideoCards(allVideos);
+  } else {
+    renderVideoCards(allVideos.filter(v => v.category === category));
+  }
+}
+
+function playVideo(embedUrl, title) {
+  const modal = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <div style="padding:0;position:relative;background:#000;border-radius:16px;overflow:hidden">
+      <button onclick="closeModal()" style="position:absolute;top:12px;left:12px;z-index:10;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.6);border:none;color:white;font-size:1.2rem;cursor:pointer">✕</button>
+      <div style="padding-top:56.25%;position:relative">
+        <iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen></iframe>
+      </div>
+      <div style="padding:1rem;background:white">
+        <h3 style="font-size:1rem;font-weight:700">${title}</h3>
+      </div>
+    </div>`;
+  modal.classList.add('active');
+  incrementVideoViews(title);
+}
+
+async function incrementVideoViews(title) {
+  try {
+    const snap = await db.collection('videos').where('title','==',title).limit(1).get();
+    snap.forEach(async doc => {
+      await doc.ref.update({views:(doc.data().views||0)+1});
+    });
+  } catch(e){}
+}
+
 function convertToEmbedUrl(url) {
-  if (!url) return '';
+  if (!url) return 'https://www.youtube.com/embed/dQw4w9WgXcQ';
   if (url.includes('/embed/')) return url;
   const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
   if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+  const fbMatch = url.match(/facebook\.com\/.*\/videos\/(\d+)/);
+  if (fbMatch) return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}`;
   return url;
 }
 
@@ -917,30 +880,59 @@ let chatUnsub = null;
 function loadChat(c) {
   c.innerHTML = `
     <div class="page-header">
-      <div class="chat-header">
-        <h1>💬 الرسائل</h1>
-        <div class="chat-status"><div class="live-dot"></div><span>متصل</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+        <div>
+          <h1>💬 الرسائل</h1>
+          <p class="subtitle">تواصل مع فريق الدعم</p>
+        </div>
+        <div class="chat-status">
+          <div class="live-dot"></div>
+          <span>متصل</span>
+        </div>
       </div>
     </div>
     <div class="chat-container">
       <div class="chat-messages" id="chat-messages">
         <div class="chat-empty">
           <div class="chat-empty-icon">💬</div>
-          <p>ابعت رسالة للأدمن وهرد عليك!</p>
-          <p class="chat-empty-hint">ممكن تبعت سؤال، مشكلة، أو أي حاجة</p>
+          <h3>ابدأ محادثة</h3>
+          <p>ابعت رسالة لأدمن ميلانو وهرد عليك في أقرب وقت</p>
+          <div class="chat-quick-replies">
+            <button class="quick-reply-btn" onclick="sendQuickReply('عندي سؤال عن المنتجات')">❓ سؤال عن المنتجات</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('عندي مشكلة في الحساب')">🔧 مشكلة في الحساب</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('عايز أعرف عن طريقة السحب')">💰 طريقة السحب</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('عايز أعرف أكتر عن برنامج العمولة')">📋 برنامج العمولة</button>
+          </div>
         </div>
       </div>
       <div class="chat-input-area">
+        <button class="chat-emoji-btn" onclick="toggleEmojiPicker()">😊</button>
         <textarea id="chat-input" placeholder="اكتب رسالتك هنا..." rows="1"
                   oninput="autoResizeTextarea(this)"
                   onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
-        <button class="chat-send-btn" onclick="sendChatMessage()">📤</button>
+        <button class="chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()">
+          <i class="fi fi-rr-paper-plane"></i>
+        </button>
       </div>
     </div>`;
 
   if (chatUnsub) { try{chatUnsub()}catch(e){} }
-  chatUnsub = db.collection('messages').where('affiliateId','==',currentUser.uid).orderBy('createdAt','asc').onSnapshot(snap => {
-    renderChatMessages(snap);
+  chatUnsub = db.collection('messages').where('affiliateId','==',currentUser.uid).onSnapshot(snap => {
+    const msgs = [];
+    let unread = 0;
+    snap.forEach(doc => {
+      const d = doc.data();
+      msgs.push({id:doc.id,...d});
+      if (!d.read && d.sender === 'admin') unread++;
+    });
+    msgs.sort((a,b) => {
+      const ta = a.createdAt?.toMillis?.() || 0;
+      const tb = b.createdAt?.toMillis?.() || 0;
+      return ta - tb;
+    });
+    renderChatMessagesFromDocs(msgs);
+    const badge = document.getElementById('chat-badge');
+    if (badge) { badge.textContent = unread || ''; badge.style.display = unread ? 'flex' : 'none'; }
   }, e => console.error(e));
   unsubscribers.push(() => { if(chatUnsub) try{chatUnsub()}catch(e){} });
 }
@@ -952,24 +944,94 @@ function renderChatMessages(snap) {
     container.innerHTML = `
       <div class="chat-empty">
         <div class="chat-empty-icon">💬</div>
-        <p>ابعت رسالة للأدمن وهرد عليك!</p>
-        <p class="chat-empty-hint">ممكن تبعت سؤال، مشكلة، أو أي حاجة</p>
+        <h3>ابدأ محادثة</h3>
+        <p>ابعت رسالة لأدمن ميلانو وهرد عليك في أقرب وقت</p>
+        <div class="chat-quick-replies">
+          <button class="quick-reply-btn" onclick="sendQuickReply('عندي سؤال عن المنتجات')">❓ سؤال عن المنتجات</button>
+          <button class="quick-reply-btn" onclick="sendQuickReply('عندي مشكلة في الحساب')">🔧 مشكلة في الحساب</button>
+          <button class="quick-reply-btn" onclick="sendQuickReply('عايز أعرف عن طريقة السحب')">💰 طريقة السحب</button>
+          <button class="quick-reply-btn" onclick="sendQuickReply('عايز أعرف أكتر عن برنامج العمولة')">📋 برنامج العمولة</button>
+        </div>
       </div>`;
     return;
   }
   let html = '';
+  let lastDate = '';
   snap.forEach(doc => {
     const msg = doc.data();
     const time = msg.createdAt?.toDate?.()?.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) || '';
+    const msgDate = msg.createdAt?.toDate?.()?.toLocaleDateString('ar-EG',{day:'numeric',month:'long',year:'numeric'}) || '';
     const isSent = msg.sender === 'affiliate';
+    if (msgDate !== lastDate) {
+      html += `<div class="chat-date-divider"><span>${msgDate}</span></div>`;
+      lastDate = msgDate;
+    }
     html += `
       <div class="chat-msg ${isSent ? 'sent' : 'received'}">
-        <div class="chat-msg-bubble">${msg.text}</div>
-        <div class="chat-msg-time">${time}</div>
+        ${!isSent ? '<div class="chat-msg-avatar">M</div>' : ''}
+        <div>
+          <div class="chat-msg-bubble">${msg.text}</div>
+          <div class="chat-msg-time">
+            <span>${time}</span>
+            ${isSent ? (msg.read ? '<span class="msg-status">✓✓</span>' : '<span class="msg-status">✓</span>') : ''}
+          </div>
+        </div>
+        ${isSent ? `<div class="chat-msg-avatar">${(affiliateData?.name||'?').charAt(0)}</div>` : ''}
       </div>`;
   });
   container.innerHTML = html;
   container.scrollTop = container.scrollHeight;
+}
+
+function renderChatMessagesFromDocs(msgs) {
+  const container = document.getElementById('chat-messages');
+  if (!container) return;
+  if (msgs.length === 0) {
+    container.innerHTML = `
+      <div class="chat-empty">
+        <div class="chat-empty-icon">💬</div>
+        <h3>ابدأ محادثة</h3>
+        <p>ابعت رسالة لأدمن ميلانو وهرد عليك في أقرب وقت</p>
+        <div class="chat-quick-replies">
+          <button class="quick-reply-btn" onclick="sendQuickReply('عندي سؤال عن المنتجات')">❓ سؤال عن المنتجات</button>
+          <button class="quick-reply-btn" onclick="sendQuickReply('عندي مشكلة في الحساب')">🔧 مشكلة في الحساب</button>
+          <button class="quick-reply-btn" onclick="sendQuickReply('عايز أعرف عن طريقة السحب')">💰 طريقة السحب</button>
+          <button class="quick-reply-btn" onclick="sendQuickReply('عايز أعرف أكتر عن برنامج العمولة')">📋 برنامج العمولة</button>
+        </div>
+      </div>`;
+    return;
+  }
+  let html = '';
+  let lastDate = '';
+  msgs.forEach(msg => {
+    const time = msg.createdAt?.toDate?.()?.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) || '';
+    const msgDate = msg.createdAt?.toDate?.()?.toLocaleDateString('ar-EG',{day:'numeric',month:'long',year:'numeric'}) || '';
+    const isSent = msg.sender === 'affiliate';
+    if (msgDate !== lastDate) {
+      html += `<div class="chat-date-divider"><span>${msgDate}</span></div>`;
+      lastDate = msgDate;
+    }
+    html += `
+      <div class="chat-msg ${isSent ? 'sent' : 'received'}">
+        ${!isSent ? '<div class="chat-msg-avatar">M</div>' : ''}
+        <div>
+          <div class="chat-msg-bubble">${msg.text}</div>
+          <div class="chat-msg-time">
+            <span>${time}</span>
+            ${isSent ? (msg.read ? '<span class="msg-status">✓✓</span>' : '<span class="msg-status">✓</span>') : ''}
+          </div>
+        </div>
+        ${isSent ? `<div class="chat-msg-avatar">${(affiliateData?.name||'?').charAt(0)}</div>` : ''}
+      </div>`;
+  });
+  container.innerHTML = html;
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendQuickReply(text) {
+  const input = document.getElementById('chat-input');
+  input.value = text;
+  sendChatMessage();
 }
 
 async function sendChatMessage() {
@@ -1013,36 +1075,92 @@ function loadNotifications(c) {
   loadNotificationsList();
   setTimeout(async () => {
     try {
-      const snap = await db.collection('notifications').where('affiliateId','==',currentUser.uid).where('read','==',false).get();
-      snap.forEach(async doc => { await doc.ref.update({read:true}); });
+      const snap = await db.collection('notifications').where('affiliateId','==',currentUser.uid).get();
+      snap.forEach(async doc => {
+        if (!doc.data().read) await doc.ref.update({read:true});
+      });
     } catch(e){}
   }, 2000);
+}
+
+function formatNotifTime(date) {
+  if (!date) return '-';
+  const d = date.toDate ? date.toDate() : new Date(date);
+  const now = new Date();
+  const diff = Math.floor((now - d) / 1000);
+  if (diff < 60) return 'الآن';
+  if (diff < 3600) return `منذ ${Math.floor(diff/60)} دقيقة`;
+  if (diff < 86400) return `منذ ${Math.floor(diff/3600)} ساعة`;
+  if (diff < 604800) return `منذ ${Math.floor(diff/86400)} يوم`;
+  return d.toLocaleDateString('ar-EG',{day:'numeric',month:'short'});
 }
 
 async function loadNotificationsList() {
   const el = document.getElementById('notifications-list');
   if (!el) return;
   try {
-    const snap = await db.collection('notifications').where('affiliateId','==',currentUser.uid).orderBy('createdAt','desc').limit(50).get();
+    const snap = await db.collection('notifications').where('affiliateId','==',currentUser.uid).get();
     if (snap.empty) {
-      el.innerHTML = '<div class="empty-state"><div class="empty-icon">🔔</div><p>لا توجد إشعارات بعد</p></div>';
+      el.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🔔</div>
+          <h3>لا توجد إشعارات</h3>
+          <p>هنا هتلاقي كل التحديثات والأرباح الجديدة</p>
+        </div>`;
       return;
     }
+    const notifs = [];
+    snap.forEach(doc => notifs.push({id:doc.id,...doc.data()}));
+    notifs.sort((a,b) => {
+      const ta = a.createdAt?.toMillis?.() || 0;
+      const tb = b.createdAt?.toMillis?.() || 0;
+      return tb - ta;
+    });
+    const notifIcons = {earnings:'💰',payout:'🏦',badge:'🏆',welcome:'👋',alert:'⚠️',info:'ℹ️',promotion:'🎉',message:'💬'};
     let html = '';
-    snap.forEach(doc => {
-      const d = doc.data();
-      const time = d.createdAt?.toDate()?.toLocaleDateString('ar-EG',{hour:'2-digit',minute:'2-digit'}) || '-';
+    notifs.forEach(d => {
+      const time = formatNotifTime(d.createdAt);
+      const icon = notifIcons[d.type] || '🔔';
+      const notifType = d.type || 'info';
+      const borderColor = notifType === 'earnings' ? 'var(--success)' : notifType === 'payout' ? 'var(--primary)' : notifType === 'badge' ? 'var(--warning)' : notifType === 'alert' ? 'var(--danger)' : 'var(--primary)';
       html += `
-        <div class="notif-item ${d.read ? '' : 'unread'}">
-          <div class="notif-dot" style="display:${d.read ? 'none' : 'block'}"></div>
+        <div class="notif-item ${d.read ? '' : 'unread'}" onclick="markNotifRead('${d.id}')">
+          <div class="notif-icon-wrap" style="width:42px;height:42px;border-radius:12px;background:${borderColor}15;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">${icon}</div>
           <div class="notif-content">
             <div class="notif-text">${d.message}</div>
             <div class="notif-time">${time}</div>
           </div>
+          ${!d.read ? '<div class="notif-dot"></div>' : ''}
         </div>`;
     });
     el.innerHTML = html;
-  } catch(e) { el.innerHTML = '<div class="empty-state"><p>لا توجد إشعارات</p></div>'; }
+  } catch(e) { 
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🔔</div>
+        <h3>لا توجد إشعارات</h3>
+        <p>هنا هتلاقي كل التحديثات والأرباح الجديدة</p>
+      </div>`; 
+  }
+}
+
+async function markNotifRead(id) {
+  try {
+    await db.collection('notifications').doc(id).update({read:true});
+  } catch(e){}
+}
+
+async function clearAllNotifications() {
+  try {
+    const snap = await db.collection('notifications').where('affiliateId','==',currentUser.uid).get();
+    const batch = db.batch();
+    snap.forEach(doc => {
+      if (!doc.data().read) batch.update(doc.ref,{read:true});
+    });
+    await batch.commit();
+    loadNotificationsList();
+    showToast('تم قراءة كل الإشعارات ✅');
+  } catch(e){ showToast('حدث خطأ','error'); }
 }
 
 // ===== SETTINGS =====
@@ -1051,54 +1169,128 @@ function loadSettings(c) {
   c.innerHTML = `
     <div class="page-header"><h1>⚙️ الإعدادات</h1></div>
 
+    <div class="settings-section profile-header-section">
+      <div class="profile-avatar-large">${(affiliateData?.name||'?').charAt(0)}</div>
+      <h2 class="profile-name">${affiliateData?.name || 'مستخدم'}</h2>
+      <p class="profile-email">${affiliateData?.email || ''}</p>
+      <div class="profile-tier-badge">${getCurrentTier().emoji} ${getCurrentTier().name}</div>
+      <div class="profile-completion-bar">
+        <div class="profile-completion-track">
+          <div class="profile-completion-fill" style="width:${pct}%"></div>
+        </div>
+        <span class="profile-completion-text">${pct}% مكتمل</span>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h2>📝 الملف الشخصي</h2>
+      <form id="settings-form" onsubmit="handleUpdateProfile(event)">
+        <div class="form-group">
+          <label><i class="fi fi-rr-user"></i> الاسم الكامل</label>
+          <input type="text" id="settings-name" value="${affiliateData?.name || ''}" placeholder="اسمك الكامل" required>
+        </div>
+        <div class="form-group">
+          <label><i class="fi fi-rr-phone"></i> رقم التليفون</label>
+          <input type="tel" id="settings-phone" value="${affiliateData?.phone || ''}" placeholder="01XXXXXXXXX" dir="ltr" style="text-align:right">
+        </div>
+        <div class="form-group">
+          <label><i class="fi fi-rr-map-marker"></i> العنوان / المحافظة</label>
+          <select id="settings-governorate">
+            <option value="">اختر المحافظة</option>
+            <option value="القاهرة" ${affiliateData?.governorate==='القاهرة'?'selected':''}>القاهرة</option>
+            <option value="الجيزة" ${affiliateData?.governorate==='الجيزة'?'selected':''}>الجيزة</option>
+            <option value="الإسكندرية" ${affiliateData?.governorate==='الإسكندرية'?'selected':''}>الإسكندرية</option>
+            <option value="القليوبية" ${affiliateData?.governorate==='القليوبية'?'selected':''}>القليوبية</option>
+            <option value="الشرقية" ${affiliateData?.governorate==='الشرقية'?'selected':''}>الشرقية</option>
+            <option value="الدقهلية" ${affiliateData?.governorate==='الدقهلية'?'selected':''}>الدقهلية</option>
+            <option value="المنوفية" ${affiliateData?.governorate==='المنوفية'?'selected':''}>المنوفية</option>
+            <option value="الغربية" ${affiliateData?.governorate==='الغربية'?'selected':''}>الغربية</option>
+            <option value="البحيرة" ${affiliateData?.governorate==='البحيرة'?'selected':''}>البحيرة</option>
+            <option value="كفر الشيخ" ${affiliateData?.governorate==='كفر الشيخ'?'selected':''}>كفر الشيخ</option>
+            <option value="الفيوم" ${affiliateData?.governorate==='الفيوم'?'selected':''}>الفيوم</option>
+            <option value="بني سويف" ${affiliateData?.governorate==='بني سويف'?'selected':''}>بني سويف</option>
+            <option value="الفيوم" ${affiliateData?.governorate==='الفيوم'?'selected':''}>الفيوم</option>
+            <option value="أسيوط" ${affiliateData?.governorate==='أسيوط'?'selected':''}>أسيوط</option>
+            <option value="سوهاج" ${affiliateData?.governorate==='سوهاج'?'selected':''}>سوهاج</option>
+            <option value="قنا" ${affiliateData?.governorate==='قنا'?'selected':''}>قنا</option>
+            <option value="الأقصر" ${affiliateData?.governorate==='الأقصر'?'selected':''}>الأقصر</option>
+            <option value="أسوان" ${affiliateData?.governorate==='أسوان'?'selected':''}>أسوان</option>
+            <option value="البحر الأحمر" ${affiliateData?.governorate==='البحر الأحمر'?'selected':''}>البحر الأحمر</option>
+            <option value="الوادي الجديد" ${affiliateData?.governorate==='الوادي الجديد'?'selected':''}>الوادي الجديد</option>
+            <option value="مطروح" ${affiliateData?.governorate==='مطروح'?'selected':''}>مطروح</option>
+            <option value="شمال سيناء" ${affiliateData?.governorate==='شمال سيناء'?'selected':''}>شمال سيناء</option>
+            <option value="جنوب سيناء" ${affiliateData?.governorate==='جنوب سيناء'?'selected':''}>جنوب سيناء</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label><i class="fi fi-rr-home"></i> العنوان التفصيلي</label>
+          <input type="text" id="settings-address" value="${affiliateData?.address || ''}" placeholder="الشارع، المنطقة، المدينة">
+        </div>
+        <div class="form-group">
+          <label><i class="fi fi-rr-envelope"></i> البريد الإلكتروني</label>
+          <input type="email" value="${affiliateData?.email || ''}" disabled style="opacity:.6">
+          <small style="color:var(--text-secondary);font-size:.75rem;margin-top:.3rem;display:block">لا يمكن تغيير البريد الإلكتروني</small>
+        </div>
+        <div class="form-group">
+          <label><i class="fi fi-rr-birthday-cake"></i> تاريخ الميلاد</label>
+          <input type="date" id="settings-birthday" value="${affiliateData?.birthday || ''}">
+        </div>
+        <div class="form-group">
+          <label><i class="fi fi-rr-venus-mars"></i> النوع</label>
+          <select id="settings-gender">
+            <option value="">اختر</option>
+            <option value="male" ${affiliateData?.gender==='male'?'selected':''}>ذكر</option>
+            <option value="female" ${affiliateData?.gender==='female'?'selected':''}>أنثى</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label><i class="fi fi-rr-share-alt"></i> وسائل التواصل الاجتماعي</label>
+          <input type="text" id="settings-facebook" value="${affiliateData?.facebook || ''}" placeholder="رابط فيسبوك" style="margin-bottom:.5rem">
+          <input type="text" id="settings-instagram" value="${affiliateData?.instagram || ''}" placeholder="رابط انستجرام" style="margin-bottom:.5rem">
+          <input type="text" id="settings-tiktok" value="${affiliateData?.tiktok || ''}" placeholder="رابط تيك توك">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">
+          <i class="fi fi-rr-check"></i> حفظ التعديلات
+        </button>
+      </form>
+    </div>
+
     <div class="settings-section">
       <h2>🎨 المظهر</h2>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:.8rem 0;border-bottom:1px solid #f3f4f6">
-        <span style="font-size:.9rem">الوضع الليلي</span>
-        <button class="btn btn-sm ${document.body.classList.contains('dark-mode') ? 'btn-primary' : 'btn-ghost'}" onclick="toggleDarkMode()">
-          ${document.body.classList.contains('dark-mode') ? '☀️ نهاري' : '🌙 ليلي'}
+      <div class="settings-toggle-row">
+        <span><i class="fi fi-rr-moon"></i> الوضع الليلي</span>
+        <button class="toggle-btn ${document.body.classList.contains('dark-mode') ? 'active' : ''}" onclick="toggleDarkMode()">
+          <div class="toggle-knob"></div>
+        </button>
+      </div>
+      <div class="settings-toggle-row">
+        <span><i class="fi fi-rr-bell"></i> إشعارات البريد</span>
+        <button class="toggle-btn ${affiliateData?.emailNotifications ? 'active' : ''}" onclick="toggleEmailNotifications()">
+          <div class="toggle-knob"></div>
         </button>
       </div>
     </div>
 
     <div class="settings-section">
       <h2>📊 أدوات متقدمة</h2>
-      <div style="display:flex;flex-direction:column;gap:.8rem">
-        <button class="btn btn-ghost btn-block" onclick="showEarningsCalculator()" style="justify-content:flex-start">
-          🧮 حاسبة الأرباح - احسب أرباحك المتوقعة
+      <div class="settings-tools-grid">
+        <button class="tool-card" onclick="showEarningsCalculator()">
+          <div class="tool-icon">🧮</div>
+          <span>حاسبة الأرباح</span>
         </button>
-        <button class="btn btn-ghost btn-block" onclick="showQRCode()" style="justify-content:flex-start">
-          📱 كود QR - شير رابط الإحالة بالكود
+        <button class="tool-card" onclick="showQRCode()">
+          <div class="tool-icon">📱</div>
+          <span>كود QR</span>
         </button>
-        <button class="btn btn-ghost btn-block" onclick="showWeeklySummary()" style="justify-content:flex-start">
-          📊 ملخص الأسبوع - تقرير أسبوعي
+        <button class="tool-card" onclick="showWeeklySummary()">
+          <div class="tool-icon">📊</div>
+          <span>ملخص الأسبوع</span>
         </button>
-        <button class="btn btn-ghost btn-block" onclick="exportToCSV()" style="justify-content:flex-start">
-          📥 تصدير البيانات - حمّل CSV
-        </button>
-        <button class="btn btn-ghost btn-block" onclick="showProfileCompletion()" style="justify-content:flex-start">
-          📋 إكمال الملف الشخصي - ${pct}% مكتمل
+        <button class="tool-card" onclick="exportToCSV()">
+          <div class="tool-icon">📥</div>
+          <span>تصدير CSV</span>
         </button>
       </div>
-    </div>
-
-    <div class="settings-section">
-      <h2>📝 تعديل البيانات</h2>
-      <form id="settings-form" onsubmit="handleUpdateProfile(event)">
-        <div class="form-group">
-          <label>الاسم</label>
-          <input type="text" id="settings-name" value="${affiliateData?.name || ''}" required>
-        </div>
-        <div class="form-group">
-          <label>رقم الهاتف</label>
-          <input type="tel" id="settings-phone" value="${affiliateData?.phone || ''}">
-        </div>
-        <div class="form-group">
-          <label>البريد الإلكتروني</label>
-          <input type="email" value="${affiliateData?.email || ''}" disabled>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">💾 حفظ التعديلات</button>
-      </form>
     </div>
 
     <div class="settings-section">
@@ -1112,18 +1304,23 @@ function loadSettings(c) {
           <label>تأكيد كلمة المرور</label>
           <input type="password" id="confirm-new-password" required>
         </div>
-        <button type="submit" class="btn btn-secondary btn-block">🔐 تغيير كلمة المرور</button>
+        <button type="submit" class="btn btn-secondary btn-block">
+          <i class="fi fi-rr-lock"></i> تغيير كلمة المرور
+        </button>
       </form>
     </div>
 
     <div class="settings-section">
-      <h2>🚪 حسابي</h2>
+      <h2>🚪 الحساب</h2>
       <div class="account-info">
-        <div class="account-item"><span>البريد الإلكتروني:</span><span>${affiliateData?.email || ''}</span></div>
-        <div class="account-item"><span>رمز الإحالة:</span><span>${affiliateData?.referralCode || ''}</span></div>
-        <div class="account-item"><span>المستوى:</span><span>${getCurrentTier().emoji} ${getCurrentTier().name}</span></div>
+        <div class="account-item"><span>البريد الإلكتروني</span><span>${affiliateData?.email || ''}</span></div>
+        <div class="account-item"><span>رمز الإحالة</span><span style="font-family:monospace;color:var(--primary)">${affiliateData?.referralCode || ''}</span></div>
+        <div class="account-item"><span>المستوى الحالي</span><span>${getCurrentTier().emoji} ${getCurrentTier().name}</span></div>
+        <div class="account-item"><span>تاريخ الانضمام</span><span>${affiliateData?.createdAt?.toDate?.()?.toLocaleDateString('ar-EG') || '-'}</span></div>
       </div>
-      <button class="btn btn-danger btn-block" onclick="handleLogout()">🚪 تسجيل الخروج</button>
+      <button class="btn btn-danger btn-block" onclick="handleLogout()">
+        <i class="fi fi-rr-sign-out-alt"></i> تسجيل الخروج
+      </button>
     </div>`;
 }
 
@@ -1131,13 +1328,36 @@ async function handleUpdateProfile(e) {
   e.preventDefault();
   const name = document.getElementById('settings-name').value.trim();
   const phone = document.getElementById('settings-phone').value.trim();
+  const governorate = document.getElementById('settings-governorate').value;
+  const address = document.getElementById('settings-address').value.trim();
+  const birthday = document.getElementById('settings-birthday').value;
+  const gender = document.getElementById('settings-gender').value;
+  const facebook = document.getElementById('settings-facebook').value.trim();
+  const instagram = document.getElementById('settings-instagram').value.trim();
+  const tiktok = document.getElementById('settings-tiktok').value.trim();
   try {
-    await db.collection('affiliates').doc(currentUser.uid).update({name, phone});
+    await db.collection('affiliates').doc(currentUser.uid).update({name, phone, governorate, address, birthday, gender, facebook, instagram, tiktok});
     affiliateData.name = name;
     affiliateData.phone = phone;
+    affiliateData.governorate = governorate;
+    affiliateData.address = address;
+    affiliateData.birthday = birthday;
+    affiliateData.gender = gender;
+    affiliateData.facebook = facebook;
+    affiliateData.instagram = instagram;
+    affiliateData.tiktok = tiktok;
     updateUserUI();
     showToast('تم حفظ التعديلات ✅');
+    loadSettings(document.getElementById('page-content'));
   } catch(e) { showToast('حدث خطأ', 'error'); }
+}
+
+function toggleEmailNotifications() {
+  const val = !affiliateData?.emailNotifications;
+  db.collection('affiliates').doc(currentUser.uid).update({emailNotifications:val}).then(() => {
+    affiliateData.emailNotifications = val;
+    showToast(val ? 'تم تفعيل إشعارات البريد ✅' : 'تم إيقاف إشعارات البريد');
+  });
 }
 
 async function handleChangePassword(e) {
@@ -1222,10 +1442,12 @@ function registerServiceWorker() {
 }
 
 const DEFAULT_VIDEOS = [
-  {id:'v1',title:'ازاي تبدأ في برنامج العمولة',desc:'دليل المبتدئين الكامل',url:'https://www.youtube.com/embed/dQw4w9WgXcQ'},
-  {id:'v2',title:'كيف تشارك على فيسبوك',desc:'أسرار المبيعات على السوشيال ميديا',url:'https://www.youtube.com/embed/dQw4w9WgXcQ'},
-  {id:'v3',title:'واتساب كورس تسويق',desc:'ازاي تستخدم واتساب في البيع',url:'https://www.youtube.com/embed/dQw4w9WgXcQ'},
-  {id:'v4',title:'بناء استراتيجية تسويقية',desc:'خطط تسويق احترافية',url:'https://www.youtube.com/embed/dQw4w9WgXcQ'}
+  {id:'v1',title:'إزاي تبدأ في برنامج العمولة',desc:'دليل المبتدئين الكامل - اعرف أزاي تسجل وتبدأ تكسب',url:'https://www.youtube.com/embed/dQw4w9WgXcQ',category:'getting-started',duration:'8:30',thumbnail:''},
+  {id:'v2',title:'أسرار البيع على فيسبوك',desc:'إزاي تعمل محتوى يجذب الزبون ويزيد مبيعاتك',url:'https://www.youtube.com/embed/dQw4w9WgXcQ',category:'social',duration:'12:15',thumbnail:''},
+  {id:'v3',title:'واتساب كورس تسويق احترافي',desc:'ازاي تستخدم واتساب في البيع من غير ما تزعج الناس',url:'https://www.youtube.com/embed/dQw4w9WgXcQ',category:'sales',duration:'10:45',thumbnail:''},
+  {id:'v4',title:'بناء استراتيجية تسويقية ناجحة',desc:'خطط تسويق احترافية تضاعف أرباحك',url:'https://www.youtube.com/embed/dQw4w9WgXcQ',category:'tips',duration:'15:20',thumbnail:''},
+  {id:'v5',title:'إزاي تكتب وصف منتج يبيع',desc:' secrets لكتابة أوصاف تقنع الزبون يشتري',url:'https://www.youtube.com/embed/dQw4w9WgXcQ',category:'sales',duration:'7:50',thumbnail:''},
+  {id:'v6',title:' instagram marketing دورة',desc:'إزاي تكبر صفحتك على انستجرام وتبيع',url:'https://www.youtube.com/embed/dQw4w9WgXcQ',category:'social',duration:'11:30',thumbnail:''}
 ];
 
 // ===== DARK MODE =====
@@ -1315,14 +1537,16 @@ function downloadQR(url) {
 // ===== EXPORT DATA =====
 async function exportToCSV() {
   try {
-    const snap = await db.collection('conversions').where('affiliateId','==',currentUser.uid).orderBy('createdAt','desc').get();
+    const snap = await db.collection('conversions').where('affiliateId','==',currentUser.uid).get();
     if (snap.empty) {
       showToast('لا توجد بيانات للتصدير', 'error');
       return;
     }
+    const items = [];
+    snap.forEach(doc => items.push(doc.data()));
+    items.sort((a,b) => (b.createdAt?.toMillis?.()||0) - (a.createdAt?.toMillis?.()||0));
     let csv = 'التاريخ,العميل,المنتج,الحالة,العمولة\n';
-    snap.forEach(doc => {
-      const d = doc.data();
+    items.forEach(d => {
       const date = d.createdAt?.toDate()?.toLocaleDateString('ar-EG') || '-';
       const status = d.status === 'approved' ? 'مقبول' : d.status === 'paid' ? 'مدفوع' : 'قيد المراجعة';
       csv += `${date},${d.customerName || 'عميل'},${d.productName || '-'},${status},${d.commission || 0}\n`;
@@ -1344,20 +1568,29 @@ async function exportToCSV() {
 function getProfileCompletion() {
   if (!affiliateData) return 0;
   let completed = 0;
-  let total = 5;
+  let total = 8;
   if (affiliateData.name) completed++;
   if (affiliateData.phone) completed++;
   if (affiliateData.email) completed++;
   if (affiliateData.referralCode) completed++;
+  if (affiliateData.governorate) completed++;
+  if (affiliateData.address) completed++;
+  if (affiliateData.facebook || affiliateData.instagram || affiliateData.tiktok) completed++;
   if (affiliateData.totalClicks > 0) completed++;
   return Math.round((completed / total) * 100);
 }
 
 function showProfileCompletion() {
   const pct = getProfileCompletion();
-  const missing = [];
-  if (!affiliateData?.phone) missing.push('رقم التليفون');
-  if (!affiliateData?.totalClicks) missing.push('مشاركة رابط واحد على الأقل');
+  const items = [
+    {label:'الاسم',done:!!affiliateData?.name,icon:'👤'},
+    {label:'رقم التليفون',done:!!affiliateData?.phone,icon:'📱'},
+    {label:'البريد الإلكتروني',done:!!affiliateData?.email,icon:'📧'},
+    {label:'المحافظة',done:!!affiliateData?.governorate,icon:'📍'},
+    {label:'العنوان التفصيلي',done:!!affiliateData?.address,icon:'🏠'},
+    {label:'وسائل التواصل',done:!!(affiliateData?.facebook||affiliateData?.instagram||affiliateData?.tiktok),icon:'🔗'},
+    {label:'مشاركة رابط إحالة',done:(affiliateData?.totalClicks||0)>0,icon:'📤'}
+  ];
   
   const modal = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
@@ -1374,16 +1607,22 @@ function showProfileCompletion() {
           ${pct}%
         </div>
       </div>
-      <p style="color:var(--text-secondary);font-size:.85rem;margin-bottom:1rem">
-        ${pct === 100 ? 'ملفك الشخصي مكتمل! 🎉' : 'كمّل ملفك الشخصي عشان تحصل على شارة إضافية'}
+      <p style="color:var(--text-secondary);font-size:.85rem;margin-bottom:1.2rem">
+        ${pct === 100 ? 'ملفك الشخصي مكتمل! 🎉' : 'كمّل ملفك عشان تحصل على شارة إضافية'}
       </p>
-      ${missing.length > 0 ? `
-        <div style="background:var(--bg);border-radius:10px;padding:1rem;text-align:right">
-          <p style="font-size:.85rem;font-weight:600;margin-bottom:.5rem">البيانات الناقصة:</p>
-          ${missing.map(m => `<p style="font-size:.8rem;color:var(--text-secondary)">• ${m}</p>`).join('')}
-        </div>
-      ` : ''}
-      <button class="btn btn-ghost btn-block" style="margin-top:1rem" onclick="closeModal()">إغلاق</button>
+      <div style="text-align:right;background:var(--bg);border-radius:12px;padding:1rem;max-height:300px;overflow-y:auto">
+        ${items.map(item => `
+          <div style="display:flex;align-items:center;gap:.8rem;padding:.6rem 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:1.1rem">${item.icon}</span>
+            <span style="flex:1;font-size:.85rem">${item.label}</span>
+            <span style="color:${item.done ? 'var(--success)' : 'var(--text-secondary)'}; font-size:1rem">${item.done ? '✅' : '⭕'}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div style="display:flex;gap:.8rem;margin-top:1.2rem">
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">إغلاق</button>
+        ${pct < 100 ? '<button class="btn btn-primary" style="flex:1" onclick="closeModal();loadPage(\'settings\')">كمّل الآن</button>' : ''}
+      </div>
     </div>`;
   modal.classList.add('active');
 }
@@ -1467,6 +1706,30 @@ async function showWeeklySummary() {
 // ===== MODAL HELPERS =====
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('active');
+}
+
+function toggleEmojiPicker() {
+  const emojis = ['😊','😂','❤️','🔥','👍','💯','💰','🎉','📱','✨','🙏','💪','🛒','📦','🎯','⭐'];
+  const modal = document.getElementById('modal-content');
+  const overlay = document.getElementById('modal-overlay');
+  modal.innerHTML = `
+    <div style="padding:1.5rem">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;text-align:center">اختر إيموجي</h3>
+      <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:.5rem">
+        ${emojis.map(e => `<button onclick="insertEmoji('${e}')" style="width:100%;aspect-ratio:1;border:1px solid var(--border);border-radius:10px;background:var(--card-bg);font-size:1.5rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">${e}</button>`).join('')}
+      </div>
+      <button class="btn btn-ghost btn-block" style="margin-top:1rem" onclick="closeModal()">إغلاق</button>
+    </div>`;
+  overlay.classList.add('active');
+}
+
+function insertEmoji(emoji) {
+  const input = document.getElementById('chat-input');
+  if (input) {
+    input.value += emoji;
+    input.focus();
+  }
+  closeModal();
 }
 
 // ===== TOP PRODUCTS =====
@@ -1601,133 +1864,186 @@ async function getSocialProof() {
   } catch(e) { return []; }
 }
 
-// ===== IMPROVED OVERVIEW WITH NEW FEATURES =====
+// ===== OVERVIEW - HIGH PERFORMANCE =====
 async function loadOverview(c) {
-  let clicks = 0, todayClicks = 0, referrals = affiliateData?.referralsCount || 0;
-  try {
-    const today = new Date(); today.setHours(0,0,0,0);
-    const clicksSnap = await db.collection('clicks').where('affiliateId','==',currentUser.uid).get();
-    clicks = clicksSnap.size;
-    clicksSnap.forEach(d => { if (d.data().createdAt?.toDate() >= today) todayClicks++; });
-  } catch(e){}
-
-  const calculatedEarnings = Math.floor(clicks / 1000) * 20;
-  const pendingEarnings = ((clicks % 1000) / 1000 * 20).toFixed(2);
-  const nextPayout = 1000 - (clicks % 1000);
-  const tier = getCurrentTier();
+  const af = affiliateData || {};
   const streak = getStreak();
   const profilePct = getProfileCompletion();
-  const topProducts = await getTopProducts();
-  const socialProof = await getSocialProof();
+  const tier = getCurrentTier();
 
   c.innerHTML = `
-    <div class="page-header">
-      <h1>مرحباً ${affiliateData?.name || ''} 👋</h1>
-      <p class="subtitle">إليك ملخص أرباحك اليوم</p>
-    </div>
+    <div class="overview-skeleton">
+      <div class="page-header">
+        <h1>مرحباً ${af.name || ''} 👋</h1>
+        <p class="subtitle">إليك ملخص أرباحك اليوم</p>
+      </div>
 
-    <!-- Streak Banner -->
-    <div class="streak-banner" onclick="showStreak()">
-      <div class="streak-icon">🔥</div>
-      <div class="streak-info">
-        <div class="streak-count">${streak} يوم</div>
-        <div class="streak-text">سلسلة الحضور</div>
+      <div class="streak-banner" onclick="showStreak()">
+        <div class="streak-icon">🔥</div>
+        <div class="streak-info">
+          <div class="streak-count">${streak} يوم</div>
+          <div class="streak-text">سلسلة الحضور</div>
+        </div>
+        <div class="streak-arrow">←</div>
       </div>
-      <div class="streak-arrow">←</div>
-    </div>
 
-    <div class="stats-grid">
-      <div class="stat-card" onclick="loadPage('payouts')">
-        <div class="stat-card-header">
-          <div class="stat-card-icon green">💰</div>
-          <span class="stat-card-trend up">+12%</span>
-        </div>
-        <div class="stat-card-value">${calculatedEarnings} <small>ج.م</small></div>
-        <div class="stat-card-label">إجمالي الأرباح</div>
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon green">💰</div><span class="stat-card-trend up">...</span></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">إجمالي الأرباح</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon blue">👥</div></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">إجمالي الإحالات</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon purple">⏳</div></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">أرباح معلقة</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon orange">🔗</div></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">إجمالي الزوار</div></div>
       </div>
-      <div class="stat-card" onclick="loadPage('referrals')">
-        <div class="stat-card-header">
-          <div class="stat-card-icon blue">👥</div>
-          <span class="stat-card-trend up">+${todayClicks}</span>
-        </div>
-        <div class="stat-card-value">${referrals}</div>
-        <div class="stat-card-label">إجمالي الإحالات</div>
-      </div>
-      <div class="stat-card" onclick="loadPage('products')">
-        <div class="stat-card-header">
-          <div class="stat-card-icon purple">⏳</div>
-        </div>
-        <div class="stat-card-value">${pendingEarnings} <small>ج.م</small></div>
-        <div class="stat-card-label">أرباح معلقة</div>
-        <div class="stat-card-progress">متبقي ${nextPayout} زائر للدفعة التالية</div>
-      </div>
-      <div class="stat-card" onclick="loadPage('products')">
-        <div class="stat-card-header">
-          <div class="stat-card-icon orange">🔗</div>
-          <span class="stat-card-trend up">+${todayClicks}</span>
-        </div>
-        <div class="stat-card-value">${clicks.toLocaleString()}</div>
-        <div class="stat-card-label">إجمالي الزوار</div>
-      </div>
-    </div>
 
-    <!-- Profile Completion -->
-    ${profilePct < 100 ? `
-    <div class="profile-alert" onclick="showProfileCompletion()">
-      <div class="profile-alert-icon">📋</div>
-      <div class="profile-alert-info">
-        <div class="profile-alert-text">أكمل ملفك الشخصي (${profilePct}%)</div>
-        <div class="profile-alert-bar">
-          <div class="profile-alert-fill" style="width:${profilePct}%"></div>
+      ${profilePct < 100 ? `
+      <div class="profile-alert" onclick="showProfileCompletion()">
+        <div class="profile-alert-icon">📋</div>
+        <div class="profile-alert-info">
+          <div class="profile-alert-text">أكمل ملفك الشخصي (${profilePct}%)</div>
+          <div class="profile-alert-bar"><div class="profile-alert-fill" style="width:${profilePct}%"></div></div>
+        </div>
+        <div class="profile-alert-arrow">←</div>
+      </div>` : ''}
+
+      <div class="referral-box">
+        <div class="referral-header">
+          <span>🔗 رابط الإحالة الخاص بك</span>
+          <span class="copy-hint">اضغط للنسخ</span>
+        </div>
+        <div class="referral-link-row">
+          <input type="text" id="referral-link" readonly value="${getShareLink()}" onclick="copyToClipboard(this.value);this.select()">
+          <button class="btn btn-primary btn-sm" onclick="copyToClipboard(document.getElementById('referral-link').value)">
+            <i class="fi fi-rr-duplicate"></i> نسخ
+          </button>
         </div>
       </div>
-      <div class="profile-alert-arrow">←</div>
-    </div>
-    ` : ''}
 
-    <div class="referral-box">
-      <div class="referral-header">
-        <span>🔗 رابط الإحالة الخاص بك</span>
-        <span class="copy-hint">اضغط للنسخ</span>
-      </div>
-      <div class="referral-link-row">
-        <input type="text" id="referral-link" readonly value="${getShareLink()}" onclick="copyToClipboard(this.value); this.select();">
-        <button class="btn btn-primary btn-sm" onclick="copyToClipboard(document.getElementById('referral-link').value)">
-          <i class="fi fi-rr-duplicate"></i> نسخ
-        </button>
+      <div class="quick-actions">
+        <h3>⚡ إجراءات سريعة</h3>
+        <div class="actions-row">
+          <button class="action-btn" onclick="shareWhatsApp()"><span class="action-icon">💬</span><span>واتساب</span></button>
+          <button class="action-btn" onclick="shareFacebook()"><span class="action-icon">📘</span><span>فيسبوك</span></button>
+          <button class="action-btn" onclick="copyLink()"><span class="action-icon">📋</span><span>نسخ الرابط</span></button>
+          <button class="action-btn" onclick="loadPage('products')"><span class="action-icon">📦</span><span>المنتجات</span></button>
+        </div>
       </div>
     </div>
 
-    <div class="quick-actions">
-      <h3>⚡ إجراءات سريعة</h3>
-      <div class="actions-row">
-        <button class="action-btn" onclick="shareWhatsApp()">
-          <span class="action-icon">💬</span>
-          <span>واتساب</span>
-        </button>
-        <button class="action-btn" onclick="shareFacebook()">
-          <span class="action-icon">📘</span>
-          <span>فيسبوك</span>
-        </button>
-        <button class="action-btn" onclick="copyLink()">
-          <span class="action-icon">📋</span>
-          <span>نسخ الرابط</span>
-        </button>
-        <button class="action-btn" onclick="loadPage('products')">
-          <span class="action-icon">📦</span>
-          <span>المنتجات</span>
-        </button>
-      </div>
-    </div>
+    <div id="overview-dynamic"></div>
+  `;
 
-    <!-- Top Products -->
-    ${topProducts.length > 0 ? `
+  loadOverviewData();
+  initFAB();
+}
+
+let overviewCache = null;
+
+async function loadOverviewData() {
+  if (overviewCache && Date.now() - overviewCache.time < 30000) {
+    renderOverviewStats(overviewCache.data);
+    return;
+  }
+  const dyn = document.getElementById('overview-dynamic');
+  if (dyn) dyn.innerHTML = `
+    <div class="tier-progress-section">
+      <div class="section-header"><h3>🏅 التقدم نحو المستوى التالي</h3></div>
+      <div class="tier-progress-card" id="tier-progress"></div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-header"><h3>📈 النقرات - آخر 7 أيام</h3><div class="live-dot"></div></div>
+      <div class="chart-area" id="chart-area"></div>
+      <div class="chart-labels" id="chart-labels"></div>
+    </div>
+    <div class="recent-section">
+      <div class="section-header"><h3>📋 آخر الإحالات</h3><button class="btn btn-ghost btn-sm" onclick="loadPage('referrals')">عرض الكل</button></div>
+      <div id="recent-referrals"></div>
+    </div>`;
+  try {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const [clicksSnap] = await Promise.all([
+      db.collection('clicks').where('affiliateId','==',currentUser.uid).get()
+    ]);
+    let clicks = 0, todayClicks = 0;
+    clicksSnap.forEach(d => {
+      clicks++;
+      const cd = d.data().createdAt?.toDate();
+      if (cd && cd >= today) todayClicks++;
+    });
+
+    const data = {
+      clicks, todayClicks,
+      earnings: Math.floor(clicks / 1000) * 20,
+      pending: ((clicks % 1000) / 1000 * 20).toFixed(2),
+      nextPayout: 1000 - (clicks % 1000) || 1000,
+      referrals: affiliateData?.referralsCount || 0
+    };
+    overviewCache = {data, time: Date.now()};
+    renderOverviewStats(data);
+    renderTierProgress();
+    loadChartData();
+    loadRecentReferrals();
+
+    Promise.all([getTopProducts(), getSocialProof()]).then(([top, social]) => {
+      renderTopProducts(top);
+      renderSocialProof(social);
+    });
+  } catch(e) {
+    const data = {
+      clicks: 0, todayClicks: 0, earnings: 0, pending: '0.00',
+      nextPayout: 1000, referrals: affiliateData?.referralsCount || 0
+    };
+    renderOverviewStats(data);
+    renderTierProgress();
+  }
+}
+
+function renderOverviewStats(d) {
+  const grid = document.getElementById('stats-grid');
+  if (!grid) return;
+  grid.innerHTML = `
+    <div class="stat-card" onclick="loadPage('payouts')">
+      <div class="stat-card-header">
+        <div class="stat-card-icon green">💰</div>
+        <span class="stat-card-trend up">${d.todayClicks}</span>
+      </div>
+      <div class="stat-card-value">${d.earnings} <small>ج.م</small></div>
+      <div class="stat-card-label">إجمالي الأرباح</div>
+    </div>
+    <div class="stat-card" onclick="loadPage('referrals')">
+      <div class="stat-card-header">
+        <div class="stat-card-icon blue">👥</div>
+        <span class="stat-card-trend up">+${d.todayClicks}</span>
+      </div>
+      <div class="stat-card-value">${d.referrals}</div>
+      <div class="stat-card-label">إجمالي الإحالات</div>
+    </div>
+    <div class="stat-card" onclick="loadPage('products')">
+      <div class="stat-card-header">
+        <div class="stat-card-icon purple">⏳</div>
+      </div>
+      <div class="stat-card-value">${d.pending} <small>ج.م</small></div>
+      <div class="stat-card-label">أرباح معلقة</div>
+      <div class="stat-card-progress">متبقي ${d.nextPayout} زائر للدفعة التالية</div>
+    </div>
+    <div class="stat-card" onclick="loadPage('products')">
+      <div class="stat-card-header">
+        <div class="stat-card-icon orange">🔗</div>
+        <span class="stat-card-trend up">+${d.todayClicks}</span>
+      </div>
+      <div class="stat-card-value">${d.clicks.toLocaleString()}</div>
+      <div class="stat-card-label">إجمالي الزوار</div>
+    </div>`;
+}
+
+function renderTopProducts(products) {
+  const container = document.getElementById('overview-dynamic');
+  if (!container || products.length === 0) return;
+  const html = `
     <div class="section">
       <div class="section-header">
         <h3>🔥 المنتجات الأكثر طلباً</h3>
       </div>
       <div class="top-products-list">
-        ${topProducts.map((p, i) => `
+        ${products.map((p, i) => `
           <div class="top-product-item" onclick="copyProductLink('${getProductShareLink(p.url)}','${p.name}')">
             <div class="top-product-rank">#${i + 1}</div>
             <img src="${p.img}" alt="${p.name}" class="top-product-img" onerror="this.style.display='none'">
@@ -1739,17 +2055,20 @@ async function loadOverview(c) {
           </div>
         `).join('')}
       </div>
-    </div>
-    ` : ''}
+    </div>`;
+  container.insertAdjacentHTML('beforeend', html);
+}
 
-    <!-- Social Proof -->
-    ${socialProof.length > 0 ? `
+function renderSocialProof(affiliates) {
+  const container = document.getElementById('overview-dynamic');
+  if (!container || affiliates.length === 0) return;
+  const html = `
     <div class="section">
       <div class="section-header">
         <h3>🏆 أفضل الشريكاء</h3>
       </div>
       <div class="social-proof-list">
-        ${socialProof.map((a, i) => `
+        ${affiliates.map(a => `
           <div class="social-proof-item">
             <div class="social-proof-avatar">${a.name.charAt(0)}</div>
             <div class="social-proof-info">
@@ -1759,38 +2078,8 @@ async function loadOverview(c) {
           </div>
         `).join('')}
       </div>
-    </div>
-    ` : ''}
-
-    <div class="tier-progress-section">
-      <div class="section-header">
-        <h3>🏅 التقدم نحو المستوى التالي</h3>
-      </div>
-      <div class="tier-progress-card" id="tier-progress"></div>
-    </div>
-
-    <div class="chart-container">
-      <div class="chart-header">
-        <h3>📈 النقرات - آخر 7 أيام</h3>
-        <div class="live-dot"></div>
-      </div>
-      <div class="chart-area" id="chart-area"></div>
-      <div class="chart-labels" id="chart-labels"></div>
-    </div>
-
-    <div class="recent-section">
-      <div class="section-header">
-        <h3>📋 آخر الإحالات</h3>
-        <button class="btn btn-ghost btn-sm" onclick="loadPage('referrals')">عرض الكل</button>
-      </div>
-      <div id="recent-referrals"></div>
-    </div>
-  `;
-
-  loadChartData();
-  renderTierProgress();
-  loadRecentReferrals();
-  initFAB();
+    </div>`;
+  container.insertAdjacentHTML('beforeend', html);
 }
 
 // ===== INIT DARK MODE ON LOAD =====
