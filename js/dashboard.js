@@ -1292,6 +1292,14 @@ function loadSettings(c) {
           <div class="tool-icon">📥</div>
           <span>تصدير CSV</span>
         </button>
+        <button class="tool-card" onclick="printReport()">
+          <div class="tool-icon">🖨️</div>
+          <span>طباعة تقرير</span>
+        </button>
+        <button class="tool-card" onclick="showShareModal()">
+          <div class="tool-icon">📤</div>
+          <span>مشاركة الرابط</span>
+        </button>
       </div>
     </div>
 
@@ -1564,6 +1572,117 @@ async function exportToCSV() {
   } catch(e) {
     showToast('حدث خطأ في التصدير', 'error');
   }
+}
+
+function printReport() {
+  const tier = getCurrentTier();
+  const af = affiliateData || {};
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>تقرير الأرباح - ميلانو F16</title>
+      <style>
+        body { font-family: 'Cairo', Arial, sans-serif; padding: 40px; direction: rtl; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #10b981; padding-bottom: 20px; }
+        .header h1 { color: #10b981; margin: 0; }
+        .header p { color: #666; margin-top: 8px; }
+        .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 30px 0; }
+        .stat-box { border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #10b981; }
+        .stat-label { color: #666; margin-top: 5px; }
+        .footer { text-align: center; margin-top: 40px; color: #999; font-size: 12px; }
+        @media print { body { padding: 20px; } }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>ميلانو F16 - تقرير الأرباح</h1>
+        <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
+      </div>
+      <div class="stats">
+        <div class="stat-box">
+          <div class="stat-value">${af.totalEarnings || 0} ج.م</div>
+          <div class="stat-label">إجمالي الأرباح</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${af.referralsCount || 0}</div>
+          <div class="stat-label">عدد الإحالات</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${af.totalClicks || 0}</div>
+          <div class="stat-label">إجمالي الزوار</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">${tier.emoji} ${tier.name}</div>
+          <div class="stat-label">المستوى الحالي (${tier.commission}%)</div>
+        </div>
+      </div>
+      <div class="footer">
+        <p>© ${new Date().getFullYear()} ميلانو F16 - جميع الحقوق محفوظة</p>
+      </div>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.print();
+}
+
+function shareToSocial(platform) {
+  const link = getShareLink();
+  const text = 'اربح المال مع ميلانو F16! انضم الآن واحصل على عمولة تصل إلى 35%';
+  const urls = {
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(text + '\n' + link)}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`,
+    twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`,
+    telegram: `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}`
+  };
+  if (urls[platform]) {
+    window.open(urls[platform], '_blank', 'width=600,height=400');
+    showToast('تم فتح نافذة المشاركة ✅');
+  }
+}
+
+function showShareModal() {
+  const modal = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <div class="share-modal">
+      <h3>📤 مشاركة رابط الإحالة</h3>
+      <p class="share-subtitle">اختر منصة للمشاركة</p>
+      <div class="share-grid">
+        <button class="share-btn whatsapp" onclick="shareToSocial('whatsapp')">
+          <i class="fi fi-brands-whatsapp"></i>
+          <span>واتساب</span>
+        </button>
+        <button class="share-btn facebook" onclick="shareToSocial('facebook')">
+          <i class="fi fi-brands-facebook"></i>
+          <span>فيسبوك</span>
+        </button>
+        <button class="share-btn twitter" onclick="shareToSocial('twitter')">
+          <i class="fi fi-brands-twitter"></i>
+          <span>تويتر</span>
+        </button>
+        <button class="share-btn telegram" onclick="shareToSocial('telegram')">
+          <i class="fi fi-brands-telegram"></i>
+          <span>تيليجرام</span>
+        </button>
+        <button class="share-btn linkedin" onclick="shareToSocial('linkedin')">
+          <i class="fi fi-brands-linkedin"></i>
+          <span>لينكدإن</span>
+        </button>
+        <button class="share-btn copy" onclick="copyToClipboard('${getShareLink()}')">
+          <i class="fi fi-rr-copy"></i>
+          <span>نسخ الرابط</span>
+        </button>
+      </div>
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">إغلاق</button>
+    </div>
+  `;
+  modal.classList.add('show');
 }
 
 // ===== PROFILE COMPLETION =====
