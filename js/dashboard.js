@@ -145,11 +145,19 @@ function getCurrentTier() {
 }
 
 function getShareLink() {
-  return `https://affiliate.milanof16.com/go.html?ref=${affiliateData?.referralCode}`;
+  return `https://affiliate.milanof16.com/go/${affiliateData?.referralCode}`;
 }
 
 function getProductShareLink(productUrl) {
-  return `https://affiliate.milanof16.com/go.html?ref=${affiliateData?.referralCode}&url=${encodeURIComponent(productUrl)}`;
+  return `https://affiliate.milanof16.com/go/${affiliateData?.referralCode}/${btoa(productUrl).replace(/=/g,'').substring(0,10)}`;
+}
+
+// Generate short code from URL
+function generateShortCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let code = '';
+  for(let i = 0; i < 6; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+  return code;
 }
 
 // ===== NAVIGATION =====

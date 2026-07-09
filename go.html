@@ -31,38 +31,83 @@
   <script src="js/firebase-config.js"></script>
   <script>
     async function handleRedirect() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const ref = urlParams.get('ref');
-      const productUrl = urlParams.get('url');
+      const path = window.location.pathname;
+      const parts = path.split('/go/').filter(Boolean);
 
-      // Track the click
-      if (ref) {
-        try {
-          // Find affiliate by referral code
-          const affSnap = await db.collection('affiliates').where('referralCode','==',ref).limit(1).get();
-          if (!affSnap.empty) {
-            const affDoc = affSnap.docs[0];
-            // Log the click
-            await db.collection('clicks').add({
-              affiliateId: affDoc.id,
-              referralCode: ref,
-              type: 'referral_click',
-              userAgent: navigator.userAgent,
-              createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            // Increment affiliate clicks
-            await db.collection('affiliates').doc(affDoc.id).update({
-              totalClicks: firebase.firestore.FieldValue.increment(1)
-            });
-          }
-        } catch(e) { console.error('Click tracking error:', e); }
+      if (!parts || parts.length === 0) {
+        showError('رابط غير صالح');
+        return;
       }
 
-      // Redirect to product page or main store
-      const targetUrl = productUrl || 'https://milanof16.com/ar';
+      const code = parts[0];
+      let targetUrl = 'https://milanof16.com/ar';
+
+      try {
+        // Check if it's a referral code (short, no slash)
+        if (!code.includes('/') && parts.length === 1) {
+          // It's a referral code like /go/mohmedayman5925
+          targetUrl = 'https://milanof16.com/ar';
+          await trackReferralClick(code);
+        }
+        // Check if it's a product link like /go/mohmedayman5925/abc123
+        else if (parts.length >= 2) {
+          const refCode = parts[0];
+          const encodedUrl = parts[1];
+          // Try to decode the product URL
+          try {
+            const decoded = atob(encodedUrl + '==');
+            if (decoded.startsWith('http')) {
+              targetUrl = decoded;
+            }
+          } catch(e) {
+            // If decode fails, just use ref code
+            targetUrl = 'https://milanof16.com/ar';
+          }
+          await trackReferralClick(refCode);
+        }
+      } catch(e) {
+        console.error('Redirect error:', e);
+      }
+
       document.getElementById('redirect-link').href = targetUrl;
-      setTimeout(() => { window.location.href = targetUrl; }, 1500);
+      setTimeout(() => { window.location.href = targetUrl; }, 1000);
     }
+
+    async function trackReferralClick(code) {
+      try {
+        // Find affiliate by referral code
+        const affSnap = await db.collection('affiliates').where('referralCode','==',code).limit(1).get();
+        if (!affSnap.empty) {
+          const affDoc = affSnap.docs[0];
+
+          // Log the click
+          await db.collection('clicks').add({
+            affiliateId: affDoc.id,
+            referralCode: code,
+            type: 'referral_click',
+            userAgent: navigator.userAgent,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          // Increment affiliate clicks
+          await db.collection('affiliates').doc(affDoc.id).update({
+            totalClicks: firebase.firestore.FieldValue.increment(1)
+          });
+        }
+      } catch(e) {
+        console.error('Click tracking error:', e);
+      }
+    }
+
+    function showError(msg) {
+      document.body.innerHTML = `
+        <div style="text-align:center">
+          <h1 style="font-size:2rem;margin-bottom:1rem">⚠️</h1>
+          <h1>${msg}</h1>
+          <a href="/" style="color:white;margin-top:2rem;display:inline-block">العودة للرئيسية</a>
+        </div>`;
+    }
+
     handleRedirect();
   </script>
 </body>
