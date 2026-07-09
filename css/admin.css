@@ -10,7 +10,7 @@
 .icon-xl{font-style:normal!important;font-size:3rem}
 
 /* ===== ADMIN LAYOUT ===== */
-.admin-layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.admin-layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh;min-height:100dvh}
 .admin-sidebar{background:linear-gradient(180deg,#0a0e27 0%,#1a1f3a 100%);color:white;padding:1.5rem;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
 .admin-sidebar .brand{display:flex;align-items:center;gap:.6rem;font-size:1.2rem;font-weight:700;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.08)}
 .admin-sidebar .brand img{width:36px;height:36px;border-radius:10px;object-fit:cover}
@@ -27,6 +27,29 @@
 .admin-topbar h1{font-size:1.3rem;font-weight:700}
 .admin-topbar .topbar-actions{display:flex;gap:1rem;align-items:center}
 .admin-content{padding:2rem}
+
+/* ===== MESSAGING STYLES ===== */
+.msg-sidebar{max-width:300px;min-width:260px}
+.msg-aff-item{transition:all .2s}
+.msg-aff-item:active{transform:scale(.98)}
+.msg-main{min-height:400px}
+#msg-chat-area{scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+@media(max-width:768px){
+  .msg-sidebar{max-width:none;min-width:auto;border-bottom:1px solid #e0e0e0 !important;border-left:none !important;max-height:200px}
+  .admin-layout{grid-template-columns:1fr}
+  .admin-sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;z-index:100;height:auto;border-radius:16px 16px 0 0;padding:.5rem;box-shadow:0 -4px 20px rgba(0,0,0,0.2);padding-bottom:calc(.5rem + env(safe-area-inset-bottom,0px))}
+  .admin-sidebar .brand,.admin-nav-section,.admin-nav-label{display:none}
+  .admin-nav{display:flex;justify-content:space-around;gap:0}
+  .admin-nav a{flex-direction:column;font-size:.6rem;padding:.5rem;margin:0;gap:.2rem;min-width:0}
+  .admin-nav .badge-count{position:absolute;top:2px;right:2px;min-width:16px;text-align:center;padding:.1rem .3rem;font-size:.55rem}
+  .admin-main{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+  .admin-content{padding:1rem}
+  .admin-stats{grid-template-columns:repeat(2,1fr)}
+  .quick-actions{grid-template-columns:repeat(2,1fr)}
+  .short-link-form{flex-direction:column}
+  .admin-table{min-width:600px}
+  .table-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
 
 /* ===== ADMIN STAT CARDS ===== */
 .admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-bottom:2rem}

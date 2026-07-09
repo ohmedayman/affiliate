@@ -37,12 +37,76 @@ const BADGES = [
   {id:'share-master',name:'سيد المشاركة',desc:'شارك 50 رابط',icon:'📣',requirement:50,field:'sharesCount'},
   {id:'social-star',name:'نجم السوشيال',desc:'شارك على 3 منصات مختلفة',icon:'⭐',requirement:3,field:'platformsCount'}
 ];
+const DEFAULT_VIDEOS = [
+  {id:'v1',title:'ازاي تبدأ في برنامج العمولة',desc:'دليل المبتدئين الكامل للاستخدام',url:'https://www.youtube.com/embed/dQw4w9WgXcQ',views:0,createdAt:new Date()},
+  {id:'v2',title:'كيف تشارك على فيسبوك',desc:'أسرار المبيعات على السوشيال ميديا',url:'https://www.youtube.com/embed/dQw4w9WgXcQ',views:0,createdAt:new Date()},
+  {id:'v3',title:'واتساب كورس تسويق',desc:'ازاي تستخدم واتساب في البيع',url:'https://www.youtube.com/embed/dQw4w9WgXcQ',views:0,createdAt:new Date()},
+  {id:'v4',title:'بناء استراتيجية تسويقية',desc:'خطط تسويق احترافية',url:'https://www.youtube.com/embed/dQw4w9WgXcQ',views:0,createdAt:new Date()},
+];
 
+// ===== FIREBASE REALTIME LISTENERS =====
+let unsubscribers = [];
+function setupRealtimeListeners() {
+  unsubscribers.forEach(u => { try{u()}catch(e){} });
+  unsubscribers = [];
+
+  // Listen to affiliate data changes
+  const affUnsub = db.collection('affiliates').doc(currentUser.uid).onSnapshot(doc => {
+    if (doc.exists) {
+      affiliateData = doc.data();
+      updateUserUI();
+      if (currentPage === 'overview') loadPage('overview');
+    }
+  }, e => console.error('Affiliate listener error:', e));
+  unsubscribers.push(affUnsub);
+
+  // Listen to notifications
+  const notifUnsub = db.collection('notifications').where('affiliateId','==',currentUser.uid).orderBy('createdAt','desc').limit(50).onSnapshot(snap => {
+    let unread = 0;
+    snap.forEach(d => { if (!d.data().read) unread++; });
+    document.getElementById('notif-count').textContent = unread > 0 ? unread : '';
+    document.getElementById('notif-count').style.display = unread > 0 ? 'inline' : 'none';
+  }, e => console.error('Notifications listener error:', e));
+  unsubscribers.push(notifUnsub);
+
+  // Listen to messages
+  const chatUnsub = db.collection('messages').where('affiliateId','==',currentUser.uid).orderBy('createdAt','asc').onSnapshot(snap => {
+    if (currentPage === 'chat') renderChatMessages(snap);
+  }, e => console.error('Chat listener error:', e));
+  unsubscribers.push(chatUnsub);
+
+  // Listen to videos
+  const vidUnsub = db.collection('videos').orderBy('createdAt','desc').onSnapshot(snap => {
+    if (currentPage === 'videos') renderVideos(snap);
+  }, e => console.error('Videos listener error:', e));
+  unsubscribers.push(vidUnsub);
+
+  // Listen to conversions for live stats
+  const convUnsub = db.collection('conversions').where('affiliateId','==',currentUser.uid).onSnapshot(snap => {
+    let earnings = 0, conversions = 0;
+    snap.forEach(d => { earnings += d.data().commission||0; conversions++; });
+    if (currentPage === 'overview') updateOverviewStats(conversions, earnings);
+  }, e => console.error('Conversions listener error:', e));
+  unsubscribers.push(convUnsub);
+}
+
+function updateOverviewStats(conversions, earnings) {
+  const earningsEl = document.querySelector('.stat-value.earnings');
+  const convEl = document.querySelector('.stat-value.conversions');
+  if (earningsEl) earningsEl.textContent = earnings + ' ج.م';
+  if (convEl) convEl.textContent = conversions;
+}
+
+// ===== AUTH =====
 auth.onAuthStateChanged(async (user) => {
   if (!user) { window.location.href = 'auth.html'; return; }
   currentUser = user;
   await loadAffiliateData();
+  setupRealtimeListeners();
   loadPage('overview');
+  setupPullToRefresh();
+  setupGestures();
+  registerServiceWorker();
 });
 
 async function loadAffiliateData() {
@@ -62,11 +126,15 @@ async function loadAffiliateData() {
 
 function updateUserUI() {
   if (!affiliateData) return;
-  document.getElementById('user-name').textContent = affiliateData.name;
-  document.getElementById('user-avatar').textContent = affiliateData.name.charAt(0);
+  const nameEl = document.getElementById('user-name');
+  const avatarEl = document.getElementById('user-avatar');
+  const tierEl = document.getElementById('user-tier');
+  const refEl = document.getElementById('ref-count');
+  if (nameEl) nameEl.textContent = affiliateData.name;
+  if (avatarEl) avatarEl.textContent = affiliateData.name.charAt(0);
   const tier = getCurrentTier();
-  document.getElementById('user-tier').textContent = tier.emoji + ' ' + tier.name;
-  document.getElementById('ref-count').textContent = affiliateData.referralsCount || 0;
+  if (tierEl) tierEl.textContent = tier.emoji + ' ' + tier.name;
+  if (refEl) refEl.textContent = affiliateData.referralsCount || 0;
 }
 
 function getCurrentTier() {
@@ -85,15 +153,28 @@ document.querySelectorAll('.sidebar-nav a').forEach(link => {
   link.addEventListener('click', (e) => {
     e.preventDefault();
     const page = link.dataset.page;
-    if (page) { loadPage(page); document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active')); link.classList.add('active'); }
+    if (page) {
+      loadPage(page);
+      document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+      // Close mobile nav
+      document.querySelector('.sidebar').classList.remove('mobile-open');
+    }
   });
 });
 
 function loadPage(page) {
   currentPage = page;
   const content = document.getElementById('page-content');
-  const loaders = {overview:loadOverview,referrals:loadReferrals,products:loadProducts,leaderboard:loadLeaderboard,payouts:loadPayouts,coupons:loadCoupons,marketing:loadMarketing,badges:loadBadges,training:loadTraining,notifications:loadNotifications,settings:loadSettings};
-  if (loaders[page]) loaders[page](content);
+  content.style.opacity = '0';
+  content.style.transform = 'translateY(10px)';
+  setTimeout(() => {
+    const loaders = {overview:loadOverview,referrals:loadReferrals,products:loadProducts,leaderboard:loadLeaderboard,payouts:loadPayouts,coupons:loadCoupons,marketing:loadMarketing,badges:loadBadges,training:loadTraining,videos:loadVideos,chat:loadChat,notifications:loadNotifications,settings:loadSettings};
+    if (loaders[page]) loaders[page](content);
+    content.style.transition = 'all 0.3s ease';
+    content.style.opacity = '1';
+    content.style.transform = 'translateY(0)';
+  }, 150);
 }
 
 // ===== OVERVIEW =====
@@ -110,36 +191,60 @@ async function loadOverview(c) {
     convSnap.forEach(d => { earnings += d.data().commission||0; });
   } catch(e){}
 
-  // Chart data (last 7 days)
   const chartData = await getChartData(7);
 
   c.innerHTML = `
-    <div class="page-header"><div><h1>مرحباً ${affiliateData?.name||''} 👋</h1><p class="subtitle">إليك ملخص أرباحك اليوم</p></div></div>
+    <div class="page-header">
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <div class="live-dot"></div>
+        <div><h1>مرحباً ${affiliateData?.name||''} 👋</h1><p class="subtitle">إليك ملخص أرباحك - بيانات مباشرة</p></div>
+      </div>
+    </div>
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-bg">💰</div><div class="stat-header"><div class="stat-icon green">💰</div><span class="stat-change up">+12%</span></div><div class="stat-value">${affiliateData?.totalEarnings||0} ج.م</div><div class="stat-label">إجمالي الأرباح</div></div>
-      <div class="stat-card"><div class="stat-bg">👥</div><div class="stat-header"><div class="stat-icon blue">👥</div><span class="stat-change up">+${affiliateData?.referralsCount||0}</span></div><div class="stat-value">${affiliateData?.referralsCount||0}</div><div class="stat-label">إجمالي الإحالات</div></div>
-      <div class="stat-card"><div class="stat-bg">⏳</div><div class="stat-header"><div class="stat-icon orange">⏳</div></div><div class="stat-value">${affiliateData?.pendingPayout||0} ج.م</div><div class="stat-label">أرباح معلقة</div></div>
-      <div class="stat-card"><div class="stat-bg">🔗</div><div class="stat-header"><div class="stat-icon purple">🔗</div><span class="stat-change up">+${todayClicks}</span></div><div class="stat-value">${clicks}</div><div class="stat-label">إجمالي النقرات</div></div>
+      <div class="stat-card touch-feedback" onclick="loadPage('payouts')">
+        <div class="stat-bg">💰</div>
+        <div class="stat-header"><div class="stat-icon green">💰</div><span class="stat-change up">+12%</span></div>
+        <div class="stat-value earnings">${affiliateData?.totalEarnings||0} ج.م</div>
+        <div class="stat-label">إجمالي الأرباح</div>
+      </div>
+      <div class="stat-card touch-feedback" onclick="loadPage('referrals')">
+        <div class="stat-bg">👥</div>
+        <div class="stat-header"><div class="stat-icon blue">👥</div><span class="stat-change up">+${affiliateData?.referralsCount||0}</span></div>
+        <div class="stat-value conversions">${affiliateData?.referralsCount||0}</div>
+        <div class="stat-label">إجمالي الإحالات</div>
+      </div>
+      <div class="stat-card touch-feedback" onclick="loadPage('payouts')">
+        <div class="stat-bg">⏳</div>
+        <div class="stat-header"><div class="stat-icon orange">⏳</div></div>
+        <div class="stat-value">${affiliateData?.pendingPayout||0} ج.م</div>
+        <div class="stat-label">أرباح معلقة</div>
+      </div>
+      <div class="stat-card touch-feedback" onclick="loadPage('referrals')">
+        <div class="stat-bg">🔗</div>
+        <div class="stat-header"><div class="stat-icon purple">🔗</div><span class="stat-change up">+${todayClicks}</span></div>
+        <div class="stat-value">${clicks}</div>
+        <div class="stat-label">إجمالي النقرات</div>
+      </div>
     </div>
     <div class="referral-box">
       <div class="referral-label">🔗 رابط الإحالة:</div>
-      <input type="text" id="referral-link" readonly value="${shareLink}">
+      <input type="text" id="referral-link" readonly value="${shareLink}" onclick="this.select()">
       <div class="share-buttons">
-        <button class="share-btn whatsapp" onclick="shareWhatsApp()" title="واتساب">💬</button>
-        <button class="share-btn facebook" onclick="shareFacebook()" title="فيسبوك">📘</button>
-        <button class="share-btn telegram" onclick="shareTelegram()" title="تيليجرام">✈️</button>
-        <button class="share-btn twitter" onclick="shareTwitter()" title="تويتر">🐦</button>
-        <button class="share-btn copy" onclick="copyLink()" title="نسخ">📋</button>
+        <button class="share-btn whatsapp touch-feedback" onclick="shareWhatsApp()" title="واتساب">💬</button>
+        <button class="share-btn facebook touch-feedback" onclick="shareFacebook()" title="فيسبوك">📘</button>
+        <button class="share-btn telegram touch-feedback" onclick="shareTelegram()" title="تيليجرام">✈️</button>
+        <button class="share-btn twitter touch-feedback" onclick="shareTwitter()" title="تويتر">🐦</button>
+        <button class="share-btn copy touch-feedback" onclick="copyLink()" title="نسخ">📋</button>
       </div>
     </div>
     <div class="chart-container">
-      <div class="chart-header"><h3>📈 النقرات - آخر 7 أيام</h3></div>
+      <div class="chart-header"><h3>📈 النقرات - آخر 7 أيام</h3><div class="live-dot"></div></div>
       <div class="chart-area" id="chart-area"></div>
       <div class="chart-labels" id="chart-labels"></div>
     </div>
     <div class="two-col">
       <div class="table-container">
-        <div class="table-header"><h2>آخر الإحالات</h2></div>
+        <div class="table-header"><h2>آخر الإحالات</h2><div class="live-dot"></div></div>
         <div class="table-wrapper"><table><thead><tr><th>التاريخ</th><th>العميل</th><th>الحالة</th><th>العمولة</th></tr></thead><tbody id="recent-referrals"></tbody></table></div>
       </div>
       <div class="table-container">
@@ -203,7 +308,7 @@ async function loadRecentReferrals() {
 
 // ===== REFERRALS =====
 async function loadReferrals(c) {
-  c.innerHTML = `<div class="page-header"><h1>👥 الإحالات</h1></div><div class="referral-box"><div class="referral-label">🔗 رابط الإحالة:</div><input type="text" id="referral-link" readonly value="${getShareLink()}"><div class="share-buttons"><button class="share-btn whatsapp" onclick="shareWhatsApp()">💬</button><button class="share-btn facebook" onclick="shareFacebook()">📘</button><button class="share-btn copy" onclick="copyLink()">📋</button></div></div><div class="table-container"><div class="table-header"><h2>كل الإحالات</h2></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>التاريخ</th><th>العميل</th><th>المنتج</th><th>الحالة</th><th>العمولة</th></tr></thead><tbody id="all-referrals"><tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-secondary)">جاري التحميل...</td></tr></tbody></table></div></div>`;
+  c.innerHTML = `<div class="page-header"><h1>👥 الإحالات</h1></div><div class="referral-box"><div class="referral-label">🔗 رابط الإحالة:</div><input type="text" id="referral-link" readonly value="${getShareLink()}" onclick="this.select()"><div class="share-buttons"><button class="share-btn whatsapp touch-feedback" onclick="shareWhatsApp()">💬</button><button class="share-btn facebook touch-feedback" onclick="shareFacebook()">📘</button><button class="share-btn copy touch-feedback" onclick="copyLink()">📋</button></div></div><div class="table-container"><div class="table-header"><h2>كل الإحالات</h2><div class="live-dot"></div></div><div class="table-wrapper"><table><thead><tr><th>#</th><th>التاريخ</th><th>العميل</th><th>المنتج</th><th>الحالة</th><th>العمولة</th></tr></thead><tbody id="all-referrals"><tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-secondary)">جاري التحميل...</td></tr></tbody></table></div></div>`;
   try {
     const snap = await db.collection('conversions').where('affiliateId','==',currentUser.uid).orderBy('createdAt','desc').get();
     const tbody = document.getElementById('all-referrals');
@@ -216,24 +321,24 @@ async function loadReferrals(c) {
 
 // ===== PRODUCTS =====
 function loadProducts(c) {
-  c.innerHTML = `<div class="page-header"><div><h1>📦 المنتجات</h1><p class="subtitle">شارك المنتجات واحصل على عمولة 5% من كل عملية بيع</p></div></div><div class="products-grid">${PRODUCTS.map(p => `<div class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="${p.img}" alt="${p.name}" style="max-height:170px;object-fit:contain;border-radius:8px" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\\'font-size:4rem\\'>📦</div>'"></div><div class="product-info"><h3>${p.name}</h3><div class="product-sku">SKU: ${p.sku}</div><div class="product-price">${p.price} ج.م</div><div class="product-commission">عمولتك: ${p.commission} ج.م (5%)</div><div class="product-actions"><button class="btn btn-primary btn-sm" onclick="shareProduct('${p.name}',${p.price},'${p.url}')">مشاركة</button><a href="${p.url}" target="_blank" class="btn btn-ghost btn-sm">عرض</a></div></div></div>`).join('')}</div>`;
+  c.innerHTML = `<div class="page-header"><div><h1>📦 المنتجات</h1><p class="subtitle">شارك المنتجات واحصل على عمولة 5% من كل عملية بيع</p></div></div><div class="products-grid">${PRODUCTS.map(p => `<div class="product-card touch-feedback"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem;border-radius:var(--radius-sm)"><img src="${p.img}" alt="${p.name}" style="max-height:170px;object-fit:contain;border-radius:8px" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\\'font-size:4rem\\'>📦</div>'"></div><div class="product-info"><h3>${p.name}</h3><div class="product-sku">SKU: ${p.sku}</div><div class="product-price">${p.price} ج.م</div><div class="product-commission">عمولتك: ${p.commission} ج.م (5%)</div><div class="product-actions"><button class="btn btn-primary btn-sm" onclick="shareProduct('${p.name}',${p.price},'${p.url}')">مشاركة</button><a href="${p.url}" target="_blank" class="btn btn-ghost btn-sm">عرض</a></div></div></div>`).join('')}</div>`;
 }
 
 // ===== LEADERBOARD =====
 async function loadLeaderboard(c) {
-  c.innerHTML = `<div class="page-header"><h1>🏆 الترتيب</h1></div><div class="leaderboard-list" id="leaderboard-list"><div style="text-align:center;padding:3rem;color:var(--text-secondary)"><div class="spinner spinner-dark"></div></div></div>`;
+  c.innerHTML = `<div class="page-header"><h1>🏆 الترتيب</h1><div class="live-dot"></div></div><div class="leaderboard-list" id="leaderboard-list"><div style="text-align:center;padding:3rem;color:var(--text-secondary)"><div class="spinner spinner-dark"></div></div></div>`;
   try {
     const snap = await db.collection('affiliates').orderBy('totalEarnings','desc').limit(20).get();
     const list = document.getElementById('leaderboard-list');
     let html = '', rank = 1;
-    snap.forEach(doc => { const d = doc.data(); const topClass = rank<=3?`top-${rank}`:''; const rc = rank===1?'rank-gold':rank===2?'rank-silver':rank===3?'rank-bronze':'rank-default'; const tier = (() => { let t = TIERS[0]; for(const tt of TIERS){if(d.referralsCount>=tt.min)t=tt;} return t; })(); html += `<div class="leaderboard-item ${topClass}"><div class="leaderboard-rank ${rc}">${rank<=3?['🥇','🥈','🥉'][rank-1]:rank}</div><div class="leaderboard-info"><div class="leaderboard-name">${d.name}</div><div class="leaderboard-tier">${tier.emoji} ${tier.name} • ${d.referralsCount||0} إحالة</div></div><div class="leaderboard-earnings">${d.totalEarnings||0} ج.م</div></div>`; rank++; });
+    snap.forEach(doc => { const d = doc.data(); const topClass = rank<=3?`top-${rank}`:''; const rc = rank===1?'rank-gold':rank===2?'rank-silver':rank===3?'rank-bronze':'rank-default'; const tier = (() => { let t = TIERS[0]; for(const tt of TIERS){if(d.referralsCount>=tt.min)t=tt;} return t; })(); html += `<div class="leaderboard-item ${topClass} touch-feedback"><div class="leaderboard-rank ${rc}">${rank<=3?['🥇','🥈','🥉'][rank-1]:rank}</div><div class="leaderboard-info"><div class="leaderboard-name">${d.name}</div><div class="leaderboard-tier">${tier.emoji} ${tier.name} • ${d.referralsCount||0} إحالة</div></div><div class="leaderboard-earnings">${d.totalEarnings||0} ج.م</div></div>`; rank++; });
     list.innerHTML = html || '<div style="text-align:center;padding:3rem;color:var(--text-secondary)">لا يوجد شركاء بعد</div>';
   } catch(e) {}
 }
 
 // ===== PAYOUTS =====
 async function loadPayouts(c) {
-  c.innerHTML = `<div class="page-header"><h1>💰 المدفوعات</h1><button class="btn btn-primary" onclick="requestPayout()">طلب سحب أرباح</button></div><div class="payout-summary"><div class="payout-card"><div class="amount" style="color:var(--primary)">${affiliateData?.totalEarnings||0}</div><div class="label">إجمالي الأرباح (ج.م)</div></div><div class="payout-card"><div class="amount" style="color:var(--warning)">${affiliateData?.pendingPayout||0}</div><div class="label">أرباح معلقة (ج.م)</div></div><div class="payout-card"><div class="amount" style="color:var(--success)">${affiliateData?.paidPayout||0}</div><div class="label">تم دفعها (ج.م)</div></div></div><div class="table-container"><div class="table-header"><h2>سجل المدفوعات</h2></div><div class="table-wrapper"><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>طريقة الدفع</th><th>الحالة</th></tr></thead><tbody id="payouts-table"><tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-secondary)">لا توجد مدفوعات بعد</td></tr></tbody></table></div></div>`;
+  c.innerHTML = `<div class="page-header"><h1>💰 المدفوعات</h1></div><div class="payout-summary"><div class="payout-card"><div class="amount" style="color:var(--primary)">${affiliateData?.totalEarnings||0}</div><div class="label">إجمالي الأرباح (ج.م)</div></div><div class="payout-card"><div class="amount" style="color:var(--warning)">${affiliateData?.pendingPayout||0}</div><div class="label">أرباح معلقة (ج.م)</div></div><div class="payout-card"><div class="amount" style="color:var(--success)">${affiliateData?.paidPayout||0}</div><div class="label">تم دفعها (ج.م)</div></div></div><button class="btn btn-primary btn-block" onclick="requestPayout()" style="margin-bottom:1.2rem">💸 طلب سحب أرباح</button><div class="table-container"><div class="table-header"><h2>سجل المدفوعات</h2><div class="live-dot"></div></div><div class="table-wrapper"><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>طريقة الدفع</th><th>الحالة</th></tr></thead><tbody id="payouts-table"><tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-secondary)">لا توجد مدفوعات بعد</td></tr></tbody></table></div></div>`;
   try {
     const snap = await db.collection('payouts').where('affiliateId','==',currentUser.uid).orderBy('createdAt','desc').get();
     if (!snap.empty) { const tbody = document.getElementById('payouts-table'); let html = ''; snap.forEach(doc => { const d = doc.data(); const date = d.createdAt?.toDate().toLocaleDateString('ar-EG')||'-'; const sc = d.status==='paid'?'status-paid':'status-pending'; const st = d.status==='paid'?'تم الدفع':'قيد المعالجة'; html += `<tr><td>${date}</td><td>${d.amount} ج.م</td><td>${d.method||'فودافون كاش'}</td><td><span class="status-badge ${sc}">${st}</span></td></tr>`; }); tbody.innerHTML = html; }
@@ -254,59 +359,291 @@ function loadMarketing(c) {
     {title:'منشور فيسبوك',icon:'📘',text:`🛡️ ميلانو F16 - مش هتلاقي منتج أقوى من كده للقضاء على الصراصير والبق والنمل!\n\n📦 شحن مجاني\n💰 أسعار تبدأ من 20 جنيه\n🔒 منتجات أصلية\n\n🛒 اطلب من هنا:\n${link}`,class:'facebook'},
     {title:'رسالة تيليجرام',icon:'✈️',text:`🪳 عايز تخلص من الحشرات نهائياً؟\n\nميلانو F16 - المبيد الأقوى في مصر!\n\n📦 شحن مجاني | 💰 أسعار من 20 ج.م\n\n🔗 ${link}`,class:'telegram'},
   ];
-  c.innerHTML = `<div class="page-header"><h1>📣 مواد تسويقية</h1></div><p style="color:var(--text-secondary);margin-bottom:2rem">استخدم الرسائل دي في مشاركة المنتجات. كل رسالة جاهزة للنسخ والمشاركة!</p>${messages.map(m => `<div class="table-container" style="margin-bottom:1rem"><div class="table-header"><h2>${m.icon} ${m.title}</h2><button class="btn btn-sm btn-primary" onclick="copyText(this)" data-text="${encodeURIComponent(m.text)}">📋 نسخ</button></div><div style="padding:1.5rem;white-space:pre-line;color:var(--text-secondary);font-size:.9rem;line-height:1.8">${m.text}</div></div>`).join('')}<div class="table-container"><div class="table-header"><h2>🔗 روابط مباشرة للمنتجات</h2></div><div style="padding:1.5rem">${PRODUCTS.map(p => `<div style="display:flex;justify-content:space-between;align-items:center;padding:.8rem 0;border-bottom:1px solid var(--border)"><span>${p.emoji} ${p.name}</span><button class="btn btn-sm btn-ghost" onclick="copyText(this)" data-text="${encodeURIComponent(link)}">نسخ الرابط</button></div>`).join('')}</div></div>`;
+  c.innerHTML = `<div class="page-header"><h1>📣 مواد تسويقية</h1></div><p style="color:var(--text-secondary);margin-bottom:1.5rem">استخدم الرسائل دي في مشاركة المنتجات. كل رسالة جاهزة للنسخ والمشاركة!</p>${messages.map(m => `<div class="table-container" style="margin-bottom:1rem"><div class="table-header"><h2>${m.icon} ${m.title}</h2><button class="btn btn-sm btn-primary touch-feedback" onclick="copyText(this)" data-text="${encodeURIComponent(m.text)}">📋 نسخ</button></div><div style="padding:1.5rem;white-space:pre-line;color:var(--text-secondary);font-size:.9rem;line-height:1.8">${m.text}</div></div>`).join('')}<div class="table-container"><div class="table-header"><h2>🔗 روابط مباشرة للمنتجات</h2></div><div style="padding:1rem">${PRODUCTS.map(p => `<div style="display:flex;justify-content:space-between;align-items:center;padding:.8rem 0;border-bottom:1px solid var(--border)"><span style="font-size:.85rem">${p.name}</span><button class="btn btn-sm btn-ghost touch-feedback" onclick="copyText(this)" data-text="${encodeURIComponent(link)}">نسخ</button></div>`).join('')}</div></div>`;
 }
 
 // ===== BADGES =====
 function loadBadges(c) {
   const count = affiliateData?.referralsCount||0;
   const earnings = affiliateData?.totalEarnings||0;
-  c.innerHTML = `<div class="page-header"><h1>🏅 الشارات والإنجازات</h1></div><div class="badges-grid">${BADGES.map(b => { let progress = 0; if (b.field==='referralsCount') progress = count; else if (b.field==='totalEarnings') progress = earnings; else if (b.field==='rank') progress = 0; else progress = 0; const earned = progress >= b.requirement; const pct = Math.min((progress/b.requirement)*100,100); return `<div class="badge-card ${earned?'earned':'locked'}"><div class="badge-icon">${b.icon}</div><div class="badge-name">${b.name}</div><div class="badge-desc">${b.desc}</div><div class="badge-progress"><div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%"></div></div><p style="font-size:.7rem;color:var(--text-secondary);margin-top:.3rem">${earned?'تم الإنجاز ✅':`${progress}/${b.requirement}`}</p></div></div>`; }).join('')}</div>`;
+  c.innerHTML = `<div class="page-header"><h1>🏅 الشارات والإنجازات</h1></div><div class="badges-grid">${BADGES.map(b => { let progress = 0; if (b.field==='referralsCount') progress = count; else if (b.field==='totalEarnings') progress = earnings; else if (b.field==='rank') progress = 0; else progress = 0; const earned = progress >= b.requirement; const pct = Math.min((progress/b.requirement)*100,100); return `<div class="badge-card ${earned?'earned':'locked'} touch-feedback"><div class="badge-icon">${b.icon}</div><div class="badge-name">${b.name}</div><div class="badge-desc">${b.desc}</div><div class="badge-progress"><div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%"></div></div><p style="font-size:.7rem;color:var(--text-secondary);margin-top:.3rem">${earned?'تم الإنجاز ✅':`${progress}/${b.requirement}`}</p></div></div>`; }).join('')}</div>`;
 }
 
 // ===== TRAINING =====
 function loadTraining(c) {
-  const lessons = [
-    {title:'ازاي تبدأ في برنامج العمولة',desc:'دليل المبتدئين للاستخدام',icon:'📚',time:'5 دقائق',level:'مبتدئ'},
-    {title:'كيف تشارك على فيسبوك',desc:'أسرار المبيعات على السوشيال ميديا',icon:'📘',time:'8 دقائق',level:'متوسط'},
-    {title:'واتساب كورس تسويق',desc:'ازاي تستخدم واتساب في البيع',icon:'💬',time:'10 دقائق',level:'متوسط'},
-    {title:'بناء استراتيجية تسويقية',desc:'خطط تسويق احترافية',icon:'🎯',time:'15 دقيقة',level:'متقدم'},
-    {title:'تحسين معدلات التحويل',desc:'ازاي تزود مبيعاتك',icon:'📈',time:'12 دقيقة',level:'متقدم'},
-    {title:'التعامل مع العملاء',desc:'فن إتمام عملية البيع',icon:'🤝',time:'7 دقائق',level:'متوسط'},
-  ];
-  c.innerHTML = `<div class="page-header"><h1>📚 التدريب والتطوير</h1></div><div class="training-grid">${lessons.map(l => `<div class="training-card"><div class="training-thumb" style="background:var(--primary-light)">${l.icon}<div class="play-btn">▶</div></div><div class="training-info"><h3>${l.title}</h3><p>${l.desc}</p><div class="training-meta"><span>⏱️ ${l.time}</span><span>📊 ${l.level}</span></div></div></div>`).join('')}</div>`;
+  c.innerHTML = `<div class="page-header"><h1>📚 التدريب والتطوير</h1></div><p style="color:var(--text-secondary);margin-bottom:1.5rem">شوف الفيديوهات التعليمية عشان تزود مبيعاتك!</p><div class="training-grid" id="training-grid"><div style="text-align:center;padding:3rem"><div class="spinner spinner-dark"></div></div></div>`;
+  loadTrainingVideos();
+}
+
+async function loadTrainingVideos() {
+  const grid = document.getElementById('training-grid');
+  if (!grid) return;
+  try {
+    const snap = await db.collection('videos').orderBy('createdAt','desc').get();
+    if (snap.empty) {
+      grid.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text-secondary)"><div style="font-size:3rem;margin-bottom:1rem">📚</div><p>لا توجد فيديوهات بعد. راجع تاني بعدين!</p></div>`;
+      return;
+    }
+    let html = '';
+    snap.forEach(doc => {
+      const v = doc.data();
+      const embedUrl = convertToEmbedUrl(v.url);
+      html += `<div class="training-card touch-feedback">
+        <div class="training-thumb" style="background:#000">
+          <iframe src="${embedUrl}" frameborder="0" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div class="training-info">
+          <h3>${v.title}</h3>
+          <p>${v.desc||''}</p>
+          <div class="training-meta">
+            <span>👁️ ${v.views||0} مشاهدة</span>
+            <span>📅 ${v.createdAt?.toDate?.()?.toLocaleDateString('ar-EG')||''}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+    grid.innerHTML = html;
+  } catch(e) {
+    grid.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text-secondary)">خطأ في تحميل الفيديوهات</div>`;
+  }
+}
+
+function convertToEmbedUrl(url) {
+  if (!url) return '';
+  if (url.includes('/embed/')) return url;
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+  const fbMatch = url.match(/facebook\.com.*\/videos\/(\d+)/);
+  if (fbMatch) return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}`;
+  return url;
+}
+
+// ===== VIDEOS (standalone page) =====
+function loadVideos(c) {
+  c.innerHTML = `<div class="page-header"><h1>🎬 الفيديوهات التعليمية</h1></div><p style="color:var(--text-secondary);margin-bottom:1.5rem">شوف الفيديوهات التعليمية عشان تlearn أزاي تبيع أكتر!</p><div class="video-grid" id="video-grid"><div style="text-align:center;padding:3rem"><div class="spinner spinner-dark"></div></div></div>`;
+  loadVideosGrid();
+}
+
+async function loadVideosGrid() {
+  const grid = document.getElementById('video-grid');
+  if (!grid) return;
+  try {
+    const snap = await db.collection('videos').orderBy('createdAt','desc').get();
+    if (snap.empty) {
+      grid.innerHTML = DEFAULT_VIDEOS.map(v => {
+        const embedUrl = convertToEmbedUrl(v.url);
+        return `<div class="video-card touch-feedback">
+          <div class="video-thumb">
+            <iframe src="${embedUrl}" frameborder="0" allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div class="video-info">
+            <h3>${v.title}</h3>
+            <p>${v.desc}</p>
+            <div class="video-meta"><span>👁️ 0 مشاهدة</span></div>
+          </div>
+        </div>`;
+      }).join('');
+      return;
+    }
+    let html = '';
+    snap.forEach(doc => {
+      const v = doc.data();
+      const embedUrl = convertToEmbedUrl(v.url);
+      html += `<div class="video-card touch-feedback">
+        <div class="video-thumb">
+          <iframe src="${embedUrl}" frameborder="0" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div class="video-info">
+          <h3>${v.title}</h3>
+          <p>${v.desc||''}</p>
+          <div class="video-meta">
+            <span>👁️ ${v.views||0} مشاهدة</span>
+            <span>📅 ${v.createdAt?.toDate?.()?.toLocaleDateString('ar-EG')||''}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+    grid.innerHTML = html;
+  } catch(e) {
+    grid.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text-secondary)">خطأ في تحميل الفيديوهات</div>`;
+  }
+}
+
+function renderVideos(snap) {
+  const grid = document.getElementById('video-grid');
+  if (!grid) return;
+  if (snap.empty) {
+    grid.innerHTML = DEFAULT_VIDEOS.map(v => {
+      const embedUrl = convertToEmbedUrl(v.url);
+      return `<div class="video-card touch-feedback">
+        <div class="video-thumb">
+          <iframe src="${embedUrl}" frameborder="0" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div class="video-info">
+          <h3>${v.title}</h3>
+          <p>${v.desc}</p>
+          <div class="video-meta"><span>👁️ 0 مشاهدة</span></div>
+        </div>
+      </div>`;
+    }).join('');
+    return;
+  }
+  let html = '';
+  snap.forEach(doc => {
+    const v = doc.data();
+    const embedUrl = convertToEmbedUrl(v.url);
+    html += `<div class="video-card touch-feedback">
+      <div class="video-thumb">
+        <iframe src="${embedUrl}" frameborder="0" allowfullscreen loading="lazy"></iframe>
+      </div>
+      <div class="video-info">
+        <h3>${v.title}</h3>
+        <p>${v.desc||''}</p>
+        <div class="video-meta">
+          <span>👁️ ${v.views||0} مشاهدة</span>
+          <span>📅 ${v.createdAt?.toDate?.()?.toLocaleDateString('ar-EG')||''}</span>
+        </div>
+      </div>
+    </div>`;
+  });
+  grid.innerHTML = html;
+}
+
+// ===== CHAT / MESSAGING =====
+let chatUnsubRealtime = null;
+
+function loadChat(c) {
+  c.innerHTML = `<div class="page-header"><h1>💬 الرسائل</h1><div style="display:flex;align-items:center;gap:.5rem"><div class="live-dot"></div><span style="font-size:.8rem;color:var(--text-secondary)">متصل</span></div></div><div class="chat-container"><div class="chat-messages" id="chat-messages"><div style="text-align:center;padding:2rem;color:var(--text-secondary)"><p>ابعت رسالة للأدمن وهرد عليك!</p></div></div><div class="chat-input-area"><textarea id="chat-input" placeholder="اكتب رسالتك هنا..." rows="1" oninput="autoResizeTextarea(this)" onkeydown="handleChatKeydown(event)"></textarea><button class="chat-send-btn" onclick="sendChatMessage()" id="chat-send">📤</button></div></div>`;
+  setupChatListener();
+  setupRealtimeChat();
+}
+
+function setupChatListener() {
+  if (chatUnsubRealtime) { try{chatUnsubRealtime()}catch(e){} }
+  chatUnsubRealtime = db.collection('messages').where('affiliateId','==',currentUser.uid).orderBy('createdAt','asc').onSnapshot(snap => {
+    renderChatMessages(snap);
+  }, e => console.error('Chat listener error:', e));
+  unsubscribers.push(() => { if(chatUnsubRealtime) try{chatUnsubRealtime()}catch(e){} });
+}
+
+function setupRealtimeChat() {
+  // Additional listener for real-time updates
+  db.collection('messages').where('affiliateId','==',currentUser.uid).orderBy('createdAt','desc').limit(1).onSnapshot(snap => {
+    snap.forEach(doc => {
+      const msg = doc.data();
+      if (msg.sender === 'admin') {
+        // Show notification for new admin messages
+        if (Notification.permission === 'granted') {
+          new Notification('رسالة جديدة من الإدارة', {body: msg.text, icon: LOGO_URL});
+        }
+      }
+    });
+  });
+}
+
+function renderChatMessages(snap) {
+  const container = document.getElementById('chat-messages');
+  if (!container) return;
+  if (snap.empty) {
+    container.innerHTML = `<div style="text-align:center;padding:2rem"><div style="font-size:3rem;margin-bottom:1rem">💬</div><p style="color:var(--text-secondary)">ابعت رسالة للأدمن وهرد عليك!</p><p style="font-size:.8rem;color:var(--text-secondary);margin-top:.5rem">ممكن تبعت سؤال، مشكلة، أو أي حاجة</p></div>`;
+    return;
+  }
+  let html = '';
+  snap.forEach(doc => {
+    const msg = doc.data();
+    const time = msg.createdAt?.toDate?.()?.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})||'';
+    const isSent = msg.sender === 'affiliate';
+    html += `<div class="chat-msg ${isSent?'sent':'received'}">
+      <div>${msg.text}</div>
+      <span class="msg-time">${time}</span>
+    </div>`;
+  });
+  container.innerHTML = html;
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+  try {
+    await db.collection('messages').add({
+      affiliateId: currentUser.uid,
+      affiliateName: affiliateData?.name || 'مستخدم',
+      sender: 'affiliate',
+      text: text,
+      read: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    // Add to notifications for admin
+    await db.collection('admin_notifications').add({
+      type: 'new_message',
+      affiliateId: currentUser.uid,
+      affiliateName: affiliateData?.name || 'مستخدم',
+      message: text,
+      read: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e) {
+    showToast('حدث خطأ في إرسال الرسالة', 'error');
+  }
+}
+
+function handleChatKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+}
+
+function autoResizeTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
 }
 
 // ===== NOTIFICATIONS =====
 function loadNotifications(c) {
   c.innerHTML = `<div class="page-header"><h1>🔔 الإشعارات</h1></div><div id="notifications-page"><div style="text-align:center;padding:3rem;color:var(--text-secondary)">جاري تحميل الإشعارات...</div></div>`;
   loadNotificationsList('notifications-page');
+  // Mark as read
+  setTimeout(async () => {
+    try {
+      const snap = await db.collection('notifications').where('affiliateId','==',currentUser.uid).where('read','==',false).get();
+      snap.forEach(async doc => { await doc.ref.update({read:true}); });
+    } catch(e){}
+  }, 2000);
 }
 
 async function loadNotificationsList(containerId) {
   const el = document.getElementById(containerId);
   if (!el) return;
   try {
-    const snap = await db.collection('notifications').where('affiliateId','==',currentUser.uid).orderBy('createdAt','desc').limit(20).get();
+    const snap = await db.collection('notifications').where('affiliateId','==',currentUser.uid).orderBy('createdAt','desc').limit(50).get();
     if (snap.empty) { el.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-secondary)"><div style="font-size:3rem;margin-bottom:1rem">🔔</div><p>لا توجد إشعارات بعد</p></div>'; return; }
     let html = '';
-    snap.forEach(doc => { const d = doc.data(); const time = d.createdAt?.toDate().toLocaleDateString('ar-EG')||'-'; html += `<div class="notification-item ${d.read?'':'unread'}"><div class="notification-dot" style="display:${d.read?'none':'block'}"></div><div class="notification-content"><div class="notification-text">${d.message}</div><div class="notification-time">${time}</div></div></div>`; });
+    snap.forEach(doc => { const d = doc.data(); const time = d.createdAt?.toDate()?.toLocaleDateString('ar-EG',{hour:'2-digit',minute:'2-digit'})||'-'; html += `<div class="notif-item ${d.read?'':'unread'}"><div class="notif-dot" style="display:${d.read?'none':'block'}"></div><div class="notif-content" style="flex:1"><div class="notif-text">${d.message}</div><div class="notif-time">${time}</div></div></div>`; });
     el.innerHTML = html;
   } catch(e) { el.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-secondary)">لا توجد إشعارات</div>'; }
 }
 
-function closeNotifications() { document.getElementById('notification-panel').classList.remove('active'); }
-
 // ===== SETTINGS =====
 function loadSettings(c) {
-  c.innerHTML = `<div class="page-header"><h1>⚙️ الإعدادات</h1></div><div class="two-col"><div class="table-container" style="padding:2rem"><h2 style="margin-bottom:1.5rem">تعديل البيانات</h2><form id="settings-form" onsubmit="handleUpdateProfile(event)"><div class="form-group"><label>الاسم</label><input type="text" id="settings-name" value="${affiliateData?.name||''}"></div><div class="form-group"><label>رقم الهاتف</label><input type="tel" id="settings-phone" value="${affiliateData?.phone||''}"></div><div class="form-group"><label>البريد الإلكتروني</label><input type="email" value="${affiliateData?.email||''}" disabled style="background:#f5f5f5"></div><button type="submit" class="btn btn-primary">حفظ التعديلات</button></form></div><div><div class="table-container" style="padding:2rem"><h2 style="margin-bottom:1.5rem">تغيير كلمة المرور</h2><form onsubmit="handleChangePassword(event)"><div class="form-group"><label>كلمة المرور الجديدة</label><input type="password" id="new-password" placeholder="6 أحرف على الأقل"></div><div class="form-group"><label>تأكيد كلمة المرور</label><input type="password" id="confirm-new-password"></div><button type="submit" class="btn btn-secondary">تغيير كلمة المرور</button></form></div><div style="margin-top:1.5rem"><button class="btn btn-danger" onclick="handleLogout()">🚪 تسجيل الخروج</button></div></div></div>`;
+  c.innerHTML = `<div class="page-header"><h1>⚙️ الإعدادات</h1></div><div class="two-col"><div class="table-container" style="padding:2rem"><h2 style="margin-bottom:1.5rem">📝 تعديل البيانات</h2><form id="settings-form" onsubmit="handleUpdateProfile(event)"><div class="form-group"><label>الاسم</label><input type="text" id="settings-name" value="${affiliateData?.name||''}" required></div><div class="form-group"><label>رقم الهاتف</label><input type="tel" id="settings-phone" value="${affiliateData?.phone||''}"></div><div class="form-group"><label>البريد الإلكتروني</label><input type="email" value="${affiliateData?.email||''}" disabled style="background:#f5f5f5"></div><button type="submit" class="btn btn-primary btn-block">💾 حفظ التعديلات</button></form></div><div><div class="table-container" style="padding:2rem"><h2 style="margin-bottom:1.5rem">🔒 تغيير كلمة المرور</h2><form onsubmit="handleChangePassword(event)"><div class="form-group"><label>كلمة المرور الجديدة</label><input type="password" id="new-password" placeholder="6 أحرف على الأقل" required></div><div class="form-group"><label>تأكيد كلمة المرور</label><input type="password" id="confirm-new-password" required></div><button type="submit" class="btn btn-secondary btn-block">🔐 تغيير كلمة المرور</button></form></div><div style="margin-top:1.5rem"><button class="btn btn-danger btn-block" onclick="handleLogout()">🚪 تسجيل الخروج</button></div></div></div>`;
 }
 
 async function handleUpdateProfile(e) {
   e.preventDefault();
   const name = document.getElementById('settings-name').value.trim();
   const phone = document.getElementById('settings-phone').value.trim();
-  try { await db.collection('affiliates').doc(currentUser.uid).update({name,phone}); affiliateData.name=name; affiliateData.phone=phone; updateUserUI(); showToast('تم حفظ التعديلات ✅','success'); } catch(e) { showToast('حدث خطأ','error'); }
+  try {
+    await db.collection('affiliates').doc(currentUser.uid).update({name,phone});
+    affiliateData.name = name;
+    affiliateData.phone = phone;
+    updateUserUI();
+    showToast('تم حفظ التعديلات ✅','success');
+  } catch(e) { showToast('حدث خطأ','error'); }
 }
 
 async function handleChangePassword(e) {
@@ -318,7 +655,12 @@ async function handleChangePassword(e) {
   try { await currentUser.updatePassword(p); showToast('تم تغيير كلمة المرور ✅','success'); } catch(e) { showToast('حدث خطأ - قد تحتاج تسجيل الدخول تاني','error'); }
 }
 
-async function handleLogout() { await auth.signOut(); window.location.href='auth.html'; }
+async function handleLogout() {
+  unsubscribers.forEach(u => { try{u()}catch(e){} });
+  unsubscribers = [];
+  await auth.signOut();
+  window.location.href = 'auth.html';
+}
 
 // ===== SHARING =====
 function shareWhatsApp() { const t = `🔥 ميلانو F16 - الحل الأقوى للقضاء على الحشرات!\n📦 شحن مجاني فوق 3000 جنيه\n🛒 اطلب دلوقتي:\n${getShareLink()}`; window.open(`https://wa.me/?text=${encodeURIComponent(t)}`,'_blank'); logShare('whatsapp'); }
@@ -330,7 +672,7 @@ function copyLink() { navigator.clipboard.writeText(getShareLink()); showToast('
 function shareProduct(name, price, url) {
   const link = `${url}?ref=${affiliateData?.referralCode}`;
   const text = `🔥 ${name} بسعر ${price} ج.م من ميلانو F16!\n📦 شحن مجاني\n${link}`;
-  if (navigator.share) { navigator.share({title:name,text}); } else { navigator.clipboard.writeText(text); showToast('تم نسخ رابط المشاركة ✅','success'); }
+  if (navigator.share) { navigator.share({title:name,text}).catch(()=>{}); } else { navigator.clipboard.writeText(text); showToast('تم نسخ رابط المشاركة ✅','success'); }
   logShare('product');
 }
 
@@ -352,10 +694,10 @@ async function requestPayout() {
   const phone = prompt('ادخل رقم فودافون كاش:');
   if (!phone) return;
   try {
-    await db.collection('payouts').add({affiliateId:currentUser.uid,amount:affiliateData.pendingPayout,method:'فودافون كаш',phone,status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await db.collection('payouts').add({affiliateId:currentUser.uid,amount:affiliateData.pendingPayout,method:'فودافون كاش',phone,status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
     await db.collection('affiliates').doc(currentUser.uid).update({pendingPayout:0});
     await db.collection('notifications').add({affiliateId:currentUser.uid,message:`تم طلب سحب ${affiliateData.pendingPayout} ج.م`,read:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    affiliateData.pendingPayout=0;
+    affiliateData.pendingPayout = 0;
     showToast('تم طلب السحب بنجاح! ✅','success');
     loadPage('payouts');
   } catch(e) { showToast('حدث خطأ','error'); }
@@ -366,13 +708,104 @@ function showToast(msg, type='info') {
   const c = document.getElementById('toast-container');
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
-  t.textContent = msg;
+  t.innerHTML = msg;
   c.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
+  setTimeout(() => { t.classList.add('removing'); setTimeout(() => t.remove(), 300); }, 3000);
 }
 
-// ===== SIDEBAR LOGOUT =====
-document.getElementById('sidebar-logout')?.addEventListener('click', async (e) => { e.preventDefault(); await handleLogout(); });
+// ===== PULL TO REFRESH =====
+function setupPullToRefresh() {
+  let startY = 0, pulling = false;
+  const content = document.querySelector('.main-content');
+  if (!content) return;
+
+  content.addEventListener('touchstart', e => {
+    if (content.scrollTop === 0) { startY = e.touches[0].clientY; pulling = true; }
+  }, {passive:true});
+
+  content.addEventListener('touchmove', e => {
+    if (!pulling) return;
+    const diff = e.touches[0].clientY - startY;
+    if (diff > 80 && content.scrollTop === 0) {
+      showRefreshIndicator();
+    }
+  }, {passive:true});
+
+  content.addEventListener('touchend', () => {
+    const indicator = document.getElementById('ptr-indicator');
+    if (indicator && indicator.classList.contains('active')) {
+      setTimeout(() => { loadPage(currentPage); hideRefreshIndicator(); }, 1000);
+    }
+    pulling = false;
+  });
+}
+
+function showRefreshIndicator() {
+  let indicator = document.getElementById('ptr-indicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'ptr-indicator';
+    indicator.className = 'ptr-indicator';
+    indicator.innerHTML = '🔄 جاري التحديث...';
+    document.body.appendChild(indicator);
+  }
+  indicator.classList.add('active');
+}
+
+function hideRefreshIndicator() {
+  const indicator = document.getElementById('ptr-indicator');
+  if (indicator) indicator.classList.remove('active');
+}
+
+// ===== GESTURES =====
+function setupGestures() {
+  let touchStartX = 0, touchStartY = 0;
+  document.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, {passive:true});
+
+  document.addEventListener('touchend', e => {
+    const diffX = e.changedTouches[0].clientX - touchStartX;
+    const diffY = Math.abs(e.changedTouches[0].clientY - touchStartY);
+    if (Math.abs(diffX) > 100 && diffY < 50) {
+      if (diffX > 0) {
+        // Swipe right - go back
+        const pages = ['overview','referrals','products','leaderboard','payouts','coupons','marketing','badges','training','videos','chat','notifications','settings'];
+        const idx = pages.indexOf(currentPage);
+        if (idx > 0) { loadPage(pages[idx-1]); updateActiveNav(pages[idx-1]); }
+      } else {
+        // Swipe left - go forward
+        const pages = ['overview','referrals','products','leaderboard','payouts','coupons','marketing','badges','training','videos','chat','notifications','settings'];
+        const idx = pages.indexOf(currentPage);
+        if (idx < pages.length-1) { loadPage(pages[idx+1]); updateActiveNav(pages[idx+1]); }
+      }
+    }
+  });
+}
+
+function updateActiveNav(page) {
+  document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
+  const active = document.querySelector(`.sidebar-nav a[data-page="${page}"]`);
+  if (active) active.classList.add('active');
+}
+
+// ===== SERVICE WORKER =====
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(e => console.log('SW registration failed'));
+  }
+}
+
+// ===== PUSH NOTIFICATIONS =====
+async function requestNotificationPermission() {
+  if ('Notification' in window) {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      showToast('تم تفعيل الإشعارات ✅', 'success');
+    }
+  }
+}
 
 // Track page clicks
 document.addEventListener('click', async (e) => {
@@ -380,3 +813,17 @@ document.addEventListener('click', async (e) => {
     try { await db.collection('clicks').add({affiliateId:currentUser.uid,type:'product_click',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); } catch(e){}
   }
 });
+
+// ===== LIVE SYNC STATUS =====
+function showSyncStatus(status) {
+  const existing = document.getElementById('sync-status');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.id = 'sync-status';
+  el.style.cssText = 'position:fixed;top:0;left:0;right:0;padding:.3rem;text-align:center;font-size:.7rem;z-index:9999;transition:all .3s';
+  el.style.background = status === 'connected' ? '#0f9d58' : status === 'syncing' ? '#f9ab00' : '#d93025';
+  el.style.color = 'white';
+  el.textContent = status === 'connected' ? '✅ متصل - بيانات مباشرة' : status === 'syncing' ? '🔄 جاري المزامنة...' : '❌ غير متصل';
+  document.body.appendChild(el);
+  if (status !== 'syncing') setTimeout(() => el.remove(), 2000);
+}

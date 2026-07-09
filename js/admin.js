@@ -14,7 +14,36 @@ auth.onAuthStateChanged(async (user) => {
   }
   adminData = doc.data();
   loadAdminPage('dashboard');
+  setupAdminListeners();
 });
+
+// ===== REALTIME LISTENERS =====
+function setupAdminListeners() {
+  // Listen to messages count
+  db.collection('messages').where('read','==',false).onSnapshot(snap => {
+    const countEl = document.getElementById('msg-count');
+    if (countEl) {
+      countEl.textContent = snap.size > 0 ? snap.size : '';
+      countEl.style.display = snap.size > 0 ? 'inline' : 'none';
+    }
+  });
+
+  // Listen to pending payouts
+  db.collection('payouts').where('status','==','pending').onSnapshot(snap => {
+    const countEl = document.getElementById('pay-count');
+    if (countEl) {
+      countEl.textContent = snap.size > 0 ? snap.size : '';
+      countEl.style.display = snap.size > 0 ? 'inline' : 'none';
+    }
+  });
+
+  // Listen to new conversions
+  db.collection('conversions').where('status','==','pending').onSnapshot(snap => {
+    if (snap.size > 0 && Notification.permission === 'granted') {
+      new Notification('مبيعات جديدة!', {body: `${snap.size} مبيعة في انتظار المراجعة`, icon: LOGO});
+    }
+  });
+}
 
 // ===== NAVIGATION =====
 document.querySelectorAll('.admin-nav a').forEach(link => {
@@ -30,9 +59,9 @@ document.querySelectorAll('.admin-nav a').forEach(link => {
 });
 
 function loadAdminPage(page) {
-  const titles = {dashboard:'لوحة التحكم',affiliates:'الشركاء',conversions:'المبيعات',payouts:'المدفوعات',products:'المنتجات',shortlinks:'الروابط القصيرة',notifications:'الإشعارات',settings:'الإعدادات'};
+  const titles = {dashboard:'لوحة التحكم',affiliates:'الشركاء',conversions:'المبيعات',payouts:'المدفوعات',products:'المنتجات',videos:'الفيديوهات',messages:'الرسائل',shortlinks:'الروابط القصيرة',notifications:'الإشعارات',settings:'الإعدادات'};
   document.getElementById('page-title').textContent = titles[page] || page;
-  const loaders = {dashboard:loadDashboard,affiliates:loadAffiliates,conversions:loadConversions,payouts:loadAdminPayouts,products:loadAdminProducts,shortlinks:loadShortLinks,notifications:loadAdminNotifications,settings:loadAdminSettings};
+  const loaders = {dashboard:loadDashboard,affiliates:loadAffiliates,conversions:loadConversions,payouts:loadAdminPayouts,products:loadAdminProducts,videos:loadAdminVideos,messages:loadAdminMessages,shortlinks:loadShortLinks,notifications:loadAdminNotifications,settings:loadAdminSettings};
   if (loaders[page]) loaders[page]();
 }
 
@@ -54,7 +83,6 @@ async function loadDashboard() {
     todayConv = todaySnap.size;
   } catch(e) {}
 
-  // Chart data
   const chartData = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date(); d.setDate(d.getDate()-i); d.setHours(0,0,0,0);
@@ -66,7 +94,6 @@ async function loadDashboard() {
   }
   const maxVal = Math.max(...chartData.map(d=>d.value),1);
 
-  // Recent activity
   let recentActivity = [];
   try {
     const actSnap = await db.collection('conversions').orderBy('createdAt','desc').limit(5).get();
@@ -86,10 +113,10 @@ async function loadDashboard() {
     <div class="quick-actions">
       <div class="quick-action" onclick="loadAdminPage('affiliates')"><div class="qa-icon" style="background:#e8f0fe;color:#1a73e8"><i class="fi fi-sr-users"></i></div><h4>إدارة الشركاء</h4><p>عرض وإدارة</p></div>
       <div class="quick-action" onclick="loadAdminPage('conversions')"><div class="qa-icon" style="background:#e8f5e9;color:#0f9d58"><i class="fi fi-sr-shopping-cart"></i></div><h4>المبيعات</h4><p>تتبع العمليات</p></div>
-      <div class="quick-action" onclick="loadAdminPage('payouts')"><div class="qa-icon" style="background:#fff3e0;color:#ff6d00"><i class="fi fi-sr-money-bill-wave"></i></div><h4>المدفوعات</h4><p>إدارة السحوبات</p></div>
-      <div class="quick-action" onclick="loadAdminPage('shortlinks')"><div class="qa-icon" style="background:#ede7f6;color:#7c4dff"><i class="fi fi-sr-link"></i></div><h4>الروابط القصيرة</h4><p> اختصار الروابط</p></div>
+      <div class="quick-action" onclick="loadAdminPage('messages')"><div class="qa-icon" style="background:#fce4ec;color:#e91e63"><i class="fi fi-sr-comments"></i></div><h4>الرسائل</h4><p>التواصل مع الشركاء</p></div>
+      <div class="quick-action" onclick="loadAdminPage('videos')"><div class="qa-icon" style="background:#ede7f6;color:#7c4dff"><i class="fi fi-sr-video"></i></div><h4>الفيديوهات</h4><p>إدارة المحتوى التعليمي</p></div>
     </div>
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem">
+    <div style="display:grid;grid-template-columns:1fr;gap:1.5rem">
       <div class="admin-chart">
         <div class="admin-chart-header"><h3>📈 المبيعات - آخر 7 أيام</h3></div>
         <div class="admin-chart-bars">${chartData.map(d => `<div class="admin-chart-bar" style="height:${(d.value/maxVal)*100}%;background:${d.value>0?'linear-gradient(180deg,#1a73e8,#42a5f5)':'#e8f0fe'}"><div class="tooltip">${d.value} مبيعة</div></div>`).join('')}</div>
@@ -236,7 +263,184 @@ function loadAdminProducts() {
     {id:'giGi',name:'جيجي اسبونج',price:20,commission:1,img:'https://assets.wuiltstore.com/cmevy2pce4pi101ksg08reses__D8_AA_D8_B5_D9_85_D9_8A_D9_85__D8_A8_D8_AF_D9_88_D9_86__D8_B9_D9_86_D9_88_D8_A7_D9_86__6_.jpg'}
   ];
   const c = document.getElementById('admin-page-content');
-  c.innerHTML = `<div class="admin-table-wrap"><div class="admin-table-header"><h2><i class="fi fi-sr-box-open"></i> المنتجات (${PRODUCTS.length})</h2></div><div class="table-wrapper"><table class="admin-table"><thead><tr><th>الصورة</th><th>المنتج</th><th>السعر</th><th>العمولة</th><th>النسبة</th></tr></thead><tbody>${PRODUCTS.map(p => `<tr><td><img src="${p.img}" style="width:50px;height:50px;border-radius:10px;object-fit:cover;background:#f1f3f4"></td><td><strong>${p.name}</strong></td><td>${p.price} ج.م</td><td style="color:#0f9d58;font-weight:600">${p.commission} ج.م</td><td>5%</td></tr>`).join('')}</tbody></table></div></div>`;
+  c.innerHTML = `<div class="admin-table-wrap"><div class="admin-table-header"><h2><i class="fi fi-sr-box-open"></i> المنتجات (${PRODUCTS.length})</h2></div><div class="table-wrapper"><table class="admin-table"><thead><tr><th>الصورة</th><th>المنتج</th><th>السعر</th><th>العمولة</th><th>النسبة</th></tr></thead><tbody>${PRODUCTS.map(p => `<tr><td><img src="${p.img}" style="width:50px;height:50px;border-radius:10px;object-fit:cover;background:#f1f3f4" loading="lazy"></td><td><strong>${p.name}</strong></td><td>${p.price} ج.م</td><td style="color:#0f9d58;font-weight:600">${p.commission} ج.م</td><td>5%</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+// ===== ADMIN VIDEOS =====
+async function loadAdminVideos() {
+  const c = document.getElementById('admin-page-content');
+  c.innerHTML = `
+    <div class="admin-table-wrap" style="padding:2rem">
+      <h2 style="margin-bottom:1rem"><i class="fi fi-sr-video"></i> إضافة فيديو جديد</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <div class="form-group"><label>عنوان الفيديو</label><input type="text" id="vid-title" placeholder="مثال: ازاي تبيع على واتساب"></div>
+        <div class="form-group"><label>الوصف</label><input type="text" id="vid-desc" placeholder="وصف مختصر للفيديو"></div>
+      </div>
+      <div class="form-group"><label>رابط الفيديو (YouTube, Facebook, أو رابط مباشر)</label><input type="url" id="vid-url" placeholder="https://youtube.com/watch?v=..."></div>
+      <button class="btn btn-primary" onclick="addVideo()"><i class="fi fi-sr-plus"></i> إضافة الفيديو</button>
+    </div>
+    <div class="admin-table-wrap">
+      <div class="admin-table-header"><h2><i class="fi fi-sr-video"></i> الفيديوهات المحملة</h2></div>
+      <div class="table-wrapper">
+        <table class="admin-table">
+          <thead><tr><th>#</th><th>العنوان</th><th>الوصف</th><th>المشاهدات</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+          <tbody id="admin-videos-tbody"><tr><td colspan="6" style="text-align:center;padding:3rem"><div class="spinner spinner-dark"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>`;
+  loadVideosList();
+}
+
+async function loadVideosList() {
+  const tbody = document.getElementById('admin-videos-tbody');
+  if (!tbody) return;
+  try {
+    const snap = await db.collection('videos').orderBy('createdAt','desc').get();
+    if (snap.empty) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:3rem;color:#5f6368">لا توجد فيديوهات بعد</td></tr>'; return; }
+    let html = '', i = 1;
+    snap.forEach(doc => {
+      const d = doc.data();
+      const date = d.createdAt?.toDate().toLocaleDateString('ar-EG')||'-';
+      html += `<tr><td>${i++}</td><td><strong>${d.title}</strong></td><td>${d.desc||'-'}</td><td>${d.views||0}</td><td>${date}</td><td><button class="btn btn-sm btn-ghost" onclick="deleteVideo('${doc.id}')"><i class="fi fi-sr-trash"></i></button></td></tr>`;
+    });
+    tbody.innerHTML = html;
+  } catch(e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:3rem;color:#5f6368">خطأ</td></tr>'; }
+}
+
+async function addVideo() {
+  const title = document.getElementById('vid-title').value.trim();
+  const desc = document.getElementById('vid-desc').value.trim();
+  const url = document.getElementById('vid-url').value.trim();
+  if (!title || !url) { showToast('ادخل العنوان والرابط', 'error'); return; }
+  try {
+    await db.collection('videos').add({
+      title, desc, url,
+      views: 0,
+      createdBy: adminUser.uid,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('تم إضافة الفيديو بنجاح ✅', 'success');
+    document.getElementById('vid-title').value = '';
+    document.getElementById('vid-desc').value = '';
+    document.getElementById('vid-url').value = '';
+    loadVideosList();
+  } catch(e) { showToast('حدث خطأ', 'error'); }
+}
+
+async function deleteVideo(id) {
+  if (!confirm('هل تريد حذف هذا الفيديو؟')) return;
+  try {
+    await db.collection('videos').doc(id).delete();
+    loadVideosList();
+    showToast('تم الحذف', 'success');
+  } catch(e) { showToast('حدث خطأ', 'error'); }
+}
+
+// ===== ADMIN MESSAGES =====
+let selectedAffiliate = null;
+
+async function loadAdminMessages() {
+  const c = document.getElementById('admin-page-content');
+  c.innerHTML = `
+    <div style="display:grid;grid-template-columns:280px 1fr;gap:0;height:calc(100vh - 140px);border-radius:16px;overflow:hidden;background:white;box-shadow:0 2px 12px rgba(0,0,0,0.08)">
+      <div class="msg-sidebar" style="border-left:1px solid #e0e0e0;overflow-y:auto;background:#fafafa">
+        <div style="padding:1rem;border-bottom:1px solid #e0e0e0"><h3 style="font-size:.95rem">الشركاء</h3></div>
+        <div id="msg-affiliates-list" style="padding:.5rem"></div>
+      </div>
+      <div class="msg-main" style="display:flex;flex-direction:column">
+        <div id="msg-header" style="padding:1rem;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;gap:.8rem">
+          <div style="width:40px;height:40px;border-radius:50%;background:#e8f0fe;display:flex;align-items:center;justify-content:center;font-weight:700;color:#1a73e8">💬</div>
+          <div><h3 style="font-size:.95rem">اختر شريك للبدء</h3><p style="font-size:.75rem;color:#5f6368">ابعت رد على الشريك</p></div>
+        </div>
+        <div id="msg-chat-area" style="flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.5rem">
+          <div style="text-align:center;padding:3rem;color:#5f6368"><div style="font-size:3rem;margin-bottom:1rem">💬</div><p>اختر شريك من القائمة عشان تبدأ المحادثة</p></div>
+        </div>
+        <div id="msg-input-area" style="padding:.8rem;border-top:1px solid #e0e0e0;display:none;background:white">
+          <div style="display:flex;gap:.5rem">
+            <textarea id="admin-chat-input" placeholder="اكتب الرد..." rows="1" style="flex:1;padding:.6rem 1rem;border:2px solid #e0e0e0;border-radius:20px;font-size:.9rem;font-family:inherit;resize:none;max-height:80px" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAdminMessage()}"></textarea>
+            <button onclick="sendAdminMessage()" style="width:42px;height:42px;border-radius:50%;background:#1a73e8;border:none;color:white;font-size:1.1rem;cursor:pointer;flex-shrink:0">📤</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  loadMsgAffiliates();
+}
+
+async function loadMsgAffiliates() {
+  const list = document.getElementById('msg-affiliates-list');
+  if (!list) return;
+  try {
+    const snap = await db.collection('affiliates').get();
+    let html = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      html += `<div onclick="selectChatAffiliate('${doc.id}','${d.name||'مستخدم'}')" class="msg-aff-item" style="display:flex;align-items:center;gap:.8rem;padding:.8rem;border-radius:10px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='#e8f0fe'" onmouseout="this.style.background='transparent'">
+        <div style="width:36px;height:36px;border-radius:50%;background:#1a73e8;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0">${(d.name||'?').charAt(0)}</div>
+        <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.name||'-'}</div><div style="font-size:.7rem;color:#5f6368;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.email||'-'}</div></div>
+      </div>`;
+    });
+    list.innerHTML = html || '<div style="text-align:center;padding:2rem;color:#5f6368">لا يوجد شركاء</div>';
+  } catch(e) { list.innerHTML = '<div style="text-align:center;padding:2rem;color:#5f6368">خطأ</div>'; }
+}
+
+async function selectChatAffiliate(uid, name) {
+  selectedAffiliate = {uid, name};
+  const header = document.getElementById('msg-header');
+  const chatArea = document.getElementById('msg-chat-area');
+  const inputArea = document.getElementById('msg-input-area');
+  header.innerHTML = `<div style="width:40px;height:40px;border-radius:50%;background:#1a73e8;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">${name.charAt(0)}</div><div><h3 style="font-size:.95rem">${name}</h3><p style="font-size:.75rem;color:#0f9d58">متصل</p></div>`;
+  inputArea.style.display = 'block';
+  chatArea.innerHTML = '<div style="text-align:center;padding:2rem"><div class="spinner spinner-dark"></div></div>';
+
+  try {
+    db.collection('messages').where('affiliateId','==',uid).orderBy('createdAt','asc').limit(100).onSnapshot(snap => {
+      if (snap.empty) {
+        chatArea.innerHTML = '<div style="text-align:center;padding:2rem;color:#5f6368"><p>لا توجد رسائل بعد</p></div>';
+        return;
+      }
+      let html = '';
+      snap.forEach(doc => {
+        const msg = doc.data();
+        const time = msg.createdAt?.toDate?.()?.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})||'';
+        const isAdmin = msg.sender === 'admin';
+        html += `<div style="max-width:75%;padding:.7rem 1rem;border-radius:16px;font-size:.9rem;line-height:1.5;align-self:${isAdmin?'flex-end':'flex-start'};background:${isAdmin?'#1a73e8':'#f1f3f4'};color:${isAdmin?'white':'#1a1a2e'};border-bottom-${isAdmin?'left':'right'}-radius:4px">
+          <div>${msg.text}</div>
+          <div style="font-size:.6rem;opacity:.7;margin-top:.3rem;text-align:${isAdmin?'left':'right'}">${time}</div>
+        </div>`;
+      });
+      chatArea.innerHTML = html;
+      chatArea.scrollTop = chatArea.scrollHeight;
+    });
+  } catch(e) {
+    chatArea.innerHTML = '<div style="text-align:center;padding:2rem;color:#5f6368">خطأ في تحميل الرسائل</div>';
+  }
+}
+
+async function sendAdminMessage() {
+  if (!selectedAffiliate) { showToast('اختر شريك أولاً', 'error'); return; }
+  const input = document.getElementById('admin-chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+  try {
+    await db.collection('messages').add({
+      affiliateId: selectedAffiliate.uid,
+      affiliateName: selectedAffiliate.name,
+      sender: 'admin',
+      text: text,
+      read: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await db.collection('notifications').add({
+      affiliateId: selectedAffiliate.uid,
+      message: `رسالة جديدة من الإدارة: ${text.substring(0, 50)}...`,
+      read: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e) {
+    showToast('حدث خطأ في إرسال الرسالة', 'error');
+  }
 }
 
 // ===== SHORT LINKS =====
@@ -346,7 +550,7 @@ async function saveSettings() {
 
 // ===== UTILITIES =====
 function closeModal() { document.getElementById('modal-overlay').classList.remove('active'); }
-function showNotifications() { showToast('قريباً...', 'info'); }
+function showNotifications() { loadAdminPage('notifications'); }
 function showToast(msg, type='info') {
   const c = document.getElementById('toast-container');
   const t = document.createElement('div');

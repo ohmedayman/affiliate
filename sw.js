@@ -1,0 +1,16 @@
+const CACHE_NAME = 'milano-v2';
+const urlsToCache = ['/','/auth.html','/dashboard.html','/admin.html','/css/landing.css','/css/dashboard.css','/css/admin.css','/js/firebase-config.js','/js/auth.js','/js/dashboard.js'];
+
+self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))); self.skipWaiting(); });
+self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(names => Promise.all(names.filter(n=>n!==CACHE_NAME).map(n=>caches.delete(n))))); self.clients.claim(); });
+self.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('/')))); });
+
+self.addEventListener('push', e => {
+  const data = e.data?.json() || {title:'ميلانو F16',body:'لديك إشعار جديد'};
+  e.waitUntil(self.registration.showNotification(data.title, {body:data.body,icon:'/assets/logo.png',badge:'/assets/logo.png',vibrate:[200,100,200]}));
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(clients.openWindow('/dashboard.html'));
+});
