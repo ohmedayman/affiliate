@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إعداد سريع - ميلانو F16</title>
+  <link rel="icon" href="https://assets.wuiltstore.com/cmksv9bcw0ki601gn64lf4joy_Gemini_Generated_Image_8x0fug8x0fug8x0f.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Cairo',sans-serif;background:#0a1628;min-height:100vh;display:flex;align-items:center;justify-content:center;color:white;padding:1.5rem}
+    .card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:2rem;max-width:450px;width:100%;backdrop-filter:blur(20px)}
+    .header{text-align:center;margin-bottom:1.5rem}
+    .header h1{font-size:1.3rem;margin-bottom:.3rem;background:linear-gradient(135deg,#fff,#e0e7ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .header p{font-size:.85rem;color:rgba(255,255,255,0.5)}
+    .form-group{margin-bottom:1rem}
+    .form-group label{display:block;font-size:.8rem;font-weight:600;color:rgba(255,255,255,0.7);margin-bottom:.4rem}
+    .form-group input{width:100%;padding:.8rem 1rem;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;font-size:.9rem;color:white;font-family:'Cairo',sans-serif}
+    .form-group input:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.2)}
+    .btn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.9rem;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer;border:none;font-family:'Cairo',sans-serif;transition:all .3s}
+    .btn:active{transform:scale(.97)}
+    .btn-green{background:linear-gradient(135deg,#10b981,#34d399);color:white;box-shadow:0 4px 20px rgba(16,185,129,0.3);margin-top:1rem}
+    .btn-green:hover{box-shadow:0 6px 25px rgba(16,185,129,0.4);transform:translateY(-2px)}
+    .msg{display:none;padding:.8rem 1rem;border-radius:10px;font-size:.85rem;margin-bottom:1rem;text-align:center}
+    .msg.error{display:block;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#fca5a5}
+    .msg.success{display:block;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7}
+    .msg.info{display:block;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);color:#93c5fd}
+    .spinner{display:none;width:20px;height:20px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .step-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:1rem;margin-bottom:1.5rem}
+    .step-box h3{font-size:.85rem;margin-bottom:.8rem;color:rgba(255,255,255,0.7)}
+    .step{display:flex;gap:.8rem;align-items:center;margin-bottom:.5rem;font-size:.8rem;color:rgba(255,255,255,0.5)}
+    .step-num{width:22px;height:22px;border-radius:50%;background:#3b82f6;color:white;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0}
+    .step.done .step-num{background:#10b981}
+    .link-box{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:1.2rem;margin-top:1.5rem;text-align:center;display:none}
+    .link-box h3{color:#6ee7b7;margin-bottom:.5rem;font-size:1rem}
+    .link-box p{color:rgba(255,255,255,0.6);font-size:.85rem;margin-bottom:1rem}
+    .link-box a{display:inline-block;background:#10b981;color:white;padding:.7rem 1.5rem;border-radius:10px;text-decoration:none;font-weight:700;font-size:.9rem}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>⚡ إعداد سريع</h1>
+      <p>اعمل حساب واحطه Admin في خطوة واحدة</p>
+    </div>
+
+    <div class="step-box">
+      <h3>اللي هيحصل:</h3>
+      <div class="step" id="step1"><div class="step-num">1</div><span>عمل حساب جديد</span></div>
+      <div class="step" id="step2"><div class="step-num">2</div><span>تفعيل صلاحية Admin</span></div>
+      <div class="step" id="step3"><div class="step-num">3</div><span>جاهز للدخول!</span></div>
+    </div>
+
+    <div class="msg" id="msg"></div>
+
+    <form id="setup-form">
+      <div class="form-group">
+        <label>الاسم</label>
+        <input type="text" id="name" placeholder="محمد أحمد" required>
+      </div>
+      <div class="form-group">
+        <label>البريد الإلكتروني</label>
+        <input type="email" id="email" placeholder="your@gmail.com" required>
+      </div>
+      <div class="form-group">
+        <label>كلمة المرور</label>
+        <input type="password" id="password" placeholder="6 أحرف على الأقل" required minlength="6">
+      </div>
+      <button type="submit" class="btn btn-green" id="submit-btn">
+        <span id="btn-text">إنشاء حساب وتفعيل Admin 👑</span>
+        <div class="spinner" id="spinner"></div>
+      </button>
+    </form>
+
+    <div class="link-box" id="link-box">
+      <h3>✅ تم بنجاح!</h3>
+      <p>دلوقتي تقدر تدخل على لوحة تحكم الإدارة</p>
+      <a href="admin-login.html">ادخل على الإدارة 🔐</a>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script>
+    const msgEl = document.getElementById('msg');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btn-text');
+    const submitBtn = document.getElementById('submit-btn');
+    const linkBox = document.getElementById('link-box');
+
+    function showMsg(text, type) {
+      msgEl.textContent = text;
+      msgEl.className = 'msg ' + type;
+    }
+
+    function setStep(num, done) {
+      const step = document.getElementById('step' + num);
+      if (step) step.className = done ? 'step done' : 'step';
+    }
+
+    function setLoading(loading) {
+      submitBtn.disabled = loading;
+      btnText.style.display = loading ? 'none' : 'inline';
+      spinner.style.display = loading ? 'block' : 'none';
+    }
+
+    document.getElementById('setup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      showMsg('جاري إنشاء الحساب...', 'info');
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        // Step 1: Create account
+        setStep(1, false);
+        const result = await auth.createUserWithEmailAndPassword(email, password);
+        setStep(1, true);
+        showMsg('تم إنشاء الحساب! ✅', 'success');
+
+        // Step 2: Create affiliate doc and make admin
+        setStep(2, false);
+        await db.collection('affiliates').doc(result.user.uid).set({
+          name: name,
+          phone: '',
+          email: email,
+          referralCode: name.replace(/\s+/g,'').toLowerCase() + Math.floor(Math.random()*10000),
+          isAdmin: true,
+          referralsCount: 0,
+          totalEarnings: 0,
+          pendingPayout: 0,
+          paidPayout: 0,
+          totalClicks: 0,
+          sharesCount: 0,
+          platformsCount: 0,
+          status: 'active',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        setStep(2, true);
+        showMsg('تم تفعيل Admin! 👑', 'success');
+
+        // Step 3: Done
+        setStep(3, true);
+        setLoading(false);
+        linkBox.style.display = 'block';
+        showMsg('تم بنجاح! اضغط الزر تحت عشان تدخل 🔐', 'success');
+
+      } catch (error) {
+        setLoading(false);
+        let msg = 'حدث خطأ';
+        if (error.code === 'auth/email-already-in-use') msg = 'البريد ده متسجل قبل كده - جرب إيميل تاني';
+        else if (error.code === 'auth/weak-password') msg = 'الباسورد ضعيف - حط 6 أحرف على الأقل';
+        else if (error.code === 'auth/invalid-email') msg = 'البريد مش صالح';
+        showMsg(msg, 'error');
+      }
+    });
+  </script>
+</body>
+</html>
