@@ -1,5 +1,5 @@
-const CACHE_NAME = 'milano-v3';
-const urlsToCache = ['/','/auth.html','/dashboard.html','/admin.html','/css/landing.css','/css/dashboard.css','/css/admin.css','/js/firebase-config.js','/js/auth.js','/js/dashboard.js','/js/admin.js'];
+const CACHE_NAME = 'milano-v4';
+const urlsToCache = ['/','/auth.html','/dashboard.html','/admin.html','/css/landing.css','/css/dashboard.css','/css/admin.css','/js/firebase-config.js','/js/auth.js','/js/dashboard.js','/js/admin.js','/js/products-data.js'];
 
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))); self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(names => Promise.all(names.filter(n=>n!==CACHE_NAME).map(n=>caches.delete(n))))); self.clients.claim(); });

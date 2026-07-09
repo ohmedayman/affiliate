@@ -4,7 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ميلانو F16 - برنامج الشراكة والعمولة</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- AOS - Animate On Scroll -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <!-- Swiper - Carousel -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+  <!-- Landing CSS -->
   <link rel="stylesheet" href="css/landing.css">
+  <!-- Flaticon Icons -->
   <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
   <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-bold-rounded/css/uicons-bold-rounded.css">
   <link rel="icon" href="https://assets.wuiltstore.com/cmksv9bcw0ki601gn64lf4joy_Gemini_Generated_Image_8x0fug8x0fug8x0f.webp">
@@ -27,87 +37,153 @@
   </nav>
 
   <section class="hero">
+    <!-- Animated Background -->
+    <div class="hero-bg">
+      <div class="mesh-gradient"></div>
+      <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+      </div>
+      <canvas id="particles-canvas"></canvas>
+    </div>
     <div class="hero-content">
-      <div class="hero-badge">🚀 برنامج العمولة رقم 1 في مصر</div>
-      <h1>ابدأ اكسب مع <span class="highlight">ميلانو F16</span></h1>
-      <p>شارك منتجاتنا للقضاء على الحشرات واحصل على عمولة 5% من كل عملية بيع. شحن مجاني ومنتجات مضمونة!</p>
-      <div class="hero-buttons">
-        <a href="auth.html" class="btn btn-secondary btn-lg">سجّل دلوقتي مجاناً</a>
-        <a href="#how-it-works" class="btn btn-outline btn-lg">اعرف أكتر</a>
+      <div class="hero-badge" data-aos="fade-down" data-aos-delay="100">
+        <span class="badge-pulse"></span>
+        برنامج العمولة رقم 1 في مصر
       </div>
-      <div class="hero-stats">
-        <div class="hero-stat"><span class="num counter" data-target="500">0</span><span class="label">شريك نشط</span></div>
-        <div class="hero-stat"><span class="num">5%</span><span class="label">عمولة لكل بيع</span></div>
-        <div class="hero-stat"><span class="num counter" data-target="10000">0</span><span class="label">عميلة تم بيعها</span></div>
-        <div class="hero-stat"><span class="num">48</span><span class="label">ساعة تسليم الأرباح</span></div>
+      <h1 data-aos="fade-up" data-aos-delay="200">
+        ابدأ اكسب مع
+        <span class="highlight">ميلانو F16</span>
+      </h1>
+      <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="300">
+        شارك منتجاتنا للقضاء على الحشرات واحصل على عمولة 5% من كل عملية بيع.
+        <br>شحن مجاني ومنتجات مضمونة!
+      </p>
+      <div class="hero-buttons" data-aos="fade-up" data-aos-delay="400">
+        <a href="auth.html" class="btn btn-secondary btn-lg magnetic-btn">
+          <span>سجّل دلوقتي مجاناً</span>
+          <i class="fi fi-rr-arrow-left"></i>
+        </a>
+        <a href="#how-it-works" class="btn btn-outline btn-lg magnetic-btn">
+          <span>اعرف أكتر</span>
+        </a>
       </div>
+      <div class="hero-stats" data-aos="fade-up" data-aos-delay="500">
+        <div class="hero-stat glass-card">
+          <div class="stat-icon"><i class="fi fi-rr-users"></i></div>
+          <span class="num counter" data-target="500">0</span>
+          <span class="label">شريك نشط</span>
+        </div>
+        <div class="hero-stat glass-card">
+          <div class="stat-icon"><i class="fi fi-rr-money-bill-wave"></i></div>
+          <span class="num">5%</span>
+          <span class="label">عمولة لكل بيع</span>
+        </div>
+        <div class="hero-stat glass-card">
+          <div class="stat-icon"><i class="fi fi-rr-shopping-cart-check"></i></div>
+          <span class="num counter" data-target="10000">0</span>
+          <span class="label">عميلة تم بيعها</span>
+        </div>
+        <div class="hero-stat glass-card">
+          <div class="stat-icon"><i class="fi fi-rr-bolt"></i></div>
+          <span class="num">48</span>
+          <span class="label">ساعة تسليم الأرباح</span>
+        </div>
+      </div>
+    </div>
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator" data-aos="fade-up" data-aos-delay="700">
+      <div class="mouse">
+        <div class="mouse-wheel"></div>
+      </div>
+      <span>اكتشف المزيد</span>
     </div>
   </section>
 
   <section class="section" id="features">
-    <div class="section-header animate-in">
-      <span class="badge"><i class="fi fi-rr-sparkles"></i> ليه تشتغل معانا</span>
-      <h2>مميزات تخلينك تكسب وانت في بيتك</h2>
-      <p>كل اللي محتاجه عشان تبدأ تكسب من الإنترنت</p>
+    <div class="section-header">
+      <span class="badge" data-aos="fade-down"><i class="fi fi-rr-sparkles"></i> ليه تشتغل معانا</span>
+      <h2 data-aos="fade-up">مميزات تخلينك تكسب وانت في بيتك</h2>
+      <p data-aos="fade-up">كل اللي محتاجه عشان تبدأ تكسب من الإنترنت</p>
     </div>
     <div class="features-grid">
-      <div class="feature-card animate-in">
+      <div class="feature-card glass-card-hover" data-aos="flip-left" data-aos-delay="100">
         <div class="feature-icon blue"><i class="fi fi-rr-money-bill-wave"></i></div>
         <h3>عمولة 5%</h3>
         <p>احصل على عمولة 5% من كل عملية بيع مباشرة. كل ما بعتت أكتر كسبت أكتر!</p>
+        <div class="feature-card-glow"></div>
       </div>
-      <div class="feature-card animate-in">
+      <div class="feature-card glass-card-hover" data-aos="flip-left" data-aos-delay="200">
         <div class="feature-icon green"><i class="fi fi-rr-truck"></i></div>
         <h3>شحن مجاني</h3>
         <p>شحن مجاني على الطلبات فوق 3000 جنيه. العملاء يحبوا الشراء من غير تكاليف إضافية.</p>
+        <div class="feature-card-glow"></div>
       </div>
-      <div class="feature-card animate-in">
+      <div class="feature-card glass-card-hover" data-aos="flip-left" data-aos-delay="300">
         <div class="feature-icon orange"><i class="fi fi-rr-shield-check"></i></div>
         <h3>منتجات أصلية</h3>
         <p>كل منتجاتنا أصلية ومضمونة من شركة ميلانو. سمعتنا عندنا أهم حاجة.</p>
+        <div class="feature-card-glow"></div>
       </div>
-      <div class="feature-card animate-in">
+      <div class="feature-card glass-card-hover" data-aos="flip-left" data-aos-delay="400">
         <div class="feature-icon purple"><i class="fi fi-rr-chart-tree-map"></i></div>
         <h3>لوحة تحكم متقدمة</h3>
         <p>تابع أرباحك وإحالاتك ونقراتك في أي وقت من خلال لوحة التحكم.</p>
+        <div class="feature-card-glow"></div>
       </div>
-      <div class="feature-card animate-in">
+      <div class="feature-card glass-card-hover" data-aos="flip-left" data-aos-delay="500">
         <div class="feature-icon teal"><i class="fi fi-rr-bolt"></i></div>
         <h3>دفع سريع</h3>
         <p>الأرباح بتتحوللك خلال 48 ساعة من الموافقة على السحب.</p>
+        <div class="feature-card-glow"></div>
       </div>
-      <div class="feature-card animate-in">
+      <div class="feature-card glass-card-hover" data-aos="flip-left" data-aos-delay="600">
         <div class="feature-icon red"><i class="fi fi-rr-bullseye"></i></div>
         <h3>منتجات مطلوبة</h3>
         <p>منتجاتنا من أشهر المبيدات الحشرية في مصر. سهلة البيع وبتحقق أرباح سريعة.</p>
+        <div class="feature-card-glow"></div>
       </div>
     </div>
   </section>
 
-  <section class="section" id="how-it-works" style="background:var(--bg)">
-    <div class="section-header animate-in">
-      <span class="badge"><i class="fi fi-rr-list-check"></i> الخطوات</span>
-      <h2>ازاي تبدأ؟</h2>
-      <p>4 خطوات بسيطة وابدأ تكسب</p>
+  <section class="section section-alt" id="how-it-works">
+    <div class="section-header">
+      <span class="badge" data-aos="fade-down"><i class="fi fi-rr-list-check"></i> الخطوات</span>
+      <h2 data-aos="fade-up">ازاي تبدأ؟</h2>
+      <p data-aos="fade-up">4 خطوات بسيطة وابدأ تكسب</p>
     </div>
-    <div class="steps-container animate-in">
-      <div class="step">
-        <div class="step-num"><i class="fi fi-rr-user-plus" style="font-size:1.5rem"></i></div>
+    <div class="steps-container">
+      <div class="step" data-aos="fade-up" data-aos-delay="100">
+        <div class="step-connector"></div>
+        <div class="step-num pulse-ring">
+          <i class="fi fi-rr-user-plus" style="font-size:1.5rem"></i>
+        </div>
         <h3>سجّل حساب</h3>
         <p>سجّل بياناتك في ثانية واحصل على كود إحالة خاص بيك.</p>
       </div>
-      <div class="step">
-        <div class="step-num"><i class="fi fi-rr-share" style="font-size:1.5rem"></i></div>
+      <div class="step" data-aos="fade-up" data-aos-delay="200">
+        <div class="step-connector"></div>
+        <div class="step-num pulse-ring">
+          <i class="fi fi-rr-share" style="font-size:1.5rem"></i>
+        </div>
         <h3>شارك الرابط</h3>
         <p>شارك رابط الإحالة على فيسبوك، واتساب، انستجرام، أو أي مكان.</p>
       </div>
-      <div class="step">
-        <div class="step-num"><i class="fi fi-rr-shopping-cart-add" style="font-size:1.5rem"></i></div>
+      <div class="step" data-aos="fade-up" data-aos-delay="300">
+        <div class="step-connector"></div>
+        <div class="step-num pulse-ring">
+          <i class="fi fi-rr-shopping-cart-add" style="font-size:1.5rem"></i>
+        </div>
         <h3>العميل يشتري</h3>
         <p>العميل بيشتري من خلال رابطك وبتتحول العملية لحد بيع مسجل.</p>
       </div>
-      <div class="step">
-        <div class="step-num"><i class="fi fi-rr-wallet" style="font-size:1.5rem"></i></div>
+      <div class="step" data-aos="fade-up" data-aos-delay="400">
+        <div class="step-num pulse-ring">
+          <i class="fi fi-rr-wallet" style="font-size:1.5rem"></i>
+        </div>
         <h3>ابدأ تكسب</h3>
         <p>كل ما حد يشتري من خلال رابطك، بتاخد عمولتك فوراً!</p>
       </div>
@@ -115,111 +191,168 @@
   </section>
 
   <section class="section" id="products">
-    <div class="section-header animate-in">
-      <span class="badge">🛡️ المنتجات</span>
-      <h2>منتجاتنا للقضاء على الحشرات</h2>
-      <p>أسعار تنافسية وعمولة 5% من كل بيع</p>
+    <div class="section-header">
+      <span class="badge" data-aos="fade-down"><i class="fi fi-rr-shield-check"></i> المنتجات</span>
+      <h2 data-aos="fade-up">منتجاتنا للقضاء على الحشرات</h2>
+      <p data-aos="fade-up">أسعار تنافسية وعمولة 5% من كل بيع</p>
     </div>
-    <div class="products-grid animate-in">
-      <a href="https://milanof16.com/ar/product/all/f16-500ml" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmdiu58cl1tl501ks9ehv955z_1750433241132832061.png" alt="اف 16" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>اف 16 للصراصير 500مل</h3><div class="product-price">60 ج.م</div><div class="product-commission">عمولتك: 3 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/f16-400ml" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmd7u4z8219le01g5d3noe3f0_1750434193411593051.png" alt="اف 16 400" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>اف 16 للصراصير 400مل</h3><div class="product-price">50 ج.م</div><div class="product-commission">عمولتك: 2.5 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/f16-650ml" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmd7u5z0v1ac701ksgbt298xa_1750432766294011606.png" alt="اف 16 جامبو" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>اف 16 جامبو للصراصير 650مل</h3><div class="product-price">70 ج.م</div><div class="product-commission">عمولتك: 3.5 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/f22-500ml" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmd7u4uf619l601g5cufc88nk_1750433228528482556.png" alt="اف 22" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>اف 22 للنمل 500مل</h3><div class="product-price">60 ج.م</div><div class="product-commission">عمولتك: 3 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/f22-400ml" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmd7u4v5019l701g5cnbm9rlr_1750434208208242738.png" alt="اف 22 400" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>اف 22 للنمل 400مل</h3><div class="product-price">50 ج.م</div><div class="product-commission">عمولتك: 2.5 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/f22-650ml" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmd7u4yly19ld01g57jpf00ev_1750433166133488427.png" alt="اف 22 جامبو" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>اف 22 جامبو للنمل 650مل</h3><div class="product-price">70 ج.م</div><div class="product-commission">عمولتك: 3.5 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/f35-650ml" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmd7u4vuk19l801g5c6103zlq_1750433213166894989.png" alt="اف 35" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>مبيد اف 35 للبق</h3><div class="product-price">70 ج.م</div><div class="product-commission">عمولتك: 3.5 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/ringo" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmd7u4tpy19l501g5fqpbbe6w_1750433182306448668.png" alt="رينجو" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>رينجو للذباب</h3><div class="product-price">60 ج.م</div><div class="product-commission">عمولتك: 3 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/الصاروخ ناموس" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmitdyi7d031q01kqaq93e5t8_WhatsApp_Image_2025-12-05_at_23.33.20_186c2329.jpg" alt="الصاروخ ناموس" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>الصاروخ ناموس</h3><div class="product-price">60 ج.م</div><div class="product-commission">عمولتك: 3 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/الصاروخ صراصير" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmg84mc0c15kp01hn1f3t2iyh__D9_82_D8_B7_D8_B9_D9_87.jpg" alt="الصاروخ صراصير" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>الصاروخ صراصير</h3><div class="product-price">60 ج.م</div><div class="product-commission">عمولتك: 3 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/الصاروخ نمل" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmerex8wa4fih01ks3rj791aa__D8_AA_D8_B5_D9_85_D9_8A_D9_85__D8_A8_D8_AF_D9_88_D9_86__D8_B9_D9_86_D9_88_D8_A7_D9_86__3_.jpg" alt="الصاروخ نمل" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>الصاروخ نمل</h3><div class="product-price">60 ج.م</div><div class="product-commission">عمولتك: 3 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/الصاروخ بق" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmerhpqh64fpz01ksclji35r9__D8_AA_D8_B5_D9_85_D9_8A_D9_85__D8_A8_D8_AF_D9_88_D9_86__D8_B9_D9_86_D9_88_D8_A7_D9_86__4_.jpg" alt="الصاروخ بق" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>الصاروخ بق</h3><div class="product-price">60 ج.م</div><div class="product-commission">عمولتك: 3 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/اسد للصراصير" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmkn1ziyo07bf01gn0z6r4q9e__D8_AA_D8_B5_D9_85_D9_8A_D9_85__D8_A8_D8_AF_D9_88_D9_86__D8_B9_D9_86_D9_88_D8_A7_D9_86__6_.webp" alt="اسد صراصير" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>اسد صراصير</h3><div class="product-price">50 ج.م</div><div class="product-commission">عمولتك: 2.5 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/lion" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmkn1ylzv07b801gn8r0d7svf__D8_AA_D8_B5_D9_85_D9_8A_D9_85__D8_A8_D8_AF_D9_88_D9_86__D8_B9_D9_86_D9_88_D8_A7_D9_86__5_.webp" alt="اسد للنمل" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>مبيد اسد للنمل</h3><div class="product-price">50 ج.م</div><div class="product-commission">عمولتك: 2.5 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/super777" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmd7u4xzw19lc01g5648d25e0_1750433199283459882.png" alt="سوبر 777" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>سوبر 777 لحشرات المواشي</h3><div class="product-price">50 ج.م</div><div class="product-commission">عمولتك: 2.5 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/gsuper777" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmqf9has002wk01jn3r8x2g3a_41cOrJRr_eL._AC_.webp" alt="سوبر 777 1 لتر" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>سوبر 777 حشرات المواشي 1 لتر</h3><div class="product-price">100 ج.م</div><div class="product-commission">عمولتك: 5 ج.م (5%)</div></div></a>
-      <a href="https://milanof16.com/ar/product/all/جيجي-اسبونج" target="_blank" class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="https://assets.wuiltstore.com/cmevy2pce4pi101ksg08reses__D8_AA_D8_B5_D9_85_D9_8A_D9_85__D8_A8_D8_AF_D9_88_D9_86__D8_B9_D9_86_D9_88_D8_A7_D9_86__6_.jpg" alt="جيجي" style="max-height:170px;object-fit:contain"></div><div class="product-info"><h3>جيجي اسبونج</h3><div class="product-price">20 ج.م</div><div class="product-commission">عمولتك: 1 ج.م (5%)</div></div></a>
+    <div class="products-grid" id="products-grid"></div>
+    <div class="products-cta" data-aos="fade-up">
+      <a href="http://milanof16.com/ar/shop" target="_blank" class="btn btn-primary btn-lg magnetic-btn">
+        <span>عرض جميع المنتجات</span>
+        <i class="fi fi-rr-arrow-left"></i>
+      </a>
     </div>
   </section>
 
-  <section class="section" style="background:var(--bg)">
-    <div class="section-header animate-in">
-      <span class="badge"><i class="fi fi-rr-star"></i> شركائنا</span>
-      <h2>شركائنا بيقولوا إيه</h2>
+  <section class="section section-alt" id="testimonials">
+    <div class="section-header">
+      <span class="badge" data-aos="fade-down"><i class="fi fi-rr-star"></i> شركائنا</span>
+      <h2 data-aos="fade-up">شركائنا بيقولوا إيه</h2>
     </div>
-    <div class="testimonials-grid animate-in">
-      <div class="testimonial-card">
-        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-        <div class="testimonial-text">"بدأت مع ميلانو من 3 شهور وكنت بكسب حوالي 3000 جنيه في الشهر. المنتجات سهلة البيع جداً والدعم ممتاز."</div>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">أ</div>
-          <div><div class="testimonial-name">أحمد محمد</div><div class="testimonial-role">القاهرة</div></div>
+    <div class="swiper testimonials-swiper" data-aos="fade-up">
+      <div class="swiper-wrapper">
+        <div class="swiper-slide">
+          <div class="testimonial-card glass-card">
+            <div class="testimonial-quote"><i class="fi fi-rr-quote-right"></i></div>
+            <div class="testimonial-stars">
+              <i class="fi fi-sr-star"></i><i class="fi fi-sr-star"></i><i class="fi fi-sr-star"></i><i class="fi fi-sr-star"></i><i class="fi fi-sr-star"></i>
+            </div>
+            <div class="testimonial-text">"بدأت مع ميلانو من 3 شهور وكنت بكسب حوالي 3000 جنيه في الشهر. المنتجات سهلة البيع جداً والدعم ممتاز."</div>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">أ</div>
+              <div>
+                <div class="testimonial-name">أحمد محمد</div>
+                <div class="testimonial-role"><i class="fi fi-rr-marker"></i> القاهرة</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="testimonial-card glass-card">
+            <div class="testimonial-quote"><i class="fi fi-rr-quote-right"></i></div>
+            <div class="testimonial-stars">
+              <i class="fi fi-sr-star"></i><i class="fi fi-sr-star"></i><i class="fi fi-sr-star"></i><i class="fi fi-sr-star"></i><i class="fi fi-sr-star"></i>
+            </div>
+            <div class="testimonial-text">"أفضل برنامج affiliate اشتغلت معاه. بسّع على فيسبوك وواتساب وكسبان كل شهر بشكل ثابت."</div>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar green">س</div>
+              <div>
+                <div class="testimonial-name">سارة علي</div>
+                <div class="testimonial-role"><i class="fi fi-rr-marker"></i> الإسكندرية</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="testimonial-card glass-card">
+            <div class="testimonial-quote"><i class="fi fi-rr-quote-right"></i></div>
+            <div class="testimonial-stars">
+              <i class="fi fi-sr-star"></i><i class="fi fi-sr-star"></i><i class="fi fi-sr-star"></i><i class="fi fi-sr-star"></i><i class="fi fi-sr-star"></i>
+            </div>
+            <div class="testimonial-text">"الدفع سريع والمنتجات أصلية. ب推荐 المبيدات لأصحابي وجيراني ومكسبان من كل بيع."</div>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar orange">م</div>
+              <div>
+                <div class="testimonial-name">محمد حسين</div>
+                <div class="testimonial-role"><i class="fi fi-rr-marker"></i> الجيزة</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="testimonial-card">
-        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-        <div class="testimonial-text">"أفضل برنامج affiliate اشتغلت معاه. بسّع على فيسبوك وواتساب وكسبان كل شهر بشكل ثابت."</div>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">س</div>
-          <div><div class="testimonial-name">سارة علي</div><div class="testimonial-role">الإسكندرية</div></div>
-        </div>
-      </div>
-      <div class="testimonial-card">
-        <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-        <div class="testimonial-text">"الدفع سريع والمنتجات أصلية. ب推荐 المبيدات لأصحابي وجيراني ومكسبان من كل بيع."</div>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">م</div>
-          <div><div class="testimonial-name">محمد حسين</div><div class="testimonial-role">الجيزة</div></div>
-        </div>
-      </div>
+      <div class="swiper-pagination"></div>
     </div>
   </section>
 
   <section class="section" id="faq">
-    <div class="section-header animate-in">
-      <span class="badge"><i class="fi fi-rr-interrogation"></i> الأسئلة الشائعة</span>
-      <h2>عندك سؤال؟</h2>
+    <div class="section-header">
+      <span class="badge" data-aos="fade-down"><i class="fi fi-rr-interrogation"></i> الأسئلة الشائعة</span>
+      <h2 data-aos="fade-up">عندك سؤال؟</h2>
     </div>
-    <div class="faq-list animate-in">
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">ازاي أسجل في برنامج العمولة؟ <span class="faq-arrow"><i class="fi fi-rr-chevron-down"></i></span></div>
+    <div class="faq-list">
+      <div class="faq-item glass-card-hover" data-aos="fade-up" data-aos-delay="100">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>ازاي أسجل في برنامج العمولة؟</span>
+          <span class="faq-arrow"><i class="fi fi-rr-chevron-down"></i></span>
+        </div>
         <div class="faq-answer">سجّل حساب مجاني من صفحة التسجيل، وهتحصل على كود إحالة خاص بيك تقدر تشاركه مع أي حد.</div>
       </div>
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">كم عمولة كل بيع؟ <span class="faq-arrow"><i class="fi fi-rr-chevron-down"></i></span></div>
+      <div class="faq-item glass-card-hover" data-aos="fade-up" data-aos-delay="200">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>كم عمولة كل بيع؟</span>
+          <span class="faq-arrow"><i class="fi fi-rr-chevron-down"></i></span>
+        </div>
         <div class="faq-answer">العمولة 5% من سعر كل منتج. يعني لو بعت منتج ب 60 جنيه بتاخد 3 جنيه عمولة.</div>
       </div>
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">ازاي بستلم أرباحي؟ <span class="faq-arrow"><i class="fi fi-rr-chevron-down"></i></span></div>
+      <div class="faq-item glass-card-hover" data-aos="fade-up" data-aos-delay="300">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>ازاي بستلم أرباحي؟</span>
+          <span class="faq-arrow"><i class="fi fi-rr-chevron-down"></i></span>
+        </div>
         <div class="faq-answer">بتطلب سحب من لوحة التحكم والدفع بيتم خلال 48 ساعة على فودافون كاش أو وي كاش.</div>
       </div>
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">هل فيه حد أدنى للسحب؟ <span class="faq-arrow"><i class="fi fi-rr-chevron-down"></i></span></div>
+      <div class="faq-item glass-card-hover" data-aos="fade-up" data-aos-delay="400">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>هل فيه حد أدنى للسحب؟</span>
+          <span class="faq-arrow"><i class="fi fi-rr-chevron-down"></i></span>
+        </div>
         <div class="faq-answer">الحد الأدنى للسحب هو 50 جنيه مصري.</div>
       </div>
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">المنتجات أصلية؟ <span class="faq-arrow"><i class="fi fi-rr-chevron-down"></i></span></div>
+      <div class="faq-item glass-card-hover" data-aos="fade-up" data-aos-delay="500">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>المنتجات أصلية؟</span>
+          <span class="faq-arrow"><i class="fi fi-rr-chevron-down"></i></span>
+        </div>
         <div class="faq-answer">أيوه، كل منتجاتنا أصلية ومضمونة من شركة ميلانو. سمعتنا عندنا أهم حاجة.</div>
       </div>
     </div>
   </section>
 
-  <section class="cta">
-    <h2>جاهز تبدأ تكسب؟ <i class="fi fi-rr-money-bill-wave"></i></h2>
-    <p>سجّل دلوقتي مجاناً وابدأ شارك المنتجات واحصل على عمولتك الأولى خلال ساعات!</p>
-    <a href="auth.html" class="btn btn-lg" style="background:white;color:#ff6d00"><i class="fi fi-rr-rocket"></i> ابدأ دلوقتي مجاناً</a>
+  <section class="cta-section" data-aos="zoom-in">
+    <div class="cta-bg">
+      <div class="mesh-gradient"></div>
+      <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+      </div>
+    </div>
+    <div class="cta-content">
+      <h2>جاهز تبدأ تكسب؟</h2>
+      <p>سجّل دلوقتي مجاناً وابدأ شارك المنتجات واحصل على عمولتك الأولى خلال ساعات!</p>
+      <a href="auth.html" class="btn btn-cta magnetic-btn">
+        <span>ابدأ دلوقتي مجاناً</span>
+        <i class="fi fi-rr-rocket"></i>
+      </a>
+      <div class="cta-trust">
+        <div class="trust-item"><i class="fi fi-rr-check-circle"></i> تسجيل مجاني</div>
+        <div class="trust-item"><i class="fi fi-rr-check-circle"></i> بدون استثمار</div>
+        <div class="trust-item"><i class="fi fi-rr-check-circle"></i> دفع سريع</div>
+      </div>
+    </div>
   </section>
 
   <footer class="footer">
+    <div class="footer-wave">
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <path d="M0,60 C360,120 720,0 1080,60 C1260,90 1380,60 1440,40 L1440,120 L0,120 Z" fill="currentColor"/>
+      </svg>
+    </div>
     <div class="footer-grid">
-      <div>
-        <div class="footer-brand"><img src="https://assets.wuiltstore.com/cmksv9bcw0ki601gn64lf4joy_Gemini_Generated_Image_8x0fug8x0fug8x0f.webp" alt="ميلانو" style="width:30px;height:30px;border-radius:8px;object-fit:cover;vertical-align:middle"> ميلانو <span>F16</span></div>
+      <div data-aos="fade-up">
+        <div class="footer-brand">
+          <img src="https://assets.wuiltstore.com/cmksv9bcw0ki601gn64lf4joy_Gemini_Generated_Image_8x0fug8x0fug8x0f.webp" alt="ميلانو" style="width:30px;height:30px;border-radius:8px;object-fit:cover;vertical-align:middle">
+          ميلانو <span>F16</span>
+        </div>
         <p class="footer-desc">ميلانو F16 للقضاء النهائي على الحشرات. منتجات أصلية مضمونة مع شحن مجاني.</p>
         <div class="footer-social">
-          <a href="https://www.facebook.com/milanof16.22" target="_blank"><i class="fi fi-brands-facebook"></i></a>
-          <a href="http://wa.me/+201551278606" target="_blank"><i class="fi fi-brands-whatsapp"></i></a>
+          <a href="https://www.facebook.com/milanof16.22" target="_blank" class="social-link"><i class="fi fi-brands-facebook"></i></a>
+          <a href="http://wa.me/+201551278606" target="_blank" class="social-link"><i class="fi fi-brands-whatsapp"></i></a>
+          <a href="https://www.instagram.com" target="_blank" class="social-link"><i class="fi fi-brands-instagram"></i></a>
         </div>
       </div>
-      <div>
+      <div data-aos="fade-up" data-aos-delay="100">
         <h4>روابط سريعة</h4>
         <ul class="footer-links">
           <li><a href="index.html"><i class="fi fi-rr-home"></i> الرئيسية</a></li>
@@ -228,7 +361,7 @@
           <li><a href="#faq"><i class="fi fi-rr-interrogation"></i> الأسئلة</a></li>
         </ul>
       </div>
-      <div>
+      <div data-aos="fade-up" data-aos-delay="200">
         <h4>المنتجات</h4>
         <ul class="footer-links">
           <li><a href="http://milanof16.com/ar/shop"><i class="fi fi-rr-shop"></i> المتجر</a></li>
@@ -237,7 +370,7 @@
           <li><a href="https://milanof16.com/ar/product/all/f35-650ml">اف 35 للبق</a></li>
         </ul>
       </div>
-      <div>
+      <div data-aos="fade-up" data-aos-delay="300">
         <h4>تواصل معانا</h4>
         <ul class="footer-links">
           <li><a href="tel:01029293339"><i class="fi fi-rr-phone-call"></i> 01029293339</a></li>
@@ -251,30 +384,61 @@
     </div>
   </footer>
 
-  <div class="toast-container" id="toast-container"></div>
-
+  <script src="js/products-data.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script>
-    function toggleFaq(el) {
-      el.parentElement.classList.toggle('open');
+    // ===== AOS Init =====
+    AOS.init({
+      duration: 800,
+      easing: 'ease-out-cubic',
+      once: true,
+      offset: 50
+    });
+
+    // ===== Products Data =====
+    const products = window.PRODUCTS || [];
+    const productsGrid = document.getElementById('products-grid');
+    if (productsGrid && products.length) {
+      productsGrid.innerHTML = products.slice(0, 8).map((p, i) => `
+        <a href="${p.url}" target="_blank" class="product-card" data-aos="fade-up" data-aos-delay="${(i % 4) * 100 + 100}">
+          <div class="product-img-wrap">
+            <img src="${p.image}" alt="${p.name}" loading="lazy">
+            <div class="product-overlay">
+              <span class="btn btn-sm" style="background:white;color:var(--primary)">عرض المنتج</span>
+            </div>
+          </div>
+          <div class="product-info">
+            <div class="product-badge">${p.category}</div>
+            <h3>${p.name}</h3>
+            <div class="product-bottom">
+              <div class="product-price">${p.price} ج.م</div>
+              <div class="product-commission">عمولتك: ${p.commission} ج.م</div>
+            </div>
+          </div>
+        </a>
+      `).join('');
     }
 
-    // Navbar scroll effect
+    // ===== Swiper Init =====
+    new Swiper('.testimonials-swiper', {
+      slidesPerView: 1,
+      spaceBetween: 20,
+      loop: true,
+      autoplay: { delay: 5000, disableOnInteraction: false },
+      pagination: { el: '.swiper-pagination', clickable: true },
+      breakpoints: {
+        768: { slidesPerView: 2 },
+        1024: { slidesPerView: 3 }
+      }
+    });
+
+    // ===== Navbar scroll effect =====
     window.addEventListener('scroll', () => {
       document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
     });
 
-    // Animate on scroll
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.1 });
-
-    document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
-
-    // Counter animation
+    // ===== Counter animation =====
     function animateCounters() {
       document.querySelectorAll('.counter').forEach(counter => {
         const target = parseInt(counter.getAttribute('data-target'));
@@ -293,42 +457,123 @@
       });
     }
 
-    // Run counter when hero is visible
-    const heroObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          animateCounters();
-          heroObserver.disconnect();
-        }
+    const heroStats = document.querySelector('.hero-stats');
+    if (heroStats) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            animateCounters();
+            obs.disconnect();
+          }
+        });
+      });
+      obs.observe(heroStats);
+    }
+
+    // ===== Magnetic Button Effect =====
+    document.querySelectorAll('.magnetic-btn').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = 'translate(0, 0)';
       });
     });
 
-    const heroStats = document.querySelector('.hero-stats');
-    if (heroStats) heroObserver.observe(heroStats);
+    // ===== Particles Canvas =====
+    const canvas = document.getElementById('particles-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
 
-    // Toast notification
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = `toast toast-${type}`;
-      toast.innerHTML = message;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 3 + 1;
+          this.speedX = (Math.random() - 0.5) * 0.5;
+          this.speedY = (Math.random() - 0.5) * 0.5;
+          this.opacity = Math.random() * 0.5 + 0.2;
+        }
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+          if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+          ctx.fill();
+        }
+      }
+
+      for (let i = 0; i < 50; i++) particles.push(new Particle());
+
+      function connectParticles() {
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * (1 - dist / 150)})`;
+              ctx.lineWidth = 0.5;
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        connectParticles();
+        requestAnimationFrame(animateParticles);
+      }
+      animateParticles();
     }
 
-    // Handle referral link - track click and redirect to store
+    // ===== Toast =====
+    function showToast(msg, type = 'info') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = `toast toast-${type}`;
+      t.innerHTML = msg;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    // ===== Referral =====
     (function() {
       const urlParams = new URLSearchParams(window.location.search);
       const ref = urlParams.get('ref');
       if (ref) {
-        // Store referral code in session
         sessionStorage.setItem('referralCode', ref);
-        // Redirect to main store after short delay
-        setTimeout(() => {
-          window.location.href = 'https://milanof16.com/ar';
-        }, 100);
+        setTimeout(() => { window.location.href = 'https://milanof16.com/ar'; }, 100);
       }
     })();
+
+    // ===== Scroll Indicator =====
+    window.addEventListener('scroll', () => {
+      const scrollIndicator = document.querySelector('.scroll-indicator');
+      if (scrollIndicator) {
+        scrollIndicator.style.opacity = window.scrollY > 100 ? '0' : '1';
+      }
+    });
   </script>
 </body>
 </html>
