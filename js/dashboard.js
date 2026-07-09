@@ -145,7 +145,11 @@ function getCurrentTier() {
 }
 
 function getShareLink() {
-  return `https://affiliate.milanof16.com/?ref=${affiliateData?.referralCode}`;
+  return `https://affiliate.milanof16.com/go.html?ref=${affiliateData?.referralCode}`;
+}
+
+function getProductShareLink(productUrl) {
+  return `https://affiliate.milanof16.com/go.html?ref=${affiliateData?.referralCode}&url=${encodeURIComponent(productUrl)}`;
 }
 
 // ===== NAVIGATION =====
@@ -191,20 +195,24 @@ async function loadOverview(c) {
     convSnap.forEach(d => { earnings += d.data().commission||0; });
   } catch(e){}
 
+  // Calculate earnings based on clicks (20 EGP per 1000 clicks)
+  const calculatedEarnings = Math.floor(clicks / 1000) * 20;
+  const pendingEarnings = (clicks % 1000) * 0.02; // 0.02 EGP per click
+
   const chartData = await getChartData(7);
 
   c.innerHTML = `
     <div class="page-header">
       <div style="display:flex;align-items:center;gap:.5rem">
         <div class="live-dot"></div>
-        <div><h1>مرحباً ${affiliateData?.name||''} 👋</h1><p class="subtitle">إليك ملخص أرباحك - بيانات مباشرة</p></div>
+        <div><h1>مرحباً ${affiliateData?.name||''} 👋</h1><p class="subtitle">إليك ملخص أرباحك - 20 ج.م لكل 1000 زائر</p></div>
       </div>
     </div>
     <div class="stats-grid">
       <div class="stat-card touch-feedback" onclick="loadPage('payouts')">
         <div class="stat-bg">💰</div>
         <div class="stat-header"><div class="stat-icon green">💰</div><span class="stat-change up">+12%</span></div>
-        <div class="stat-value earnings">${affiliateData?.totalEarnings||0} ج.م</div>
+        <div class="stat-value earnings">${calculatedEarnings} ج.م</div>
         <div class="stat-label">إجمالي الأرباح</div>
       </div>
       <div class="stat-card touch-feedback" onclick="loadPage('referrals')">
@@ -216,14 +224,14 @@ async function loadOverview(c) {
       <div class="stat-card touch-feedback" onclick="loadPage('payouts')">
         <div class="stat-bg">⏳</div>
         <div class="stat-header"><div class="stat-icon orange">⏳</div></div>
-        <div class="stat-value">${affiliateData?.pendingPayout||0} ج.م</div>
-        <div class="stat-label">أرباح معلقة</div>
+        <div class="stat-value">${pendingEarnings.toFixed(2)} ج.م</div>
+        <div class="stat-label">أرباح معلقة (${clicks % 1000} زائر)</div>
       </div>
       <div class="stat-card touch-feedback" onclick="loadPage('referrals')">
         <div class="stat-bg">🔗</div>
         <div class="stat-header"><div class="stat-icon purple">🔗</div><span class="stat-change up">+${todayClicks}</span></div>
         <div class="stat-value">${clicks}</div>
-        <div class="stat-label">إجمالي النقرات</div>
+        <div class="stat-label">إجمالي الزوار</div>
       </div>
     </div>
     <div class="referral-box">
@@ -321,7 +329,42 @@ async function loadReferrals(c) {
 
 // ===== PRODUCTS =====
 function loadProducts(c) {
-  c.innerHTML = `<div class="page-header"><div><h1>📦 المنتجات</h1><p class="subtitle">شارك المنتجات واحصل على عمولة 5% من كل عملية بيع</p></div></div><div class="products-grid">${PRODUCTS.map(p => `<div class="product-card touch-feedback"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem;border-radius:var(--radius-sm)"><img src="${p.img}" alt="${p.name}" style="max-height:170px;object-fit:contain;border-radius:8px" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\\'font-size:4rem\\'>📦</div>'"></div><div class="product-info"><h3>${p.name}</h3><div class="product-sku">SKU: ${p.sku}</div><div class="product-price">${p.price} ج.م</div><div class="product-commission">عمولتك: ${p.commission} ج.م (5%)</div><div class="product-actions"><button class="btn btn-primary btn-sm" onclick="shareProduct('${p.name}',${p.price},'${p.url}')">مشاركة</button><a href="${p.url}" target="_blank" class="btn btn-ghost btn-sm">عرض</a></div></div></div>`).join('')}</div>`;
+  c.innerHTML = `<div class="page-header"><div><h1>📦 المنتجات</h1><p class="subtitle">شارك رابط المنتج واحصل على 20 ج.م لكل 1000 زائر</p></div></div><div class="products-grid">${PRODUCTS.map(p => {
+    const shareLink = getProductShareLink(p.url);
+    return `<div class="product-card touch-feedback">
+      <div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem;border-radius:var(--radius-sm)">
+        <img src="${p.img}" alt="${p.name}" style="max-height:170px;object-fit:contain;border-radius:8px" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\\'font-size:4rem\\'>📦</div>'">
+      </div>
+      <div class="product-info">
+        <h3>${p.name}</h3>
+        <div class="product-sku">SKU: ${p.sku}</div>
+        <div class="product-price">${p.price} ج.م</div>
+        <div class="product-commission">20 ج.م لكل 1000 زائر</div>
+        <div class="product-actions" style="flex-direction:column;gap:.5rem">
+          <button class="btn btn-primary btn-sm btn-block" onclick="copyProductLink('${shareLink}','${p.name}')">
+            <i class="fi fi-rr-link"></i> نسخ رابط الربح
+          </button>
+          <a href="${p.url}" target="_blank" class="btn btn-ghost btn-sm btn-block">عرض المنتج</a>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function copyProductLink(link, productName) {
+  navigator.clipboard.writeText(link).then(() => {
+    showToast(`تم نسخ رابط ${productName} ✅`, 'success');
+    logShare('product_link');
+  }).catch(() => {
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = link;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    showToast(`تم نسخ رابط ${productName} ✅`, 'success');
+  });
 }
 
 // ===== LEADERBOARD =====
@@ -670,7 +713,7 @@ function shareTwitter() { window.open(`https://twitter.com/intent/tweet?text=${e
 function copyLink() { navigator.clipboard.writeText(getShareLink()); showToast('تم نسخ الرابط ✅','success'); logShare('copy'); }
 
 function shareProduct(name, price, url) {
-  const link = `${url}?ref=${affiliateData?.referralCode}`;
+  const link = getProductShareLink(url);
   const text = `🔥 ${name} بسعر ${price} ج.م من ميلانو F16!\n📦 شحن مجاني\n${link}`;
   if (navigator.share) { navigator.share({title:name,text}).catch(()=>{}); } else { navigator.clipboard.writeText(text); showToast('تم نسخ رابط المشاركة ✅','success'); }
   logShare('product');

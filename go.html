@@ -23,28 +23,45 @@
     <div class="loader" style="font-size:4rem">🛡️</div>
     <div class="spinner"></div>
     <h1>جاري التحويل...</h1>
-    <p>هتتنقل للموقع خلال ثانية</p>
-    <a href="#" id="redirect-link" class="btn">اضغط هنا لو محولتش</a>
+    <p>هتتنقل لمتجر ميلانو خلال ثانية</p>
+    <a href="https://milanof16.com/ar" id="redirect-link" class="btn">اضغط هنا لو محولتش</a>
   </div>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script>
     async function handleRedirect() {
-      const path = window.location.pathname;
-      const code = path.split('/go/')[1];
-      if (!code) { document.body.innerHTML = '<div style="text-align:center"><h1>رابط غير صالح</h1><a href="/" style="color:white">العودة للرئيسية</a></div>'; return; }
-      try {
-        const snap = await db.collection('shortlinks').where('code','==',code).limit(1).get();
-        if (snap.empty) { document.body.innerHTML = '<div style="text-align:center"><h1>الرابط غير موجود</h1><a href="/" style="color:white">العودة للرئيسية</a></div>'; return; }
-        const doc = snap.docs[0];
-        const data = doc.data();
-        await db.collection('shortlinks').doc(doc.id).update({clicks: firebase.firestore.FieldValue.increment(1)});
-        document.getElementById('redirect-link').href = data.longUrl;
-        setTimeout(() => { window.location.href = data.longUrl; }, 1000);
-      } catch(e) {
-        document.body.innerHTML = '<div style="text-align:center"><h1>حدث خطأ</h1><a href="/" style="color:white">العودة للرئيسية</a></div>';
+      const urlParams = new URLSearchParams(window.location.search);
+      const ref = urlParams.get('ref');
+      const productUrl = urlParams.get('url');
+
+      // Track the click
+      if (ref) {
+        try {
+          // Find affiliate by referral code
+          const affSnap = await db.collection('affiliates').where('referralCode','==',ref).limit(1).get();
+          if (!affSnap.empty) {
+            const affDoc = affSnap.docs[0];
+            // Log the click
+            await db.collection('clicks').add({
+              affiliateId: affDoc.id,
+              referralCode: ref,
+              type: 'referral_click',
+              userAgent: navigator.userAgent,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            // Increment affiliate clicks
+            await db.collection('affiliates').doc(affDoc.id).update({
+              totalClicks: firebase.firestore.FieldValue.increment(1)
+            });
+          }
+        } catch(e) { console.error('Click tracking error:', e); }
       }
+
+      // Redirect to product page or main store
+      const targetUrl = productUrl || 'https://milanof16.com/ar';
+      document.getElementById('redirect-link').href = targetUrl;
+      setTimeout(() => { window.location.href = targetUrl; }, 1500);
     }
     handleRedirect();
   </script>

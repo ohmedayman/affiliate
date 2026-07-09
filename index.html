@@ -315,6 +315,20 @@
       container.appendChild(toast);
       setTimeout(() => toast.remove(), 3000);
     }
+
+    // Handle referral link - track click and redirect to store
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const ref = urlParams.get('ref');
+      if (ref) {
+        // Store referral code in session
+        sessionStorage.setItem('referralCode', ref);
+        // Redirect to main store after short delay
+        setTimeout(() => {
+          window.location.href = 'https://milanof16.com/ar';
+        }, 100);
+      }
+    })();
   </script>
 </body>
 </html>
