@@ -2,78 +2,190 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>لوحة التحكم - ميلانو F16</title>
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
   <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-bold-rounded/css/uicons-bold-rounded.css">
   <link rel="icon" href="https://assets.wuiltstore.com/cmksv9bcw0ki601gn64lf4joy_Gemini_Generated_Image_8x0fug8x0fug8x0f.webp">
+  <link rel="apple-touch-icon" href="https://assets.wuiltstore.com/cmksv9bcw0ki601gn64lf4joy_Gemini_Generated_Image_8x0fug8x0fug8x0f.webp">
 </head>
 <body>
   <div class="dashboard">
-    <aside class="sidebar">
-      <div class="sidebar-brand"><img src="https://assets.wuiltstore.com/cmksv9bcw0ki601gn64lf4joy_Gemini_Generated_Image_8x0fug8x0fug8x0f.webp" alt="ميلانو" style="width:36px;height:36px;border-radius:10px;object-fit:cover"> ميلانو <span>F16</span></div>
-      <div class="sidebar-user">
-        <div class="user-avatar" id="user-avatar">👤</div>
-        <div class="user-name" id="user-name">جاري التحميل...</div>
-        <div class="user-tier" id="user-tier">🥉 برونزي</div>
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <img src="https://assets.wuiltstore.com/cmksv9bcw0ki601gn64lf4joy_Gemini_Generated_Image_8x0fug8x0fug8x0f.webp" alt="ميلانو">
+        ميلانو <span>F16</span>
       </div>
+
+      <div class="sidebar-user">
+        <div class="user-avatar" id="user-avatar">M</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">جاري التحميل...</div>
+          <div class="user-tier" id="user-tier">🥉 برونزي</div>
+        </div>
+      </div>
+
       <nav class="sidebar-nav">
         <div class="sidebar-section">
           <div class="sidebar-section-title">القائمة الرئيسية</div>
-          <a href="#" data-page="overview" class="active"><i class="fi fi-rr-layout-fluid"></i> الرئيسية</a>
-          <a href="#" data-page="referrals"><i class="fi fi-rr-users"></i> الإحالات <span class="nav-badge" id="ref-count">0</span></a>
-          <a href="#" data-page="products"><i class="fi fi-rr-box-open"></i> المنتجات</a>
-          <a href="#" data-page="leaderboard"><i class="fi fi-rr-trophy"></i> الترتيب</a>
+          <a href="#" data-page="overview" class="active">
+            <i class="fi fi-rr-layout-fluid"></i>
+            <span>الرئيسية</span>
+          </a>
+          <a href="#" data-page="referrals">
+            <i class="fi fi-rr-users"></i>
+            <span>الإحالات</span>
+            <span class="nav-badge" id="ref-count">0</span>
+          </a>
+          <a href="#" data-page="products">
+            <i class="fi fi-rr-box-open"></i>
+            <span>المنتجات</span>
+          </a>
+          <a href="#" data-page="leaderboard">
+            <i class="fi fi-rr-trophy"></i>
+            <span>الترتيب</span>
+          </a>
         </div>
+
         <div class="sidebar-section">
           <div class="sidebar-section-title">الأرباح</div>
-          <a href="#" data-page="payouts"><i class="fi fi-rr-money-bill-wave"></i> المدفوعات</a>
-          <a href="#" data-page="coupons"><i class="fi fi-rr-ticket"></i> كوبوناتي</a>
-          <a href="#" data-page="marketing"><i class="fi fi-rr-megaphone"></i> مواد تسويقية</a>
+          <a href="#" data-page="payouts">
+            <i class="fi fi-rr-money-bill-wave"></i>
+            <span>المدفوعات</span>
+          </a>
+          <a href="#" data-page="coupons">
+            <i class="fi fi-rr-ticket"></i>
+            <span>كوبوناتي</span>
+          </a>
+          <a href="#" data-page="marketing">
+            <i class="fi fi-rr-megaphone"></i>
+            <span>مواد تسويقية</span>
+          </a>
         </div>
+
         <div class="sidebar-section">
           <div class="sidebar-section-title">أخرى</div>
-          <a href="#" data-page="badges"><i class="fi fi-rr-award"></i> الشارات</a>
-          <a href="#" data-page="training"><i class="fi fi-rr-book-open"></i> التدريب</a>
-          <a href="#" data-page="videos"><i class="fi fi-rr-play-circle"></i> الفيديوهات</a>
-          <a href="#" data-page="notifications"><i class="fi fi-rr-bell"></i> الإشعارات <span class="nav-badge" id="notif-count">0</span></a>
-          <a href="#" data-page="chat"><i class="fi fi-rr-comment-dots"></i> الرسائل</a>
-          <a href="#" data-page="settings"><i class="fi fi-rr-settings"></i> الإعدادات</a>
+          <a href="#" data-page="badges">
+            <i class="fi fi-rr-award"></i>
+            <span>الشارات</span>
+          </a>
+          <a href="#" data-page="training">
+            <i class="fi fi-rr-book-open"></i>
+            <span>التدريب</span>
+          </a>
+          <a href="#" data-page="videos">
+            <i class="fi fi-rr-play-circle"></i>
+            <span>الفيديوهات</span>
+          </a>
+          <a href="#" data-page="notifications">
+            <i class="fi fi-rr-bell"></i>
+            <span>الإشعارات</span>
+            <span class="nav-badge" id="notif-count">0</span>
+          </a>
+          <a href="#" data-page="chat">
+            <i class="fi fi-rr-comment-dots"></i>
+            <span>الرسائل</span>
+          </a>
+          <a href="#" data-page="settings">
+            <i class="fi fi-rr-settings"></i>
+            <span>الإعدادات</span>
+          </a>
         </div>
       </nav>
+
       <div class="sidebar-footer">
-        <a href="#" id="sidebar-logout">🚪 تسجيل الخروج</a>
+        <a href="#" id="sidebar-logout">
+          <i class="fi fi-rr-sign-out-alt"></i>
+          <span>تسجيل الخروج</span>
+        </a>
       </div>
     </aside>
 
+    <!-- ===== MAIN CONTENT ===== -->
     <main class="main-content">
+      <!-- Top Bar -->
+      <div class="topbar">
+        <button class="topbar-menu" id="menu-toggle" onclick="toggleSidebar()">
+          <i class="fi fi-rr-menu-burger"></i>
+        </button>
+        <div class="topbar-title" id="topbar-title">الرئيسية</div>
+        <div class="topbar-actions">
+          <button class="topbar-btn" onclick="loadPage('notifications')" title="الإشعارات">
+            <i class="fi fi-rr-bell"></i>
+            <span class="topbar-badge" id="topbar-notif-badge" style="display:none">0</span>
+          </button>
+          <button class="topbar-btn" onclick="loadPage('chat')" title="الرسائل">
+            <i class="fi fi-rr-comment-dots"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Page Content -->
       <div id="page-content">
-        <div class="loading-page"><div class="spinner spinner-dark"></div><p style="color:var(--text-secondary)">جاري تحميل البيانات...</p></div>
+        <div class="loading-page">
+          <div class="spinner spinner-dark"></div>
+          <p style="color:var(--text-secondary)">جاري تحميل البيانات...</p>
+        </div>
       </div>
     </main>
   </div>
 
-  <div class="notification-panel" id="notification-panel">
-    <div class="notification-drawer">
-      <div class="notification-header">
-        <h3>الإشعارات</h3>
+  <!-- ===== OVERLAY ===== -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <!-- ===== NOTIFICATION PANEL ===== -->
+  <div class="notif-panel" id="notification-panel">
+    <div class="notif-drawer">
+      <div class="notif-handle"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <h3 style="font-size:1.1rem;font-weight:700">الإشعارات</h3>
         <button class="btn btn-sm btn-ghost" onclick="closeNotifications()">✕</button>
       </div>
       <div id="notification-list"></div>
     </div>
   </div>
 
-  <div class="modal-overlay" id="modal-overlay">
-    <div class="modal" id="modal-content"></div>
+  <!-- ===== MODAL ===== -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+    <div class="modal" id="modal-content" onclick="event.stopPropagation()"></div>
   </div>
 
+  <!-- ===== TOAST ===== -->
   <div class="toast-container" id="toast-container"></div>
 
+  <!-- ===== FIREBASE ===== -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/dashboard.js"></script>
+
+  <script>
+    // Sidebar toggle
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('active');
+    }
+
+    // Close sidebar on page load (mobile)
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    }
+
+    // Close sidebar when clicking a link (mobile)
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
+      link.addEventListener('click', closeSidebar);
+    });
+  </script>
 </body>
 </html>
