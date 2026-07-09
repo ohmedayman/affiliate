@@ -130,6 +130,11 @@ a{text-decoration:none;color:inherit}ul{list-style:none}img{max-width:100%}
 .auth-divider{display:flex;align-items:center;gap:1rem;margin:1.5rem 0;color:var(--text-secondary);font-size:.85rem}
 .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 
+.btn-google{display:flex;align-items:center;justify-content:center;gap:.6rem;padding:.85rem 1.5rem;border:2px solid var(--border);border-radius:var(--radius-sm);font-size:1rem;font-weight:600;cursor:pointer;transition:all .3s;background:white;color:var(--text);font-family:inherit}
+.btn-google:hover{border-color:#4285F4;background:#f8f9fa;box-shadow:0 2px 8px rgba(66,133,244,0.15)}
+.btn-google:active{transform:scale(.98)}
+.btn-google svg{flex-shrink:0}
+
 .form-group{margin-bottom:1.2rem}
 .form-group label{display:block;margin-bottom:.4rem;font-weight:600;font-size:.9rem}
 .form-group input,.form-group select,.form-group textarea{width:100%;padding:.85rem 1rem;border:2px solid var(--border);border-radius:var(--radius-sm);font-size:1rem;transition:all .3s;font-family:inherit;background:var(--bg)}
