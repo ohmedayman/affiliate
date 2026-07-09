@@ -1807,48 +1807,6 @@ function showStreak() {
   modal.classList.add('active');
 }
 
-// ===== FLOATING ACTION BUTTON =====
-function initFAB() {
-  if (document.getElementById('fab-container')) return;
-  
-  const fab = document.createElement('div');
-  fab.id = 'fab-container';
-  fab.innerHTML = `
-    <div class="fab-overlay" id="fab-overlay" onclick="toggleFAB()"></div>
-    <div class="fab-menu" id="fab-menu">
-      <button class="fab-item" onclick="shareWhatsApp();toggleFAB()">
-        <span class="fab-item-icon">💬</span>
-        <span class="fab-item-text">واتساب</span>
-      </button>
-      <button class="fab-item" onclick="shareFacebook();toggleFAB()">
-        <span class="fab-item-icon">📘</span>
-        <span class="fab-item-text">فيسبوك</span>
-      </button>
-      <button class="fab-item" onclick="copyLink();toggleFAB()">
-        <span class="fab-item-icon">📋</span>
-        <span class="fab-item-text">نسخ الرابط</span>
-      </button>
-      <button class="fab-item" onclick="showQRCode();toggleFAB()">
-        <span class="fab-item-icon">📱</span>
-        <span class="fab-item-text">كود QR</span>
-      </button>
-    </div>
-    <button class="fab-main" id="fab-main" onclick="toggleFAB()">
-      <span class="fab-main-icon">+</span>
-    </button>
-  `;
-  document.body.appendChild(fab);
-}
-
-function toggleFAB() {
-  const menu = document.getElementById('fab-menu');
-  const overlay = document.getElementById('fab-overlay');
-  const main = document.getElementById('fab-main');
-  menu.classList.toggle('active');
-  overlay.classList.toggle('active');
-  main.classList.toggle('active');
-}
-
 // ===== SOCIAL PROOF =====
 async function getSocialProof() {
   try {
@@ -1932,7 +1890,6 @@ async function loadOverview(c) {
   `;
 
   loadOverviewData();
-  initFAB();
 }
 
 let overviewCache = null;
