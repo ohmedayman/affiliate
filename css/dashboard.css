@@ -910,22 +910,92 @@ img {
   border-radius: var(--radius-full);
 }
 
+.product-img-wrap {
+  position: relative;
+  height: 180px;
+  background: var(--gray-100);
+  overflow: hidden;
+}
+
+.product-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-img-wrap img {
+  transform: scale(1.05);
+}
+
+.product-img-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  background: var(--gray-100);
+}
+
+.product-category-tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 12px;
+  background: rgba(255,255,255,0.9);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(4px);
+}
+
 .product-info {
   padding: 16px;
 }
 
-.product-name {
+.product-info h3 {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--text);
   margin-bottom: 8px;
 }
 
-.product-price {
+.product-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
   margin-bottom: 12px;
+}
+
+.product-sku {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.product-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.product-commission-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  margin-bottom: 12px;
+}
+
+.product-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .price-current {
@@ -1944,6 +2014,152 @@ tr:hover {
   margin-bottom: 24px;
 }
 
+/* ===== LEADERBOARD ===== */
+.leaderboard-podium {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding: 24px 0;
+}
+
+.podium-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 20px;
+  background: var(--card-bg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-light);
+  min-width: 140px;
+  transition: var(--transition-slow);
+}
+
+.podium-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.podium-item.rank-1 {
+  border-color: #ffd700;
+  background: linear-gradient(180deg, #fffef5, var(--card-bg));
+  padding-bottom: 32px;
+}
+
+.podium-item.rank-2 {
+  border-color: #c0c0c0;
+  padding-bottom: 24px;
+}
+
+.podium-item.rank-3 {
+  border-color: #cd7f32;
+  padding-bottom: 16px;
+}
+
+.podium-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.podium-medal {
+  font-size: 2rem;
+}
+
+.podium-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.podium-earnings {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.podium-tier {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--card-bg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-light);
+}
+
+.leaderboard-rank {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  min-width: 32px;
+  text-align: center;
+}
+
+.leaderboard-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.leaderboard-info {
+  flex: 1;
+}
+
+.leaderboard-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.leaderboard-tier {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.leaderboard-earnings {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* ===== PAYOUT CARDS ===== */
+.payout-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
 .payout-card {
   background: var(--card-bg);
   border-radius: var(--radius-xl);
@@ -1951,17 +2167,307 @@ tr:hover {
   box-shadow: var(--shadow-card);
   border: 1px solid var(--border-light);
   text-align: center;
+  transition: var(--transition-slow);
 }
 
-.payout-card .amount {
+.payout-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.payout-card-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.payout-card-amount {
   font-size: 1.8rem;
   font-weight: 800;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.payout-card.total .payout-card-amount { color: var(--primary); }
+.payout-card.pending .payout-card-amount { color: var(--warning); }
+.payout-card.paid .payout-card-amount { color: var(--info); }
+
+.payout-card-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.payout-info {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  flex: 1;
+  min-width: 200px;
+}
+
+.info-icon {
+  font-size: 1.1rem;
+}
+
+.payout-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.payout-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.payout-item:last-child {
+  border-bottom: none;
+}
+
+.payout-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payout-item-amount {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.payout-item-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.payout-item-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.payout-item-method {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.btn-lg {
+  padding: 14px 28px;
+  font-size: 1rem;
+  margin-bottom: 24px;
+}
+
+/* ===== CHAT ===== */
+.chat-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  height: calc(100vh - 150px);
+  background: var(--card-bg);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-light);
+}
+
+.chat-sidebar {
+  border-left: 1px solid var(--border-light);
+  overflow-y: auto;
+  background: var(--gray-50);
+}
+
+.chat-sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.chat-sidebar-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.chat-list {
+  padding: 8px;
+}
+
+.chat-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.chat-list-item:hover {
+  background: var(--gray-100);
+}
+
+.chat-list-item.active {
+  background: var(--primary-light);
+}
+
+.chat-main {
+  display: flex;
+  flex-direction: column;
+  background: var(--gray-50);
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-message {
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.chat-message.sent {
+  align-self: flex-start;
+  background: var(--primary);
+  color: white;
+}
+
+.chat-message.received {
+  align-self: flex-end;
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.chat-input-area {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  border-top: 1px solid var(--border-light);
+  background: var(--card-bg);
+}
+
+.chat-input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.chat-send-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.chat-send-btn:hover {
+  background: var(--primary-dark);
+}
+
+/* ===== NOTIFICATIONS ===== */
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--card-bg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-light);
+  transition: var(--transition);
+}
+
+.notification-item.unread {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.notification-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.notification-icon.info {
+  background: var(--info-light);
+  color: var(--info);
+}
+
+.notification-icon.success {
+  background: var(--primary-light);
   color: var(--primary);
 }
 
-.payout-card .label {
-  color: var(--text-secondary);
+.notification-icon.warning {
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.notification-text {
   font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.notification-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
@@ -2721,6 +3227,33 @@ tr:hover {
   
   .chart-area {
     height: 120px;
+  }
+  
+  .leaderboard-podium {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .podium-item {
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .payout-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .chat-layout {
+    grid-template-columns: 1fr;
+    height: calc(100vh - 200px);
+  }
+  
+  .chat-sidebar {
+    display: none;
+  }
+  
+  .payout-info {
+    flex-direction: column;
   }
 }
 
