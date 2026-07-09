@@ -718,6 +718,136 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 /* ================================================================
+   FEATURES PRO - PROFESSIONAL SaaS CARDS
+   ================================================================ */
+.feature-card-pro {
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 3rem 2rem 2.5rem;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border: 1px solid var(--border);
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card-pro::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.feature-card-pro:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 20px 60px rgba(99, 102, 241, 0.15);
+  border-color: transparent;
+}
+
+.feature-card-pro:hover::before {
+  opacity: 1;
+}
+
+.feature-icon-pro {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+}
+
+.feature-icon-pro svg {
+  width: 36px;
+  height: 36px;
+  stroke-width: 1.5;
+}
+
+.feature-card-pro:hover .feature-icon-pro {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.green-pro {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #059669;
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.2);
+}
+
+.blue-pro {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #2563eb;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.2);
+}
+
+.orange-pro {
+  background: linear-gradient(135deg, #ffedd5, #fed7aa);
+  color: #ea580c;
+  box-shadow: 0 4px 16px rgba(234, 88, 12, 0.2);
+}
+
+.purple-pro {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  color: #7c3aed;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+}
+
+.teal-pro {
+  background: linear-gradient(135deg, #ccfbf1, #99f6e4);
+  color: #0d9488;
+  box-shadow: 0 4px 16px rgba(13, 148, 136, 0.2);
+}
+
+.red-pro {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #dc2626;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.2);
+}
+
+.feature-card-pro h3 {
+  margin-bottom: 0.8rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.feature-card-pro p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  margin-bottom: 1rem;
+}
+
+.feature-badge-pro {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.4s ease;
+}
+
+.feature-card-pro:hover .feature-badge-pro {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ================================================================
    STEPS
    ================================================================ */
 .steps-container {
@@ -1598,6 +1728,9 @@ button { font-family: inherit; cursor: pointer; }
    ================================================================ */
 @media (max-width: 1024px) {
   .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .feature-card-pro { padding: 2.5rem 1.5rem 2rem; }
+  .feature-icon-pro { width: 75px; height: 75px; }
+  .feature-icon-pro svg { width: 32px; height: 32px; }
   .steps-container { grid-template-columns: repeat(2, 1fr); }
   .step-connector { display: none; }
   .footer-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1642,6 +1775,9 @@ button { font-family: inherit; cursor: pointer; }
   .hero-stat { min-width: 200px; width: 100%; }
   
   .features-grid { grid-template-columns: 1fr; }
+  .feature-card-pro { padding: 2.5rem 1.5rem 2rem; }
+  .feature-icon-pro { width: 70px; height: 70px; }
+  .feature-icon-pro svg { width: 30px; height: 30px; }
   .steps-container { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr; }
   
