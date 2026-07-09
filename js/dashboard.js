@@ -22,10 +22,12 @@ const PRODUCTS = [
 ];
 
 const TIERS = [
-  {name:'برونزي',emoji:'🥉',min:0,color:'#cd7f32'},
-  {name:'فضي',emoji:'🥈',min:10,color:'#c0c0c0'},
-  {name:'ذهبي',emoji:'🥇',min:25,color:'#ffd700'},
-  {name:'الماس',emoji:'💎',min:50,color:'#b9f2ff'}
+  {name:'برونزي',emoji:'🥉',min:0,color:'#cd7f32',commission:10},
+  {name:'فضي',emoji:'🥈',min:10,color:'#c0c0c0',commission:15},
+  {name:'ذهبي',emoji:'🥇',min:25,color:'#ffd700',commission:20},
+  {name:'بلاتين',emoji:'💠',min:50,color:'#e5e4e2',commission:25},
+  {name:'الماس',emoji:'💎',min:100,color:'#b9f2ff',commission:30},
+  {name:'سماوي',emoji:'🌟',min:200,color:'#00ced1',commission:35}
 ];
 
 const BADGES = [
@@ -1580,6 +1582,23 @@ function getProfileCompletion() {
   return Math.round((completed / total) * 100);
 }
 
+function getSetupProgress() {
+  if (!affiliateData) return { percentage: 0, steps: [] };
+  
+  const steps = [
+    { text: 'إنشاء الحساب', completed: !!affiliateData.email },
+    { text: 'إضافة رقم التليفون', completed: !!affiliateData.phone },
+    { text: 'إكمال الملف الشخصي', completed: !!(affiliateData.governorate && affiliateData.address) },
+    { text: 'مشاركة رابط الإحالة', completed: (affiliateData.totalClicks || 0) > 0 },
+    { text: 'الحصول على أول إحالة', completed: (affiliateData.referralsCount || 0) > 0 }
+  ];
+  
+  const completedCount = steps.filter(s => s.completed).length;
+  const percentage = Math.round((completedCount / steps.length) * 100);
+  
+  return { percentage, steps };
+}
+
 function showProfileCompletion() {
   const pct = getProfileCompletion();
   const items = [
@@ -1828,12 +1847,39 @@ async function loadOverview(c) {
   const streak = getStreak();
   const profilePct = getProfileCompletion();
   const tier = getCurrentTier();
+  const setupSteps = getSetupProgress();
 
   c.innerHTML = `
     <div class="overview-skeleton">
       <div class="page-header">
         <h1>مرحباً ${af.name || ''} 👋</h1>
         <p class="subtitle">إليك ملخص أرباحك اليوم</p>
+      </div>
+
+      <!-- SETUP WIZARD -->
+      <div class="setup-wizard">
+        <div class="setup-header">
+          <div class="setup-icon-circle">
+            <i class="fi fi-sr-check-circle"></i>
+          </div>
+          <div class="setup-info">
+            <h3>سجّل حسابك</h3>
+            <p>سجّل بياناتك هي تأسي واحداً على كود إحالة خاص بك.</p>
+          </div>
+        </div>
+        <div class="setup-progress-bar">
+          <div class="setup-progress-fill" style="width:${setupSteps.percentage}%"></div>
+        </div>
+        <div class="setup-steps-grid">
+          ${setupSteps.steps.map(step => `
+            <div class="setup-step ${step.completed ? 'completed' : ''}">
+              <div class="setup-step-icon">
+                ${step.completed ? '<i class="fi fi-sr-check"></i>' : '<i class="fi fi-sr-plus"></i>'}
+              </div>
+              <span class="setup-step-text">${step.text}</span>
+            </div>
+          `).join('')}
+        </div>
       </div>
 
       <div class="streak-banner" onclick="showStreak()">
@@ -1850,6 +1896,24 @@ async function loadOverview(c) {
         <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon blue">👥</div></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">إجمالي الإحالات</div></div>
         <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon purple">⏳</div></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">أرباح معلقة</div></div>
         <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon orange">🔗</div></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">إجمالي الزوار</div></div>
+      </div>
+
+      <!-- COMMISSION LEVELS -->
+      <div class="commission-levels-card">
+        <div class="commission-header">
+          <h3>📊 مستويات العمولة</h3>
+          <span class="commission-current">عمولتك: ${tier.commission}%</span>
+        </div>
+        <div class="commission-tiers">
+          ${TIERS.map(t => `
+            <div class="commission-tier ${getCurrentTier().name === t.name ? 'active' : ''}">
+              <div class="tier-emoji">${t.emoji}</div>
+              <div class="tier-name">${t.name}</div>
+              <div class="tier-commission">${t.commission}%</div>
+              <div class="tier-req">${t.min} إحالة</div>
+            </div>
+          `).join('')}
+        </div>
       </div>
 
       ${profilePct < 100 ? `
