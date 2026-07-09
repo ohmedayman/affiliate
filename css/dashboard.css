@@ -2399,6 +2399,12 @@ tr:hover {
   font-weight: 500;
   box-shadow: var(--shadow-lg);
   animation: toast-in 0.3s ease;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.toast.removing {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 .toast.success {

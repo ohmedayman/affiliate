@@ -1211,7 +1211,6 @@ function loadSettings(c) {
             <option value="كفر الشيخ" ${affiliateData?.governorate==='كفر الشيخ'?'selected':''}>كفر الشيخ</option>
             <option value="الفيوم" ${affiliateData?.governorate==='الفيوم'?'selected':''}>الفيوم</option>
             <option value="بني سويف" ${affiliateData?.governorate==='بني سويف'?'selected':''}>بني سويف</option>
-            <option value="الفيوم" ${affiliateData?.governorate==='الفيوم'?'selected':''}>الفيوم</option>
             <option value="أسيوط" ${affiliateData?.governorate==='أسيوط'?'selected':''}>أسيوط</option>
             <option value="سوهاج" ${affiliateData?.governorate==='سوهاج'?'selected':''}>سوهاج</option>
             <option value="قنا" ${affiliateData?.governorate==='قنا'?'selected':''}>قنا</option>
