@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إعداد الأدمن - ميلانو F16</title>
+  <link rel="icon" href="https://assets.wuiltstore.com/cmksv9bcw0ki601gn64lf4joy_Gemini_Generated_Image_8x0fug8x0fug8x0f.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Cairo',sans-serif;background:#0a1628;min-height:100vh;display:flex;align-items:center;justify-content:center;color:white;padding:1.5rem}
+    .card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:2rem;max-width:450px;width:100%;backdrop-filter:blur(20px)}
+    .header{text-align:center;margin-bottom:1.5rem}
+    .header h1{font-size:1.3rem;margin-bottom:.3rem;background:linear-gradient(135deg,#fff,#e0e7ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .header p{font-size:.85rem;color:rgba(255,255,255,0.5)}
+    .form-group{margin-bottom:1rem}
+    .form-group label{display:block;font-size:.8rem;font-weight:600;color:rgba(255,255,255,0.7);margin-bottom:.4rem}
+    .form-group input{width:100%;padding:.8rem 1rem;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;font-size:.9rem;color:white;font-family:'Cairo',sans-serif}
+    .form-group input:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.2)}
+    .btn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.9rem;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer;border:none;font-family:'Cairo',sans-serif;transition:all .3s}
+    .btn:active{transform:scale(.97)}
+    .btn-primary{background:linear-gradient(135deg,#10b981,#34d399);color:white;box-shadow:0 4px 20px rgba(16,185,129,0.3);margin-top:1rem}
+    .btn-primary:hover{box-shadow:0 6px 25px rgba(16,185,129,0.4);transform:translateY(-2px)}
+    .btn-google{background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);margin-top:.8rem}
+    .divider{display:flex;align-items:center;gap:1rem;margin:1.2rem 0;color:rgba(255,255,255,0.3);font-size:.8rem}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.1)}
+    .msg{display:none;padding:.8rem 1rem;border-radius:10px;font-size:.85rem;margin-bottom:1rem;text-align:center}
+    .msg.error{display:block;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#fca5a5}
+    .msg.success{display:block;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7}
+    .spinner{display:none;width:20px;height:20px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .steps{background:rgba(255,255,255,0.03);border-radius:12px;padding:1rem;margin-bottom:1.5rem;border:1px solid rgba(255,255,255,0.05)}
+    .steps h3{font-size:.85rem;margin-bottom:.8rem;color:rgba(255,255,255,0.7)}
+    .step{display:flex;gap:.8rem;align-items:flex-start;margin-bottom:.6rem;font-size:.8rem;color:rgba(255,255,255,0.5)}
+    .step-num{width:22px;height:22px;border-radius:50%;background:#3b82f6;color:white;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0}
+    .link-box{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:.8rem 1rem;margin-top:1rem;display:flex;justify-content:space-between;align-items:center}
+    .link-box span{font-size:.8rem;color:rgba(255,255,255,0.6);word-break:break-all}
+    .link-box button{background:#3b82f6;color:white;border:none;padding:.4rem .8rem;border-radius:6px;font-size:.75rem;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>⚙️ إعداد الأدمن</h1>
+      <p>سجّل دخولك وحط نفسك Admin</p>
+    </div>
+
+    <div class="steps">
+      <h3>الخطوات:</h3>
+      <div class="step"><div class="step-num">1</div><span>سجّل دخول بالبريد والباسورد</span></div>
+      <div class="step"><div class="step-num">2</div><span>اضغط "اعملي Admin"</span></div>
+      <div class="step"><div class="step-num">3</div><span>ادخل على admin-login.html</span></div>
+    </div>
+
+    <div class="msg" id="msg"></div>
+
+    <form id="setup-form">
+      <div class="form-group">
+        <label>البريد الإلكتروني</label>
+        <input type="email" id="email" placeholder="your@email.com" required>
+      </div>
+      <div class="form-group">
+        <label>كلمة المرور</label>
+        <input type="password" id="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-primary" id="login-btn">
+        <span>تسجيل الدخول</span>
+        <div class="spinner" id="spinner"></div>
+      </button>
+    </form>
+
+    <div class="divider">أو</div>
+
+    <button class="btn btn-google" onclick="googleLogin()">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      الدخول بـ Google
+    </button>
+
+    <div id="admin-section" style="display:none;margin-top:1.5rem">
+      <button class="btn" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);color:white" onclick="makeAdmin()">
+        👑 اعمللي Admin
+      </button>
+    </div>
+
+    <div class="link-box" id="link-box" style="display:none">
+      <span>admin-login.html</span>
+      <button onclick="copyLink()">نسخ</button>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script>
+    const msgEl = document.getElementById('msg');
+    const spinner = document.getElementById('spinner');
+    const adminSection = document.getElementById('admin-section');
+    const linkBox = document.getElementById('link-box');
+
+    function showMsg(text, type) {
+      msgEl.textContent = text;
+      msgEl.className = 'msg ' + type;
+    }
+
+    function setLoading(loading) {
+      spinner.style.display = loading ? 'block' : 'none';
+    }
+
+    // Check if already logged in
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const doc = await db.collection('affiliates').doc(user.uid).get();
+        if (doc.exists && doc.data().isAdmin) {
+          showMsg('أنت Admin بالفعل! ✅', 'success');
+          adminSection.style.display = 'none';
+          linkBox.style.display = 'flex';
+        } else {
+          showMsg('مسجّل دخول كـ: ' + user.email, 'success');
+          adminSection.style.display = 'block';
+          linkBox.style.display = 'none';
+        }
+      }
+    });
+
+    // Email login
+    document.getElementById('setup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        showMsg('تم تسجيل الدخول! ✅', 'success');
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        let msg = 'حدث خطأ';
+        if (error.code === 'auth/user-not-found') msg = 'البريد غير مسجل - سجّل حساب جديد أولاً';
+        else if (error.code === 'auth/wrong-password') msg = 'كلمة المرور غلط';
+        showMsg(msg, 'error');
+      }
+    });
+
+    // Google login
+    async function googleLogin() {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.signInWithPopup(provider);
+        showMsg('تم تسجيل الدخول! ✅', 'success');
+      } catch (e) {
+        showMsg('حدث خطأ في Google Login', 'error');
+      }
+    }
+
+    // Make admin
+    async function makeAdmin() {
+      const user = auth.currentUser;
+      if (!user) { showMsg('سجل دخول أولاً', 'error'); return; }
+
+      try {
+        await db.collection('affiliates').doc(user.uid).update({
+          isAdmin: true
+        });
+        showMsg('تم! أنت Admin دلوقتي 👑', 'success');
+        adminSection.style.display = 'none';
+        linkBox.style.display = 'flex';
+      } catch (e) {
+        showMsg('حدث خطأ: ' + e.message, 'error');
+      }
+    }
+
+    // Copy link
+    function copyLink() {
+      navigator.clipboard.writeText('https://affiliate.milanof16.com/admin-login.html');
+      alert('تم النسخ!');
+    }
+  </script>
+</body>
+</html>
