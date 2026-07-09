@@ -1469,5 +1469,329 @@ function closeModal() {
   document.getElementById('modal-overlay').classList.remove('active');
 }
 
+// ===== TOP PRODUCTS =====
+async function getTopProducts() {
+  try {
+    const snap = await db.collection('clicks').where('affiliateId','==',currentUser.uid).get();
+    const productClicks = {};
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (d.productId) {
+        productClicks[d.productId] = (productClicks[d.productId] || 0) + 1;
+      }
+    });
+    const sorted = Object.entries(productClicks).sort((a,b) => b[1] - a[1]).slice(0, 5);
+    return sorted.map(([id, clicks]) => {
+      const product = PRODUCTS.find(p => p.id === id);
+      return product ? { ...product, clicks } : null;
+    }).filter(Boolean);
+  } catch(e) { return []; }
+}
+
+// ===== STREAK SYSTEM =====
+function getStreak() {
+  const today = new Date().toDateString();
+  const lastVisit = localStorage.getItem('lastVisit');
+  const streak = parseInt(localStorage.getItem('streak') || '0');
+  
+  if (lastVisit === today) return streak;
+  
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  if (lastVisit === yesterday.toDateString()) {
+    const newStreak = streak + 1;
+    localStorage.setItem('streak', newStreak);
+    localStorage.setItem('lastVisit', today);
+    return newStreak;
+  } else {
+    localStorage.setItem('streak', 1);
+    localStorage.setItem('lastVisit', today);
+    return 1;
+  }
+}
+
+function showStreak() {
+  const streak = getStreak();
+  const modal = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <div style="padding:1.5rem;text-align:center">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">🔥 سلسلة الحضور</h2>
+      <div style="font-size:4rem;margin:1rem 0;animation:pulse 2s infinite">🔥</div>
+      <div style="font-size:2.5rem;font-weight:800;color:var(--primary);margin-bottom:.5rem">${streak}</div>
+      <p style="color:var(--text-secondary);font-size:.9rem;margin-bottom:1.5rem">يوم متتالي</p>
+      
+      <div style="display:flex;justify-content:center;gap:.5rem;margin-bottom:1.5rem">
+        ${[1,2,3,4,5,6,7].map(d => `
+          <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;
+            background:${d <= streak ? 'var(--primary)' : 'var(--bg)'};color:${d <= streak ? 'white' : 'var(--text-secondary)'}">
+            ${d}
+          </div>
+        `).join('')}
+      </div>
+      
+      <div style="background:var(--bg);border-radius:10px;padding:1rem;margin-bottom:1rem">
+        <p style="font-size:.85rem;color:var(--text-secondary)">
+          ${streak >= 7 ? '🎉 مبروك! وصلت 7 أيام!' : 
+            streak >= 3 ? '💪 كمّل كده! متبقي ' + (7-streak) + ' أيام' :
+            '🚀 ابدأ سلسلتك! دخّل كل يوم عشان تاخد مكافآت'}
+        </p>
+      </div>
+      
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">إغلاق</button>
+    </div>`;
+  modal.classList.add('active');
+}
+
+// ===== FLOATING ACTION BUTTON =====
+function initFAB() {
+  if (document.getElementById('fab-container')) return;
+  
+  const fab = document.createElement('div');
+  fab.id = 'fab-container';
+  fab.innerHTML = `
+    <div class="fab-overlay" id="fab-overlay" onclick="toggleFAB()"></div>
+    <div class="fab-menu" id="fab-menu">
+      <button class="fab-item" onclick="shareWhatsApp();toggleFAB()">
+        <span class="fab-item-icon">💬</span>
+        <span class="fab-item-text">واتساب</span>
+      </button>
+      <button class="fab-item" onclick="shareFacebook();toggleFAB()">
+        <span class="fab-item-icon">📘</span>
+        <span class="fab-item-text">فيسبوك</span>
+      </button>
+      <button class="fab-item" onclick="copyLink();toggleFAB()">
+        <span class="fab-item-icon">📋</span>
+        <span class="fab-item-text">نسخ الرابط</span>
+      </button>
+      <button class="fab-item" onclick="showQRCode();toggleFAB()">
+        <span class="fab-item-icon">📱</span>
+        <span class="fab-item-text">كود QR</span>
+      </button>
+    </div>
+    <button class="fab-main" id="fab-main" onclick="toggleFAB()">
+      <span class="fab-main-icon">+</span>
+    </button>
+  `;
+  document.body.appendChild(fab);
+}
+
+function toggleFAB() {
+  const menu = document.getElementById('fab-menu');
+  const overlay = document.getElementById('fab-overlay');
+  const main = document.getElementById('fab-main');
+  menu.classList.toggle('active');
+  overlay.classList.toggle('active');
+  main.classList.toggle('active');
+}
+
+// ===== SOCIAL PROOF =====
+async function getSocialProof() {
+  try {
+    const affSnap = await db.collection('affiliates').orderBy('totalEarnings','desc').limit(3).get();
+    const recent = [];
+    affSnap.forEach(doc => {
+      const d = doc.data();
+      if (d.name && d.totalEarnings > 0) {
+        recent.push({ name: d.name, earnings: d.totalEarnings });
+      }
+    });
+    return recent;
+  } catch(e) { return []; }
+}
+
+// ===== IMPROVED OVERVIEW WITH NEW FEATURES =====
+async function loadOverview(c) {
+  let clicks = 0, todayClicks = 0, referrals = affiliateData?.referralsCount || 0;
+  try {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const clicksSnap = await db.collection('clicks').where('affiliateId','==',currentUser.uid).get();
+    clicks = clicksSnap.size;
+    clicksSnap.forEach(d => { if (d.data().createdAt?.toDate() >= today) todayClicks++; });
+  } catch(e){}
+
+  const calculatedEarnings = Math.floor(clicks / 1000) * 20;
+  const pendingEarnings = ((clicks % 1000) / 1000 * 20).toFixed(2);
+  const nextPayout = 1000 - (clicks % 1000);
+  const tier = getCurrentTier();
+  const streak = getStreak();
+  const profilePct = getProfileCompletion();
+  const topProducts = await getTopProducts();
+  const socialProof = await getSocialProof();
+
+  c.innerHTML = `
+    <div class="page-header">
+      <h1>مرحباً ${affiliateData?.name || ''} 👋</h1>
+      <p class="subtitle">إليك ملخص أرباحك اليوم</p>
+    </div>
+
+    <!-- Streak Banner -->
+    <div class="streak-banner" onclick="showStreak()">
+      <div class="streak-icon">🔥</div>
+      <div class="streak-info">
+        <div class="streak-count">${streak} يوم</div>
+        <div class="streak-text">سلسلة الحضور</div>
+      </div>
+      <div class="streak-arrow">←</div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card" onclick="loadPage('payouts')">
+        <div class="stat-card-header">
+          <div class="stat-card-icon green">💰</div>
+          <span class="stat-card-trend up">+12%</span>
+        </div>
+        <div class="stat-card-value">${calculatedEarnings} <small>ج.م</small></div>
+        <div class="stat-card-label">إجمالي الأرباح</div>
+      </div>
+      <div class="stat-card" onclick="loadPage('referrals')">
+        <div class="stat-card-header">
+          <div class="stat-card-icon blue">👥</div>
+          <span class="stat-card-trend up">+${todayClicks}</span>
+        </div>
+        <div class="stat-card-value">${referrals}</div>
+        <div class="stat-card-label">إجمالي الإحالات</div>
+      </div>
+      <div class="stat-card" onclick="loadPage('products')">
+        <div class="stat-card-header">
+          <div class="stat-card-icon purple">⏳</div>
+        </div>
+        <div class="stat-card-value">${pendingEarnings} <small>ج.م</small></div>
+        <div class="stat-card-label">أرباح معلقة</div>
+        <div class="stat-card-progress">متبقي ${nextPayout} زائر للدفعة التالية</div>
+      </div>
+      <div class="stat-card" onclick="loadPage('products')">
+        <div class="stat-card-header">
+          <div class="stat-card-icon orange">🔗</div>
+          <span class="stat-card-trend up">+${todayClicks}</span>
+        </div>
+        <div class="stat-card-value">${clicks.toLocaleString()}</div>
+        <div class="stat-card-label">إجمالي الزوار</div>
+      </div>
+    </div>
+
+    <!-- Profile Completion -->
+    ${profilePct < 100 ? `
+    <div class="profile-alert" onclick="showProfileCompletion()">
+      <div class="profile-alert-icon">📋</div>
+      <div class="profile-alert-info">
+        <div class="profile-alert-text">أكمل ملفك الشخصي (${profilePct}%)</div>
+        <div class="profile-alert-bar">
+          <div class="profile-alert-fill" style="width:${profilePct}%"></div>
+        </div>
+      </div>
+      <div class="profile-alert-arrow">←</div>
+    </div>
+    ` : ''}
+
+    <div class="referral-box">
+      <div class="referral-header">
+        <span>🔗 رابط الإحالة الخاص بك</span>
+        <span class="copy-hint">اضغط للنسخ</span>
+      </div>
+      <div class="referral-link-row">
+        <input type="text" id="referral-link" readonly value="${getShareLink()}" onclick="copyToClipboard(this.value); this.select();">
+        <button class="btn btn-primary btn-sm" onclick="copyToClipboard(document.getElementById('referral-link').value)">
+          <i class="fi fi-rr-duplicate"></i> نسخ
+        </button>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <h3>⚡ إجراءات سريعة</h3>
+      <div class="actions-row">
+        <button class="action-btn" onclick="shareWhatsApp()">
+          <span class="action-icon">💬</span>
+          <span>واتساب</span>
+        </button>
+        <button class="action-btn" onclick="shareFacebook()">
+          <span class="action-icon">📘</span>
+          <span>فيسبوك</span>
+        </button>
+        <button class="action-btn" onclick="copyLink()">
+          <span class="action-icon">📋</span>
+          <span>نسخ الرابط</span>
+        </button>
+        <button class="action-btn" onclick="loadPage('products')">
+          <span class="action-icon">📦</span>
+          <span>المنتجات</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Top Products -->
+    ${topProducts.length > 0 ? `
+    <div class="section">
+      <div class="section-header">
+        <h3>🔥 المنتجات الأكثر طلباً</h3>
+      </div>
+      <div class="top-products-list">
+        ${topProducts.map((p, i) => `
+          <div class="top-product-item" onclick="copyProductLink('${getProductShareLink(p.url)}','${p.name}')">
+            <div class="top-product-rank">#${i + 1}</div>
+            <img src="${p.img}" alt="${p.name}" class="top-product-img" onerror="this.style.display='none'">
+            <div class="top-product-info">
+              <div class="top-product-name">${p.name}</div>
+              <div class="top-product-clicks">${p.clicks} نقرة</div>
+            </div>
+            <div class="top-product-price">${p.price} ج.م</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    <!-- Social Proof -->
+    ${socialProof.length > 0 ? `
+    <div class="section">
+      <div class="section-header">
+        <h3>🏆 أفضل الشريكاء</h3>
+      </div>
+      <div class="social-proof-list">
+        ${socialProof.map((a, i) => `
+          <div class="social-proof-item">
+            <div class="social-proof-avatar">${a.name.charAt(0)}</div>
+            <div class="social-proof-info">
+              <div class="social-proof-name">${a.name}</div>
+              <div class="social-proof-earnings">${a.earnings} ج.م أرباح</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    <div class="tier-progress-section">
+      <div class="section-header">
+        <h3>🏅 التقدم نحو المستوى التالي</h3>
+      </div>
+      <div class="tier-progress-card" id="tier-progress"></div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-header">
+        <h3>📈 النقرات - آخر 7 أيام</h3>
+        <div class="live-dot"></div>
+      </div>
+      <div class="chart-area" id="chart-area"></div>
+      <div class="chart-labels" id="chart-labels"></div>
+    </div>
+
+    <div class="recent-section">
+      <div class="section-header">
+        <h3>📋 آخر الإحالات</h3>
+        <button class="btn btn-ghost btn-sm" onclick="loadPage('referrals')">عرض الكل</button>
+      </div>
+      <div id="recent-referrals"></div>
+    </div>
+  `;
+
+  loadChartData();
+  renderTierProgress();
+  loadRecentReferrals();
+  initFAB();
+}
+
 // ===== INIT DARK MODE ON LOAD =====
 initDarkMode();
