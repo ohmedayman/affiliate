@@ -1,13 +1,13 @@
 let currentUser = null, affiliateData = null, currentPage = 'overview';
 const PRODUCTS = [
-  {id:'f16-500',name:'اف 16 للصراصير 500مل',price:60,commission:15,emoji:'🪳',sku:'F16-500ML',category:'صراصير',url:'https://milanof16.com/ar/product/all/f16-500ml'},
-  {id:'f16-400',name:'اف 16 للصراصير 400مل',price:50,commission:12,emoji:'🪳',sku:'F16-400ML',category:'صراصير',url:'https://milanof16.com/ar/product/all/f16-400ml'},
-  {id:'f22-500',name:'اف 22 للنمل 500مل',price:60,commission:15,emoji:'🐜',sku:'F22-500ML',category:'نمل',url:'https://milanof16.com/ar/product/all/f22-500ml'},
-  {id:'f22-400',name:'اف 22 للنمل 400مل',price:50,commission:12,emoji:'🐜',sku:'F22-400ML',category:'نمل',url:'https://milanof16.com/ar/product/all/f22-400ml'},
-  {id:'f35-650',name:'مبيد اف 35 للبق',price:70,commission:18,emoji:'🐛',sku:'F35-650ML',category:'بق',url:'https://milanof16.com/ar/product/all/f35-650ml'},
-  {id:'ringo',name:'رينجو للذباب',price:60,commission:15,emoji:'🪰',sku:'RINGO',category:'ذباب',url:'https://milanof16.com/ar/product/all/ringo'},
-  {id:'super777',name:'سوبر 777 لحشرات المواشي',price:50,commission:12,emoji:'🐄',sku:'SUPER777',category:'مواشي',url:'https://milanof16.com/ar/product/all/super777'},
-  {id:'giGi',name:'جيجي اسبونج',price:20,commission:5,emoji:'🧽',sku:'GIGI',category:'تنظيف',url:'https://milanof16.com/ar/product/all/جيجي-اسبونج'}
+  {id:'f16-500',name:'اف 16 للصراصير 500مل',price:60,commission:3,img:'https://assets.wuiltstore.com/cmdiu58cl1tl501ks9ehv955z_1750433241132832061.png',sku:'F16-500ML',category:'صراصير',url:'https://milanof16.com/ar/product/all/f16-500ml'},
+  {id:'f16-400',name:'اف 16 للصراصير 400مل',price:50,commission:2.5,img:'https://assets.wuiltstore.com/cmd7u4z8219le01g5d3noe3f0_1750434193411593051.png',sku:'F16-400ML',category:'صراصير',url:'https://milanof16.com/ar/product/all/f16-400ml'},
+  {id:'f22-500',name:'اف 22 للنمل 500مل',price:60,commission:3,img:'https://assets.wuiltstore.com/cmd7u4uf619l601g5cufc88nk_1750433228528482556.png',sku:'F22-500ML',category:'نمل',url:'https://milanof16.com/ar/product/all/f22-500ml'},
+  {id:'f22-400',name:'اف 22 للنمل 400مل',price:50,commission:2.5,img:'https://assets.wuiltstore.com/cmd7u4v5019l701g5cnbm9rlr_1750434208208242738.png',sku:'F22-400ML',category:'نمل',url:'https://milanof16.com/ar/product/all/f22-400ml'},
+  {id:'f35-650',name:'مبيد اف 35 للبق',price:70,commission:3.5,img:'https://assets.wuiltstore.com/cmd7u4vuk19l801g5c6103zlq_1750433213166894989.png',sku:'F35-650ML',category:'بق',url:'https://milanof16.com/ar/product/all/f35-650ml'},
+  {id:'ringo',name:'رينجو للذباب',price:60,commission:3,img:'https://assets.wuiltstore.com/cmd7u4tpy19l501g5fqpbbe6w_1750433182306448668.png',sku:'RINGO',category:'ذباب',url:'https://milanof16.com/ar/product/all/ringo'},
+  {id:'super777',name:'سوبر 777 لحشرات المواشي',price:50,commission:2.5,img:'https://assets.wuiltstore.com/cmd7u4xzw19lc01g5648d25e0_1750433199283459882.png',sku:'SUPER777',category:'مواشي',url:'https://milanof16.com/ar/product/all/super777'},
+  {id:'giGi',name:'جيجي اسبونج',price:20,commission:1,img:'https://assets.wuiltstore.com/cmevy2pce4pi101ksg08reses__D8_AA_D8_B5_D9_85_D9_8A_D9_85__D8_A8_D8_AF_D9_88_D9_86__D8_B9_D9_86_D9_88_D8_A7_D9_86__6_.jpg',sku:'GIGI',category:'تنظيف',url:'https://milanof16.com/ar/product/all/جيجي-اسبونج'}
 ];
 const TIERS = [
   {name:'برونزي',emoji:'🥉',min:0,color:'#cd7f32',commissionRate:0.25},
@@ -206,7 +206,7 @@ async function loadReferrals(c) {
 
 // ===== PRODUCTS =====
 function loadProducts(c) {
-  c.innerHTML = `<div class="page-header"><div><h1>📦 المنتجات</h1><p class="subtitle">شارك المنتجات واحصل على عمولة من كل عملية بيع</p></div></div><div class="products-grid">${PRODUCTS.map(p => `<div class="product-card"><div class="product-img-wrap" style="background:var(--primary-light)">${p.emoji}</div><div class="product-info"><h3>${p.name}</h3><div class="product-sku">SKU: ${p.sku}</div><div class="product-price">${p.price} ج.م</div><div class="product-commission">عمولتك: ${p.commission} ج.م (${Math.round(p.commission/p.price*100)}%)</div><div class="product-actions"><button class="btn btn-primary btn-sm" onclick="shareProduct('${p.name}',${p.price},'${p.url}')">مشاركة</button><a href="${p.url}" target="_blank" class="btn btn-ghost btn-sm">عرض</a></div></div></div>`).join('')}</div>`;
+  c.innerHTML = `<div class="page-header"><div><h1>📦 المنتجات</h1><p class="subtitle">شارك المنتجات واحصل على عمولة 5% من كل عملية بيع</p></div></div><div class="products-grid">${PRODUCTS.map(p => `<div class="product-card"><div class="product-img-wrap" style="background:#f8f9fa;padding:.5rem"><img src="${p.img}" alt="${p.name}" style="max-height:170px;object-fit:contain;border-radius:8px" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\\'font-size:4rem\\'>📦</div>'"></div><div class="product-info"><h3>${p.name}</h3><div class="product-sku">SKU: ${p.sku}</div><div class="product-price">${p.price} ج.م</div><div class="product-commission">عمولتك: ${p.commission} ج.م (5%)</div><div class="product-actions"><button class="btn btn-primary btn-sm" onclick="shareProduct('${p.name}',${p.price},'${p.url}')">مشاركة</button><a href="${p.url}" target="_blank" class="btn btn-ghost btn-sm">عرض</a></div></div></div>`).join('')}</div>`;
 }
 
 // ===== LEADERBOARD =====
