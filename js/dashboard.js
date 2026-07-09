@@ -2011,10 +2011,10 @@ async function loadOverview(c) {
       </div>
 
       <div class="stats-grid" id="stats-grid">
-        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon green">💰</div><span class="stat-card-trend up">...</span></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">إجمالي الأرباح</div></div>
-        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon blue">👥</div></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">إجمالي الإحالات</div></div>
-        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon purple">⏳</div></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">أرباح معلقة</div></div>
-        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon orange">🔗</div></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">إجمالي الزوار</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon green"><i class="fi fi-sr-wallet"></i></div><span class="stat-card-trend up">...</span></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">إجمالي الأرباح</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon blue"><i class="fi fi-sr-users"></i></div></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">إجمالي الإحالات</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon purple"><i class="fi fi-sr-clock"></i></div></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">أرباح معلقة</div></div>
+        <div class="stat-card"><div class="stat-card-header"><div class="stat-card-icon orange"><i class="fi fi-sr-eye"></i></div></div><div class="stat-card-value skeleton-box">&nbsp;</div><div class="stat-card-label">إجمالي الزوار</div></div>
       </div>
 
       <!-- COMMISSION LEVELS -->
@@ -2142,15 +2142,15 @@ function renderOverviewStats(d) {
   grid.innerHTML = `
     <div class="stat-card" onclick="loadPage('payouts')">
       <div class="stat-card-header">
-        <div class="stat-card-icon green">💰</div>
-        <span class="stat-card-trend up">${d.todayClicks}</span>
+        <div class="stat-card-icon green"><i class="fi fi-sr-wallet"></i></div>
+        <span class="stat-card-trend up">+${d.todayClicks}</span>
       </div>
       <div class="stat-card-value">${d.earnings} <small>ج.م</small></div>
       <div class="stat-card-label">إجمالي الأرباح</div>
     </div>
     <div class="stat-card" onclick="loadPage('referrals')">
       <div class="stat-card-header">
-        <div class="stat-card-icon blue">👥</div>
+        <div class="stat-card-icon blue"><i class="fi fi-sr-users"></i></div>
         <span class="stat-card-trend up">+${d.todayClicks}</span>
       </div>
       <div class="stat-card-value">${d.referrals}</div>
@@ -2158,7 +2158,7 @@ function renderOverviewStats(d) {
     </div>
     <div class="stat-card" onclick="loadPage('products')">
       <div class="stat-card-header">
-        <div class="stat-card-icon purple">⏳</div>
+        <div class="stat-card-icon purple"><i class="fi fi-sr-clock"></i></div>
       </div>
       <div class="stat-card-value">${d.pending} <small>ج.م</small></div>
       <div class="stat-card-label">أرباح معلقة</div>
@@ -2166,7 +2166,7 @@ function renderOverviewStats(d) {
     </div>
     <div class="stat-card" onclick="loadPage('products')">
       <div class="stat-card-header">
-        <div class="stat-card-icon orange">🔗</div>
+        <div class="stat-card-icon orange"><i class="fi fi-sr-eye"></i></div>
         <span class="stat-card-trend up">+${d.todayClicks}</span>
       </div>
       <div class="stat-card-value">${d.clicks.toLocaleString()}</div>

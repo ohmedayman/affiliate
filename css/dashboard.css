@@ -582,7 +582,11 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
+}
+
+.stat-card-icon i {
+  font-size: 1.3rem;
 }
 
 .stat-card-icon.green {
