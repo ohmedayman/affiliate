@@ -4,12 +4,13 @@ const COLORS = ['#1a73e8','#0f9d58','#ff6d00','#7c4dff','#d93025','#00897b','#e9
 
 // ===== AUTH CHECK =====
 auth.onAuthStateChanged(async (user) => {
-  if (!user) { window.location.href = 'auth.html'; return; }
+  if (!user) { window.location.href = 'admin-login.html'; return; }
   adminUser = user;
   const doc = await db.collection('affiliates').doc(user.uid).get();
   if (!doc.exists || !doc.data().isAdmin) {
-    alert('ليس لديك صلاحية الوصول لهذه الصفحة');
-    window.location.href = 'dashboard.html';
+    alert('ليس لديك صلاحية الوصول لهذه الصفحة. سيتم تحويلك لصفحة تسجيل الدخول.');
+    await auth.signOut();
+    window.location.href = 'admin-login.html';
     return;
   }
   adminData = doc.data();
