@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم - ميلانو F16</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="dashboard">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">🛡️ ميلانو <span>F16</span></div>
+      <nav class="sidebar-nav">
+        <a href="#" data-page="overview" class="active">📊 الرئيسية</a>
+        <a href="#" data-page="referrals">👥 الإحالات</a>
+        <a href="#" data-page="products">📦 المنتجات</a>
+        <a href="#" data-page="payouts">💰 المدفوعات</a>
+        <a href="#" data-page="settings">⚙️ الإعدادات</a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="#" id="sidebar-logout" style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1rem;border-radius:var(--radius-sm);transition:all 0.2s;color:#ff6b6b;">🚪 تسجيل الخروج</a>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+      <div id="page-content">
+        <div style="display:flex;align-items:center;justify-content:center;height:60vh;">
+          <div class="spinner spinner-dark" style="width:40px;height:40px;"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
