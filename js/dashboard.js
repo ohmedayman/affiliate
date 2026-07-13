@@ -856,15 +856,6 @@ function loadMarketing(c) {
     </div>`;
 }
 
-const allMarketingMessages = [
-  {title:'رسالة واتساب',icon:'💬',platform:'whatsapp',text:''},
-  {title:'منشور فيسبوك',icon:'📘',platform:'facebook',text:''},
-  {title:'رسالة تيليجرام',icon:'✈️',platform:'telegram',text:''},
-  {title:'ستوري انستجرام',icon:'📱',platform:'instagram',text:''},
-  {title:'منشور تويتر',icon:'🐦',platform:'twitter',text:''},
-  {title:'رسالة عامة',icon:'📋',platform:'copy',text:''}
-];
-
 function renderMarketingCards(messages) {
   return messages.map(m => `
     <div class="marketing-card" data-platform="${m.platform}">
