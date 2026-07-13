@@ -59,6 +59,40 @@ document.querySelectorAll('.admin-nav a').forEach(link => {
   });
 });
 
+// ===== GLOBAL SEARCH =====
+document.getElementById('global-search')?.addEventListener('input', async (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  if (!q) return;
+  const currentPage = document.querySelector('.admin-nav a.active')?.dataset?.page;
+  if (currentPage === 'affiliates') { filterAffiliates(q); return; }
+  if (currentPage === 'messages') { filterAffiliatesList(q); return; }
+  // Global search: search affiliates by name/email
+  try {
+    const snap = await db.collection('affiliates').get();
+    let found = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      if ((d.name||'').toLowerCase().includes(q) || (d.email||'').toLowerCase().includes(q) || (d.referralCode||'').toLowerCase().includes(q)) {
+        found.push({id:doc.id, ...d});
+      }
+    });
+    if (found.length > 0) {
+      loadAdminPage('affiliates');
+      setTimeout(() => filterAffiliates(q), 500);
+    }
+  } catch(e) {}
+});
+
+document.getElementById('global-search')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const q = e.target.value.trim().toLowerCase();
+    if (q) {
+      loadAdminPage('affiliates');
+      setTimeout(() => filterAffiliates(q), 500);
+    }
+  }
+});
+
 function loadAdminPage(page) {
   const titles = {dashboard:'لوحة التحكم',affiliates:'الشركاء',conversions:'المبيعات',payouts:'المدفوعات',products:'المنتجات',videos:'الفيديوهات',messages:'الرسائل',shortlinks:'الروابط القصيرة',notifications:'الإشعارات',settings:'الإعدادات'};
   document.getElementById('page-title').textContent = titles[page] || page;
@@ -191,9 +225,10 @@ async function loadConversions() {
     snap.forEach(doc => {
       const d = doc.data();
       const date = d.createdAt?.toDate().toLocaleDateString('ar-EG')||'-';
-      const sc = d.status==='approved'?'status-approved':d.status==='paid'?'status-paid':'status-pending';
-      const st = d.status==='approved'?'مقبول':d.status==='paid'?'مدفوع':'قيد المراجعة';
-      html += `<tr><td>${i++}</td><td>${date}</td><td>${d.affiliateName||'-'}</td><td>${d.customerName||'-'}</td><td>${d.productName||'-'}</td><td><strong style="color:#0f9d58">${d.commission||0} ج.م</strong></td><td><span class="status-badge ${sc}">${st}</span></td><td><button class="btn btn-sm btn-ghost" onclick="approveConversion('${doc.id}','${d.status}')"><i class="fi fi-sr-check"></i></button></td></tr>`;
+      const sc = d.status==='approved'?'status-approved':d.status==='paid'?'status-paid':d.status==='rejected'?'status-rejected':'status-pending';
+      const st = d.status==='approved'?'مقبول':d.status==='paid'?'مدفوع':d.status==='rejected'?'مرفوض':'قيد المراجعة';
+      const actions = d.status==='pending'?`<button class="btn btn-sm btn-ghost" onclick="approveConversion('${doc.id}','${d.status}')" title="قبول" style="color:#0f9d58"><i class="fi fi-sr-check"></i></button> <button class="btn btn-sm btn-ghost" onclick="rejectConversion('${doc.id}','${d.status}')" title="رفض" style="color:#ef4444"><i class="fi fi-sr-times"></i></button>`:'-';
+      html += `<tr><td>${i++}</td><td>${date}</td><td>${d.affiliateName||'-'}</td><td>${d.customerName||'-'}</td><td>${d.productName||'-'}</td><td><strong style="color:#0f9d58">${d.commission||0} ج.م</strong></td><td><span class="status-badge ${sc}">${st}</span></td><td>${actions}</td></tr>`;
     });
     tbody.innerHTML = html;
   } catch(e) {}
@@ -205,6 +240,16 @@ async function approveConversion(docId, currentStatus) {
     await db.collection('conversions').doc(docId).update({status:'approved'});
     loadConversions();
     showToast('تم قبول المبيعة', 'success');
+  } catch(e) { showToast('حدث خطأ', 'error'); }
+}
+
+async function rejectConversion(docId, currentStatus) {
+  if (currentStatus !== 'pending') return;
+  if (!confirm('هل تريد رفض هذه المبيعة؟')) return;
+  try {
+    await db.collection('conversions').doc(docId).update({status:'rejected'});
+    loadConversions();
+    showToast('تم رفض المبيعة', 'success');
   } catch(e) { showToast('حدث خطأ', 'error'); }
 }
 
@@ -370,15 +415,49 @@ async function editVideo(id) {
     const doc = await db.collection('videos').doc(id).get();
     if (!doc.exists) return;
     const d = doc.data();
-    const newTitle = prompt('عنوان الفيديو:', d.title);
-    if (newTitle === null) return;
-    const newDesc = prompt('الوصف:', d.desc || '');
-    const newUrl = prompt('الرابط:', d.url);
-    if (!newTitle || !newUrl) return;
-    await db.collection('videos').doc(id).update({title:newTitle, desc:newDesc, url:newUrl});
-    showToast('تم التعديل ✅', 'success');
-    loadVideosList();
+    const categoryLabels = {'getting-started':'🚀 البدء','social':'📱 السوشيال ميديا','sales':'💰 المبيعات','tips':'💡 نصائح'};
+    const modal = document.getElementById('modal-content');
+    modal.innerHTML = `
+      <div class="admin-modal-header"><h2><i class="fi fi-sr-pencil"></i> تعديل الفيديو</h2><button class="btn btn-sm btn-ghost" onclick="closeModal()">✕</button></div>
+      <div class="admin-modal-body">
+        <div class="form-group"><label>عنوان الفيديو</label><input type="text" id="edit-vid-title" value="${d.title||''}"></div>
+        <div class="form-group"><label>الوصف</label><input type="text" id="edit-vid-desc" value="${d.desc||''}"></div>
+        <div class="form-group"><label>الرابط</label><input type="url" id="edit-vid-url" value="${d.url||''}"></div>
+        <div class="form-group"><label>التصنيف</label>
+          <select id="edit-vid-category">
+            <option value="getting-started" ${d.category==='getting-started'?'selected':''}>🚀 البدء</option>
+            <option value="social" ${d.category==='social'?'selected':''}>📱 السوشيال ميديا</option>
+            <option value="sales" ${d.category==='sales'?'selected':''}>💰 المبيعات</option>
+            <option value="tips" ${d.category==='tips'?'selected':''}>💡 نصائح</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-group"><label>المدة</label><input type="text" id="edit-vid-duration" value="${d.duration||''}"></div>
+          <div class="form-group"><label>رابط الصورة المصغرة</label><input type="url" id="edit-vid-thumbnail" value="${d.thumbnail||''}"></div>
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button class="btn btn-sm btn-ghost" onclick="closeModal()">إلغاء</button>
+        <button class="btn btn-sm btn-primary" onclick="saveVideoEdit('${id}')"><i class="fi fi-sr-disk"></i> حفظ التعديلات</button>
+      </div>`;
+    document.getElementById('modal-overlay').classList.add('active');
   } catch(e) { showToast('حدث خطأ', 'error'); }
+}
+
+async function saveVideoEdit(id) {
+  const title = document.getElementById('edit-vid-title').value.trim();
+  const desc = document.getElementById('edit-vid-desc').value.trim();
+  const url = document.getElementById('edit-vid-url').value.trim();
+  const category = document.getElementById('edit-vid-category').value;
+  const duration = document.getElementById('edit-vid-duration').value.trim();
+  const thumbnail = document.getElementById('edit-vid-thumbnail').value.trim();
+  if (!title || !url) { showToast('العنوان والرابط مطلوبين', 'error'); return; }
+  try {
+    await db.collection('videos').doc(id).update({title, desc, url, category, duration, thumbnail});
+    closeModal();
+    showToast('تم تعديل الفيديو بنجاح', 'success');
+    loadVideosList();
+  } catch(e) { showToast('حدث خطأ أثناء التعديل', 'error'); }
 }
 
 async function deleteVideo(id) {
@@ -687,9 +766,41 @@ async function broadcastNotification() {
 }
 
 // ===== ADMIN SETTINGS =====
-function loadAdminSettings() {
+async function loadAdminSettings() {
   const c = document.getElementById('admin-page-content');
-  c.innerHTML = `<div class="admin-table-wrap" style="padding:2rem"><h2 style="margin-bottom:1.5rem"><i class="fi fi-sr-settings"></i> إعدادات المنصة</h2><div class="form-group"><label>نسبة العمولة (%)</label><input type="number" id="set-commission" value="5" min="1" max="50"></div><div class="form-group"><label>الحد الأدنى للسحب (ج.م)</label><input type="number" id="set-min-payout" value="50" min="10"></div><div class="form-group"><label>رابط الموقع الرئيسي</label><input type="url" id="set-store-url" value="https://milanof16.com/ar"></div><button class="btn btn-primary" onclick="saveSettings()"><i class="fi fi-sr-disk"></i> حفظ</button></div>`;
+  c.innerHTML = `<div class="admin-table-wrap" style="padding:2rem"><h2 style="margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem"><i class="fi fi-sr-settings"></i> إعدادات المنصة</h2><div style="text-align:center;padding:3rem"><div class="spinner spinner-dark"></div><p style="color:#5f6368;font-size:.85rem;margin-top:.5rem">جاري تحميل الإعدادات...</p></div></div>`;
+  let commission = 5, minPayout = 50, storeUrl = 'https://milanof16.com/ar';
+  try {
+    const doc = await db.collection('settings').doc('platform').get();
+    if (doc.exists) {
+      const d = doc.data();
+      commission = d.commission || commission;
+      minPayout = d.minPayout || minPayout;
+      storeUrl = d.storeUrl || storeUrl;
+    }
+  } catch(e) {}
+  c.innerHTML = `
+    <div class="admin-table-wrap" style="padding:2rem">
+      <h2 style="margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem"><i class="fi fi-sr-settings"></i> إعدادات المنصة</h2>
+      <div class="settings-form-grid">
+        <div class="form-group">
+          <label><i class="fi fi-sr-percent" style="color:#1a73e8"></i> نسبة العمولة (%)</label>
+          <input type="number" id="set-commission" value="${commission}" min="1" max="50">
+          <small style="color:#5f6368;font-size:.75rem">النسبة المئوية للعمولة على كل مبيعة</small>
+        </div>
+        <div class="form-group">
+          <label><i class="fi fi-sr-money-bill-wave" style="color:#0f9d58"></i> الحد الأدنى للسحب (ج.م)</label>
+          <input type="number" id="set-min-payout" value="${minPayout}" min="10">
+          <small style="color:#5f6368;font-size:.75rem">الحد الأدنى لقيمة طلب السحب</small>
+        </div>
+        <div class="form-group">
+          <label><i class="fi fi-sr-globe" style="color:#7c4dff"></i> رابط الموقع الرئيسي</label>
+          <input type="url" id="set-store-url" value="${storeUrl}">
+          <small style="color:#5f6368;font-size:.75rem">رابط المتجر الرئيسي</small>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:1rem"><i class="fi fi-sr-disk"></i> حفظ الإعدادات</button>
+    </div>`;
 }
 
 async function saveSettings() {
@@ -698,8 +809,8 @@ async function saveSettings() {
   const storeUrl = document.getElementById('set-store-url').value;
   try {
     await db.collection('settings').doc('platform').set({commission,minPayout,storeUrl,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-    showToast('تم حفظ الإعدادات', 'success');
-  } catch(e) { showToast('حدث خطأ', 'error'); }
+    showToast('تم حفظ الإعدادات بنجاح', 'success');
+  } catch(e) { showToast('حدث خطأ أثناء الحفظ', 'error'); }
 }
 
 // ===== UTILITIES =====
