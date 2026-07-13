@@ -405,7 +405,7 @@ function renderProducts(products) {
       <div class="product-card" data-category="${p.category}">
         <div class="product-img-wrap">
           <img src="${p.img}" alt="${p.name}" loading="lazy"
-               onerror="this.style.display='none';this.parentElement.innerHTML='<div class=\\'product-img-fallback\\'>📦</div>'">
+               onerror="this.onerror=null;this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f1f5f9%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 font-size=%2240%22>📦</text></svg>'">
           <div class="product-category-tag">${p.category}</div>
           <div class="product-price-tag">${p.price} ج.م</div>
         </div>
@@ -767,37 +767,127 @@ function loadCoupons(c) {
 // ===== MARKETING =====
 function loadMarketing(c) {
   const link = getShareLink();
+  const waLink = `https://wa.me/?text=${encodeURIComponent('🔥 ميلانو F16 - الحل الأقوى للقضاء على الحشرات!\n\n📦 شحن مجاني فوق 3000 جنيه\n✅ منتجات أصلية مضمونة\n\n🛒 اطلب دلوقتي:\n' + link)}`;
   const messages = [
-    {title:'رسالة واتساب',icon:'💬',text:`🔥 ميلانو F16 - الحل الأقوى للقضاء على الحشرات!\n\n✅ شحن مجاني فوق 3000 جنيه\n✅ منتجات أصلية مضمونة\n✅ أسعار تبدأ من 20 جنيه\n\n📦 اطلب دلوقتي:\n${link}`},
-    {title:'منشور فيسبوك',icon:'📘',text:`🛡️ ميلانو F16 - مش هتلاقي منتج أقوى من كده للقضاء على الصراصير والبق والنمل!\n\n📦 شحن مجاني\n💰 أسعار تبدأ من 20 جنيه\n🔒 منتجات أصلية\n\n🛒 اطلب من هنا:\n${link}`},
-    {title:'رسالة تيليجرام',icon:'✈️',text:`🪳 عايز تخلص من الحشرات نهائياً؟\n\nميلانو F16 - المبيد الأقوى في مصر!\n\n📦 شحن مجاني | 💰 أسعار من 20 ج.م\n\n🔗 ${link}`}
+    {title:'رسالة واتساب',icon:'💬',platform:'whatsapp',text:`🔥 ميلانو F16 - الحل الأقوى للقضاء على الحشرات!\n\n✅ شحن مجاني فوق 3000 جنيه\n✅ منتجات أصلية مضمونة\n✅ أسعار تبدأ من 20 جنيه\n\n📦 اطلب دلوقتي:\n${link}`},
+    {title:'منشور فيسبوك',icon:'📘',platform:'facebook',text:`🛡️ ميلانو F16 - مش هتلاقي منتج أقوى من كده للقضاء على الصراصير والبق والنمل!\n\n📦 شحن مجاني\n💰 أسعار تبدأ من 20 جنيه\n🔒 منتجات أصلية\n\n🛒 اطلب من هنا:\n${link}`},
+    {title:'رسالة تيليجرام',icon:'✈️',platform:'telegram',text:`🪳 عايز تخلص من الحشرات نهائياً؟\n\nميلانو F16 - المبيد الأقوى في مصر!\n\n📦 شحن مجاني | 💰 أسعار من 20 ج.م\n\n🔗 ${link}`},
+    {title:'ستوري انستجرام',icon:'📱',platform:'instagram',text:`🪳 صراصير؟ بق؟ نمل؟ 🚫\n\nميلانو F16 - المبيد اللي بيحل المشكلة من جذورها!\n\n📦 شحن مجاني\n💰 أسعار تبدأ من 20 ج.م\n\n📲 اطلب من اللينك في البايو 👆\n${link}`},
+    {title:'منشور تويتر',icon:'🐦',platform:'twitter',text:`🚨 عايز تخلص من الحشرات؟\n\nميلانو F16 - أقوى مبيد حشري في مصر 🛡️\n✅ شحن مجاني | ✅ أسعار من 20 ج.م\n\n🔗 ${link}`},
+    {title:'رسالة عامة',icon:'📋',platform:'copy',text:`📢 ميلانو F16 - منظف ومبيد متعدد الاستخدامات\n\n✅ للصراصير والبق والنمل والذباب\n✅ آمن على الأطفال والحيوانات\n✅ شحن مجاني فوق 3000 جنيه\n\n📦 للطلب: ${link}`}
   ];
 
   c.innerHTML = `
-    <div class="page-header"><h1>📣 مواد تسويقية</h1></div>
-    <p class="section-desc">استخدم الرسائل دي في مشاركة المنتجات. كل رسالة جاهزة للنسخ والمشاركة!</p>
-
-    <div class="marketing-messages">
-      ${messages.map(m => `
-        <div class="marketing-card">
-          <div class="marketing-card-header">
-            <span>${m.icon} ${m.title}</span>
-            <button class="btn btn-primary btn-sm" onclick="copyToClipboard(decodeURIComponent('${encodeURIComponent(m.text)}'))">📋 نسخ</button>
-          </div>
-          <div class="marketing-card-body">${m.text}</div>
-        </div>`).join('')}
+    <div class="page-header">
+      <h1>📣 مواد تسويقية</h1>
+      <p class="subtitle">رسائل جاهزة للنسخ والمشاركة على كل المنصات</p>
     </div>
 
-    <div class="table-container">
-      <div class="table-header"><h2>🔗 روابط مباشرة للمنتجات</h2></div>
-      <div class="product-links-list">
+    <div class="marketing-stats-bar">
+      <div class="marketing-stat">
+        <span class="marketing-stat-value">${messages.length}</span>
+        <span class="marketing-stat-label">رسالة جاهزة</span>
+      </div>
+      <div class="marketing-stat">
+        <span class="marketing-stat-value">${PRODUCTS.length}</span>
+        <span class="marketing-stat-label">منتج</span>
+      </div>
+      <div class="marketing-stat">
+        <span class="marketing-stat-value">5</span>
+        <span class="marketing-stat-label">منصات</span>
+      </div>
+    </div>
+
+    <div class="marketing-tabs" id="marketing-tabs">
+      <button class="marketing-tab active" onclick="filterMarketing('all', this)">الكل</button>
+      <button class="marketing-tab" onclick="filterMarketing('whatsapp', this)">💬 واتساب</button>
+      <button class="marketing-tab" onclick="filterMarketing('facebook', this)">📘 فيسبوك</button>
+      <button class="marketing-tab" onclick="filterMarketing('telegram', this)">✈️ تيليجرام</button>
+      <button class="marketing-tab" onclick="filterMarketing('instagram', this)">📱 انستجرام</button>
+      <button class="marketing-tab" onclick="filterMarketing('twitter', this)">🐦 تويتر</button>
+    </div>
+
+    <div class="marketing-messages" id="marketing-messages">
+      ${renderMarketingCards(messages)}
+    </div>
+
+    <div class="marketing-product-section">
+      <h3>📦 روابط مباشرة للمنتجات</h3>
+      <p style="color:var(--text-secondary);font-size:.85rem;margin-bottom:16px">شارك رابط أي منتج مباشرة</p>
+      <div class="marketing-product-grid">
         ${PRODUCTS.map(p => `
-          <div class="product-link-item">
-            <span class="product-link-name">${p.name}</span>
-            <button class="btn btn-ghost btn-sm" onclick="copyToClipboard('${getProductShareLink(p.url)}')">نسخ</button>
+          <div class="marketing-product-card" onclick="copyProductLink('${getProductShareLink(p.url)}','${p.name.replace(/'/g,"\\'")}')">
+            <img src="${p.img}" alt="${p.name}" class="marketing-product-img" onerror="this.onerror=null;this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f1f5f9%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 font-size=%2240%22>📦</text></svg>'">
+            <div class="marketing-product-info">
+              <div class="marketing-product-name">${p.name}</div>
+              <div class="marketing-product-price">${p.price} ج.م</div>
+            </div>
+            <div class="marketing-product-copy">
+              <i class="fi fi-rr-copy"></i>
+            </div>
           </div>`).join('')}
       </div>
+    </div>
+
+    <div class="marketing-tips">
+      <h3>💡 نصائح للتسويق الفعال</h3>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-icon">🎯</div>
+          <h4>شارك بانتظام</h3>
+          <p>شارك يومياً على الأقل مرة واحدة على كل المنصات</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">📸</div>
+          <h4>استخدم صور المنتجات</h4>
+          <p>أضف صور حقيقية للمنتجات لزيادة الثقة والمبيعات</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">💬</div>
+          <h4>رد بسرعة</h4>
+          <p>رد على أي استفسار في أسرع وقت ممكن لزيادة المبيعات</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">📊</div>
+          <h4>تتبع نتائجك</h4>
+          <p>تابع عدد النقرات والأرباح من صفحة الإحالة</p>
+        </div>
+      </div>
     </div>`;
+}
+
+const allMarketingMessages = [
+  {title:'رسالة واتساب',icon:'💬',platform:'whatsapp',text:''},
+  {title:'منشور فيسبوك',icon:'📘',platform:'facebook',text:''},
+  {title:'رسالة تيليجرام',icon:'✈️',platform:'telegram',text:''},
+  {title:'ستوري انستجرام',icon:'📱',platform:'instagram',text:''},
+  {title:'منشور تويتر',icon:'🐦',platform:'twitter',text:''},
+  {title:'رسالة عامة',icon:'📋',platform:'copy',text:''}
+];
+
+function renderMarketingCards(messages) {
+  return messages.map(m => `
+    <div class="marketing-card" data-platform="${m.platform}">
+      <div class="marketing-card-header">
+        <span>${m.icon} ${m.title}</span>
+        <button class="btn btn-primary btn-sm" onclick="copyToClipboard(decodeURIComponent('${encodeURIComponent(m.text)}'))">📋 نسخ</button>
+      </div>
+      <div class="marketing-card-body">${m.text}</div>
+    </div>`).join('');
+}
+
+function filterMarketing(platform, btn) {
+  document.querySelectorAll('.marketing-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const container = document.getElementById('marketing-messages');
+  const cards = container.querySelectorAll('.marketing-card');
+  cards.forEach(card => {
+    if (platform === 'all' || card.dataset.platform === platform) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
 }
 
 // ===== BADGES =====

@@ -1982,6 +1982,74 @@ tr:hover {
 .status-rejected { background: var(--danger-light); color: var(--danger); }
 
 /* ===== MARKETING SECTION ===== */
+.marketing-stats-bar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  background: var(--card-bg);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-light);
+}
+
+.marketing-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+}
+
+.marketing-stat:not(:last-child) {
+  border-left: 1px solid var(--border);
+  padding-left: 16px;
+}
+
+.marketing-stat-value {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.marketing-stat-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.marketing-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.marketing-tab {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--gray-100);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.marketing-tab:hover {
+  background: var(--gray-200);
+}
+
+.marketing-tab.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
 .marketing-messages {
   display: grid;
   gap: 16px;
@@ -2033,6 +2101,137 @@ tr:hover {
 
 .product-link-item:last-child {
   border-bottom: none;
+}
+
+/* ===== MARKETING PRODUCT GRID ===== */
+.marketing-product-section {
+  margin-bottom: 32px;
+}
+
+.marketing-product-section h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.marketing-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.marketing-product-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: var(--transition-slow);
+}
+
+.marketing-product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--primary);
+}
+
+.marketing-product-img {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--gray-100);
+  flex-shrink: 0;
+}
+
+.marketing-product-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.marketing-product-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.marketing-product-price {
+  font-size: 0.78rem;
+  color: var(--primary);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.marketing-product-copy {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+/* ===== MARKETING TIPS ===== */
+.marketing-tips {
+  margin-bottom: 32px;
+}
+
+.marketing-tips h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.tip-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-xl);
+  padding: 20px 16px;
+  text-align: center;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-card);
+  transition: var(--transition-slow);
+}
+
+.tip-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.tip-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.tip-card h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.tip-card p {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 .product-link-name {
@@ -3302,6 +3501,14 @@ tr:hover {
     grid-template-columns: repeat(2, 1fr);
   }
   
+  .tips-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .marketing-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
   .products-summary-bar {
     flex-wrap: wrap;
   }
@@ -3547,6 +3754,37 @@ tr:hover {
   .referral-status {
     width: 100%;
     justify-content: space-between;
+  }
+  
+  .tips-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  
+  .marketing-product-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .marketing-tabs {
+    gap: 6px;
+  }
+  
+  .marketing-tab {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .marketing-stats-bar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+  
+  .marketing-stat:not(:last-child) {
+    border-left: none;
+    border-bottom: 1px solid var(--border);
+    padding-left: 0;
+    padding-bottom: 10px;
   }
 }
 
