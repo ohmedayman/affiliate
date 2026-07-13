@@ -1962,13 +1962,20 @@ tr:hover {
   box-shadow: var(--shadow-card-hover);
 }
 
-.video-thumbnail {
+.video-thumb {
   position: relative;
   height: 160px;
   background: var(--gray-100);
+  overflow: hidden;
 }
 
-.video-thumbnail img {
+.video-thumb iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.video-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1988,21 +1995,43 @@ tr:hover {
   justify-content: center;
   color: var(--primary);
   font-size: 1.2rem;
+  pointer-events: none;
+}
+
+.video-category-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(4px);
 }
 
 .video-info {
   padding: 16px;
 }
 
-.video-title {
+.video-info h3 {
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text);
+  margin-bottom: 4px;
+}
+
+.video-info p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
   margin-bottom: 8px;
 }
 
 .video-meta {
-  font-size: 0.8rem;
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
@@ -3280,4 +3309,20 @@ tr:hover {
 
 .animate-slideUp {
   animation: slideUp 0.5s ease;
+}
+
+/* ===== PAGE TRANSITION ===== */
+.page-enter {
+  animation: pageEnter 0.3s ease;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
