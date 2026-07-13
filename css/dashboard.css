@@ -3103,7 +3103,7 @@ tr:hover {
     transform: translateX(100%);
   }
   
-  .sidebar.show {
+  .sidebar.open {
     transform: translateX(0);
   }
   

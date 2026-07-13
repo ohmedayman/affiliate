@@ -148,8 +148,13 @@ function getShareLink() {
 }
 
 function getProductShareLink(productUrl) {
-  const code = btoa(productUrl).replace(/=/g,'').substring(0,10);
-  return `https://affiliate.milanof16.com/go/${affiliateData?.referralCode}/${code}`;
+  try {
+    const code = btoa(unescape(encodeURIComponent(productUrl))).replace(/=/g,'').substring(0,10);
+    return `https://affiliate.milanof16.com/go/${affiliateData?.referralCode}/${code}`;
+  } catch(e) {
+    const code = btoa(productUrl.replace(/[^\x00-\x7F]/g,'')).replace(/=/g,'').substring(0,10) || 'link';
+    return `https://affiliate.milanof16.com/go/${affiliateData?.referralCode}/${code}`;
+  }
 }
 
 function copyToClipboard(text) {
@@ -244,7 +249,12 @@ function loadPage(page) {
     notifications: loadNotifications,
     settings: loadSettings
   };
-  if (loaders[page]) loaders[page](content);
+  if (loaders[page]) {
+    try { loaders[page](content); } catch(e) {
+      console.error('Page load error:', page, e);
+      content.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h3>خطأ في تحميل الصفحة</h3><p>${e.message}</p><button class="btn btn-primary btn-sm" onclick="loadPage('${page}')">إعادة المحاولة</button></div>`;
+    }
+  }
 }
 
 async function loadChartData() {
@@ -1681,7 +1691,7 @@ function showShareModal() {
       <button class="btn btn-ghost btn-block" onclick="closeModal()">إغلاق</button>
     </div>
   `;
-  modal.classList.add('show');
+  modal.classList.add('active');
 }
 
 // ===== PROFILE COMPLETION =====

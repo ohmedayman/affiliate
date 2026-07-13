@@ -390,7 +390,7 @@
           const refCode = parts[0];
           const encodedUrl = parts[1];
           try {
-            const decoded = atob(encodedUrl + '==');
+            const decoded = decodeURIComponent(escape(atob(encodedUrl + '==')));
             if (decoded.startsWith('http')) {
               targetUrl = decoded;
             }
