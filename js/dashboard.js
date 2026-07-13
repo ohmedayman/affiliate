@@ -365,15 +365,31 @@ async function loadRecentReferrals() {
 // ===== PRODUCTS =====
 function loadProducts(c) {
   const categories = [...new Set(PRODUCTS.map(p => p.category))];
+  const totalCommission = PRODUCTS.length;
   c.innerHTML = `
     <div class="page-header">
       <h1>📦 المنتجات</h1>
       <p class="subtitle">شارك رابط المنتج واحصل على 20 ج.م لكل 1000 زائر</p>
     </div>
 
+    <div class="products-summary-bar">
+      <div class="products-summary-item">
+        <span class="products-summary-value">${PRODUCTS.length}</span>
+        <span class="products-summary-label">منتج متاح</span>
+      </div>
+      <div class="products-summary-item">
+        <span class="products-summary-value">${categories.length}</span>
+        <span class="products-summary-label">فئة</span>
+      </div>
+      <div class="products-summary-item">
+        <span class="products-summary-value">20 ج.م</span>
+        <span class="products-summary-label">لكل 1000 زائر</span>
+      </div>
+    </div>
+
     <div class="filter-bar">
-      <button class="filter-chip active" onclick="filterProducts('all', this)">الكل</button>
-      ${categories.map(cat => `<button class="filter-chip" onclick="filterProducts('${cat}', this)">${cat}</button>`).join('')}
+      <button class="filter-chip active" onclick="filterProducts('all', this)">الكل (${PRODUCTS.length})</button>
+      ${categories.map(cat => `<button class="filter-chip" onclick="filterProducts('${cat}', this)">${cat} (${PRODUCTS.filter(p=>p.category===cat).length})</button>`).join('')}
     </div>
 
     <div class="products-grid" id="products-grid">
@@ -384,25 +400,41 @@ function loadProducts(c) {
 function renderProducts(products) {
   return products.map(p => {
     const shareLink = getProductShareLink(p.url);
+    const escapedName = p.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
     return `
       <div class="product-card" data-category="${p.category}">
         <div class="product-img-wrap">
           <img src="${p.img}" alt="${p.name}" loading="lazy"
                onerror="this.style.display='none';this.parentElement.innerHTML='<div class=\\'product-img-fallback\\'>📦</div>'">
           <div class="product-category-tag">${p.category}</div>
+          <div class="product-price-tag">${p.price} ج.م</div>
         </div>
         <div class="product-info">
           <h3>${p.name}</h3>
           <div class="product-meta">
             <span class="product-sku">SKU: ${p.sku}</span>
-            <span class="product-price">${p.price} ج.م</span>
           </div>
-          <div class="product-commission-badge">20 ج.م / 1000 زائر</div>
+          <div class="product-details">
+            <div class="product-detail-row">
+              <span class="detail-label">السعر</span>
+              <span class="detail-value">${p.price} ج.م</span>
+            </div>
+            <div class="product-detail-row">
+              <span class="detail-label">العمولة</span>
+              <span class="detail-value highlight">${p.commission} ج.م للمنتج</span>
+            </div>
+            <div class="product-detail-row">
+              <span class="detail-label">الربح لكل 1000 زائر</span>
+              <span class="detail-value highlight">20 ج.م</span>
+            </div>
+          </div>
           <div class="product-actions">
-            <button class="btn btn-primary btn-block" onclick="copyProductLink('${shareLink}','${p.name}')">
+            <button class="btn btn-primary btn-block" onclick="copyProductLink('${shareLink}','${escapedName}')">
               <i class="fi fi-rr-link"></i> نسخ رابط الربح
             </button>
-            <a href="${p.url}" target="_blank" class="btn btn-ghost btn-block">عرض المنتج</a>
+            <a href="${p.url}" target="_blank" class="btn btn-ghost btn-block">
+              <i class="fi fi-rr-external-link"></i> عرض المنتج
+            </a>
           </div>
         </div>
       </div>`;
@@ -565,34 +597,68 @@ async function loadPayoutsHistory() {
 
 // ===== REFERRALS =====
 async function loadReferrals(c) {
+  const totalEarnings = Math.floor((affiliateData?.totalClicks || 0) / 1000) * 20;
+  const conversionRate = affiliateData?.totalClicks > 0 ? ((affiliateData?.referralsCount || 0) / affiliateData.totalClicks * 100).toFixed(1) : '0.0';
   c.innerHTML = `
     <div class="page-header"><h1>👥 الإحالات</h1></div>
 
     <div class="referral-box">
-      <div class="referral-header">
-        <span>🔗 رابط الإحالة</span>
-        <span class="copy-hint">اضغط للنسخ</span>
-      </div>
-      <div class="referral-link-row">
-        <input type="text" readonly value="${getShareLink()}" onclick="copyToClipboard(this.value); this.select();">
-        <button class="btn btn-primary btn-sm" onclick="copyToClipboard('${getShareLink()}')">نسخ</button>
+      <div class="referral-content">
+        <h3>🔗 رابط الإحالة الخاص بك</h3>
+        <p>شارك الرابط ده مع أصحابك وكل ما حد يدخل من الرابط أنت بتكسب!</p>
+        <div class="referral-link-row">
+          <input type="text" readonly value="${getShareLink()}" onclick="copyToClipboard(this.value); this.select();" class="referral-link-input">
+          <button class="btn btn-primary btn-sm" onclick="copyToClipboard('${getShareLink()}')">
+            <i class="fi fi-rr-duplicate"></i> نسخ
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="referral-stats">
-      <div class="ref-stat">
+    <div class="referral-stats-grid">
+      <div class="ref-stat-card">
+        <div class="ref-stat-icon blue"><i class="fi fi-sr-users"></i></div>
         <div class="ref-stat-value">${affiliateData?.referralsCount || 0}</div>
         <div class="ref-stat-label">إجمالي الإحالات</div>
       </div>
-      <div class="ref-stat">
-        <div class="ref-stat-value">${affiliateData?.totalClicks || 0}</div>
+      <div class="ref-stat-card">
+        <div class="ref-stat-icon orange"><i class="fi fi-sr-eye"></i></div>
+        <div class="ref-stat-value">${(affiliateData?.totalClicks || 0).toLocaleString()}</div>
         <div class="ref-stat-label">إجمالي الزوار</div>
+      </div>
+      <div class="ref-stat-card">
+        <div class="ref-stat-icon green"><i class="fi fi-sr-wallet"></i></div>
+        <div class="ref-stat-value">${totalEarnings}</div>
+        <div class="ref-stat-label">الأرباح (ج.م)</div>
+      </div>
+      <div class="ref-stat-card">
+        <div class="ref-stat-icon purple"><i class="fi fi-sr-chart-line"></i></div>
+        <div class="ref-stat-value">${conversionRate}%</div>
+        <div class="ref-stat-label">نسبة التحويل</div>
+      </div>
+    </div>
+
+    <div class="referral-share-section">
+      <h3>📤 شارك رابط الإحالة</h3>
+      <div class="share-buttons-row">
+        <button class="share-btn-styled whatsapp" onclick="shareWhatsApp()">
+          <i class="fi fi-brands-whatsapp"></i> واتساب
+        </button>
+        <button class="share-btn-styled facebook" onclick="shareFacebook()">
+          <i class="fi fi-brands-facebook"></i> فيسبوك
+        </button>
+        <button class="share-btn-styled telegram" onclick="shareTelegram()">
+          <i class="fi fi-brands-telegram"></i> تيليجرام
+        </button>
+        <button class="share-btn-styled copy" onclick="copyLink()">
+          <i class="fi fi-rr-copy"></i> نسخ
+        </button>
       </div>
     </div>
 
     <div class="table-container">
       <div class="table-header">
-        <h2>📋 كل الإحالات</h2>
+        <h2>📋 سجل الإحالات</h2>
         <div class="live-dot"></div>
       </div>
       <div id="all-referrals">
@@ -609,16 +675,26 @@ async function loadAllReferrals() {
   try {
     const snap = await db.collection('conversions').where('affiliateId','==',currentUser.uid).get();
     if (snap.empty) {
-      container.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><p>لا توجد إحالات بعد</p><button class="btn btn-primary btn-sm" onclick="loadPage(\'products\')">شارك رابطك الآن</button></div>';
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">👥</div>
+          <h3>لا توجد إحالات بعد</h3>
+          <p>شارك رابط الإحالة بتاعك على واتساب أو السوشيال ميديا وابدأ تكسب!</p>
+          <button class="btn btn-primary btn-sm" onclick="loadPage('products')">
+            <i class="fi fi-sr-box-open"></i> شارك رابطك الآن
+          </button>
+        </div>`;
       return;
     }
     const items = [];
     snap.forEach(doc => items.push({id:doc.id,...doc.data()}));
     items.sort((a,b) => (b.createdAt?.toMillis?.()||0) - (a.createdAt?.toMillis?.()||0));
+
     let html = '<div class="referral-list">';
     let i = 1;
     items.forEach(d => {
       const date = d.createdAt?.toDate()?.toLocaleDateString('ar-EG') || '-';
+      const time = d.createdAt?.toDate()?.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) || '';
       const statusClass = d.status === 'approved' ? 'approved' : d.status === 'paid' ? 'paid' : d.status === 'rejected' ? 'rejected' : 'pending';
       const statusText = d.status === 'approved' ? 'مقبول' : d.status === 'paid' ? 'مدفوع' : d.status === 'rejected' ? 'مرفوض' : 'قيد المراجعة';
       html += `
@@ -626,7 +702,7 @@ async function loadAllReferrals() {
           <div class="referral-number">#${i++}</div>
           <div class="referral-info">
             <div class="referral-customer">${d.customerName || 'عميل'}</div>
-            <div class="referral-date">${date}</div>
+            <div class="referral-date">${date} • ${time}</div>
           </div>
           <div class="referral-status">
             <span class="status-badge ${statusClass}">${statusText}</span>
@@ -636,7 +712,10 @@ async function loadAllReferrals() {
     });
     html += '</div>';
     container.innerHTML = html;
-  } catch(e) { container.innerHTML = '<div class="empty-state"><p>خطأ</p></div>'; }
+  } catch(e) {
+    console.error('Load referrals error:', e);
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>خطأ في تحميل الإحالات</p></div>';
+  }
 }
 
 // ===== COUPONS =====
