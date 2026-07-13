@@ -1288,16 +1288,23 @@ async function loadNotificationsList() {
       const tb = b.createdAt?.toMillis?.() || 0;
       return tb - ta;
     });
-    const notifIcons = {earnings:'💰',payout:'🏦',badge:'🏆',welcome:'👋',alert:'⚠️',info:'ℹ️',promotion:'🎉',message:'💬'};
+    const notifConfig = {
+      earnings: { icon: '💰', bg: 'linear-gradient(135deg, #d1fae5, #a7f3d0)', color: '#059669', shadow: 'rgba(16,185,129,0.2)' },
+      payout:   { icon: '🏦', bg: 'linear-gradient(135deg, #dbeafe, #bfdbfe)', color: '#2563eb', shadow: 'rgba(37,99,235,0.2)' },
+      badge:    { icon: '🏆', bg: 'linear-gradient(135deg, #fef3c7, #fde68a)', color: '#d97706', shadow: 'rgba(217,119,6,0.2)' },
+      welcome:  { icon: '👋', bg: 'linear-gradient(135deg, #ede9fe, #ddd6fe)', color: '#7c3aed', shadow: 'rgba(124,58,237,0.2)' },
+      alert:    { icon: '⚠️', bg: 'linear-gradient(135deg, #fee2e2, #fecaca)', color: '#dc2626', shadow: 'rgba(220,38,38,0.2)' },
+      promotion:{ icon: '🎉', bg: 'linear-gradient(135deg, #fce7f3, #fbcfe8)', color: '#db2777', shadow: 'rgba(219,39,119,0.2)' },
+      message:  { icon: '💬', bg: 'linear-gradient(135deg, #e0e7ff, #c7d2fe)', color: '#4f46e5', shadow: 'rgba(79,70,229,0.2)' },
+      info:     { icon: 'ℹ️',  bg: 'linear-gradient(135deg, var(--gray-100), var(--gray-200))', color: 'var(--text-secondary)', shadow: 'rgba(0,0,0,0.05)' }
+    };
     let html = '';
     notifs.forEach(d => {
       const time = formatNotifTime(d.createdAt);
-      const icon = notifIcons[d.type] || '🔔';
-      const notifType = d.type || 'info';
-      const borderColor = notifType === 'earnings' ? 'var(--success)' : notifType === 'payout' ? 'var(--primary)' : notifType === 'badge' ? 'var(--warning)' : notifType === 'alert' ? 'var(--danger)' : 'var(--primary)';
+      const cfg = notifConfig[d.type] || notifConfig.info;
       html += `
         <div class="notif-item ${d.read ? '' : 'unread'}" onclick="markNotifRead('${d.id}')">
-          <div class="notif-icon-wrap" style="width:42px;height:42px;border-radius:12px;background:${borderColor}15;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">${icon}</div>
+          <div class="notif-icon-wrap" style="background:${cfg.bg};box-shadow:0 4px 12px ${cfg.shadow}">${cfg.icon}</div>
           <div class="notif-content">
             <div class="notif-text">${d.message}</div>
             <div class="notif-time">${time}</div>
