@@ -250,10 +250,10 @@ function loadPage(page) {
     settings: loadSettings
   };
   if (loaders[page]) {
-    try { loaders[page](content); } catch(e) {
+    Promise.resolve().then(() => loaders[page](content)).catch(e => {
       console.error('Page load error:', page, e);
       content.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h3>خطأ في تحميل الصفحة</h3><p>${e.message}</p><button class="btn btn-primary btn-sm" onclick="loadPage('${page}')">إعادة المحاولة</button></div>`;
-    }
+    });
   }
 }
 
